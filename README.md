@@ -85,7 +85,7 @@ your sitepackage or target extension has this dependency, then run `composer upd
 refresh the package metadata. Otherwise the extension dropdown in the editor will be empty.
 
 After installation, the module is available in the TYPO3 backend under
-**Web > Content Blocks**.
+**Admin Tools > Content Blocks**.
 
 ## Feedback and Support
 
