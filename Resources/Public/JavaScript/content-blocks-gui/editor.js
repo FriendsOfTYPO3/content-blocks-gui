@@ -306,14 +306,17 @@ let ContentBlockEditor = class ContentBlockEditor extends LitElement {
     }
     fieldTypeDroppedListener(event) {
         this.rightPaneActiveSchema = this.fieldTypeList.filter((fieldType) => fieldType.type === event.detail.data.type)[0];
-        const fields = event.detail.level > 0 ? event.detail.parent.fields : this.cbDefinition.yaml.fields;
+        if (!this.cbDefinition.yaml.fields) {
+            this.cbDefinition.yaml.fields = [];
+        }
+        const fields = event.detail.level > 0 ? (event.detail.parent.fields ?? []) : this.cbDefinition.yaml.fields;
         const newIdentifier = event.detail.data.type + '_' + this.getNextFieldIndex(fields, event.detail.data.type);
         this.handleFieldAction(newIdentifier, event.detail);
     }
     handleFieldAction(newIdentifier, eventData) {
-        let fields = this.cbDefinition.yaml.fields;
+        let fields = this.cbDefinition.yaml.fields ?? [];
         if (eventData.parent !== null) {
-            fields = eventData.parent.fields;
+            fields = eventData.parent.fields ?? [];
         }
         if (fields.filter((fieldType) => fieldType.identifier === eventData.data.identifier).length > 0) {
             this.updateContentBlockField(eventData.data.identifier, eventData.position, eventData.level, eventData.parent);
