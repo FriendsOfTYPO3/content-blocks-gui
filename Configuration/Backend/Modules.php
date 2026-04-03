@@ -18,7 +18,7 @@ use FriendsOfTYPO3\ContentBlocksGui\Controller\Backend\ContentBlocksGuiControlle
 $_LLL_mod = 'LLL:EXT:content_blocks_gui/Resources/Private/Language/locallang_mod.xlf:';
 return [
     'web_ContentBlocksGui' => [
-        'parent' => 'tools',
+        'parent' => 'web',
         'position' => ['after' => 'web_info'],
         'access' => 'admin',
         'workspaces' => 'live',
