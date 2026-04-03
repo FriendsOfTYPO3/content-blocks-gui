@@ -174,7 +174,7 @@ let ContentBlockList = class ContentBlockList extends LitElement {
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                ${this.selectionMode ? html `<th style="width: 40px;"><input type="checkbox" disabled /></th>` : ''}
+                ${this.selectionMode ? html `<th style="width: 40px;"></th>` : ''}
                 <th></th>
                 <th class="sortable" @click="${() => this.handleSort('name')}" style="cursor: pointer;">
                   Content Block name
