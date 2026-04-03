@@ -98,6 +98,18 @@ let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends Li
           margin-left: 0.5rem;
         }
 
+        .palette-field {
+          border-left: 2px solid var(--typo3-surface-warning);
+          border-radius: 5px;
+          background: var(--typo3-surface-bright);
+          margin-bottom: 0.5rem;
+        }
+
+        .collection-field-item .palette-field {
+          border-left: 2px solid var(--typo3-surface-warning);
+          margin-left: 0.5rem;
+        }
+
         .field-component {
           position: relative;
         }
@@ -168,7 +180,7 @@ let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends Li
             ${this.fieldList?.map((item, index) => {
             const isActive = this.isFieldActive(index + 1, 0, null);
             return html `
-                <div class=${classMap({ 'field-item': true, 'collection-type': item.type === 'Collection', 'field-active': isActive })} data-field-index="${index}">
+                <div class=${classMap({ 'field-item': true, 'collection-type': item.type === 'Collection' || item.type === 'Palette', 'field-active': isActive })} data-field-index="${index}">
                   ${this.renderFieldArea(item, index + 1, 0, null)}
                 </div>
               `;
@@ -194,12 +206,13 @@ let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends Li
     }
     renderFieldArea(cbField, position, level, parent) {
         const fieldType = this.fieldTypes?.filter((fieldType) => fieldType.type === cbField.type)[0];
-        if (cbField.type === 'Collection') {
+        if (cbField.type === 'Collection' || cbField.type === 'Palette') {
+            const containerClass = cbField.type === 'Palette' ? 'palette-field' : 'collection-field';
             return html `
         <div class="collection-container" data-level="${level}">
-          <div class="collection-field">
+          <div class="${containerClass}">
             <div class="collection-header">
-              ${this.renderDraggableFieldType(fieldType, cbField, position, level, cbField, true, false)}
+              ${this.renderDraggableFieldType(fieldType, cbField, position, level, parent, true, false)}
             </div>
             <div class="collection-body">
               <div class="collection-fields">
@@ -210,7 +223,7 @@ let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends Li
                 const isActive = this.isFieldActive(index + 1, level + 1, cbField);
                 return html `
                     <div class=${classMap({ 'collection-field-item': true, 'field-active': isActive })} data-field-index="${index}">
-                      <div class=${classMap({ 'field-item': true, 'collection-type': field.type === 'Collection' })} data-field-index="${index}">
+                      <div class=${classMap({ 'field-item': true, 'collection-type': field.type === 'Collection' || field.type === 'Palette' })} data-field-index="${index}">
                         ${this.renderFieldArea(field, index + 1, level + 1, cbField)}
                       </div>
                     </div>

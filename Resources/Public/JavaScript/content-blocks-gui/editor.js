@@ -328,7 +328,7 @@ let ContentBlockEditor = class ContentBlockEditor extends LitElement {
             type: type,
             label: type + position,
         };
-        if (type === 'Collection') {
+        if (type === 'Collection' || type === 'Palette') {
             newField.fields = [];
         }
         if (level > 0) {

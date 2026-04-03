@@ -4,7 +4,7 @@
 	"description": "TYPO3 Content Blocks GUI.",
 	"homepage": "https://typo3.org",
 	"license": ["GPL-2.0-or-later"],
-    "version": "0.1.1",
+    "version": "0.1.2",
     "minimum-stability": "alpha",
 	"authors": [{
 		"name": "TYPO3 Content Types Team",
