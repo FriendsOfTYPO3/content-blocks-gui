@@ -1,87 +1,16 @@
 /*
-* This file is part of the TYPO3 CMS project.
-*
-* It is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, either version 2
-* of the License, or any later version.
-*
-* For the full copyright and license information, please read the
-* LICENSE.txt file that was distributed with this source code.
-*
-* The TYPO3 project - inspiring people to share!
-*/
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { html, LitElement } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import AjaxRequest from '@typo3/core/ajax/ajax-request.js';
-import Modal from '@typo3/backend/modal.js';
-import { lll } from '@typo3/core/lit-helper.js';
-import { SeverityEnum } from '@typo3/backend/enum/severity.js';
-import '@typo3/backend/element/icon-element.js';
-import './upload.js';
-/**
- * Content Block List Component
+ * This file is part of the TYPO3 CMS project.
  *
- * @example
- * <content-block-list></content-block-list>
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let ContentBlockList = class ContentBlockList extends LitElement {
-    constructor() {
-        super(...arguments);
-        this.activeTab = 'content-element';
-        this.searchTerm = '';
-        this.items = [];
-        this.counts = {};
-        this.isLoading = false;
-        this.sortField = 'name';
-        this.sortDirection = 'asc';
-        this.availableExtensions = [];
-        this.selectionMode = false;
-        this.selectedBlocks = new Set();
-        this.debounceTimeout = null;
-        this.handleUploadButtonClick = (event) => {
-            const target = event.target;
-            if (target.closest('[data-action="upload-content-blocks"]')) {
-                event.preventDefault();
-                this.openUploadModal();
-            }
-        };
-    }
-    connectedCallback() {
-        super.connectedCallback();
-        // Load available extensions from data attribute
-        const extensionsData = this.getAttribute('data-available-extensions');
-        if (extensionsData) {
-            try {
-                this.availableExtensions = JSON.parse(extensionsData);
-            }
-            catch (e) {
-                console.error('Failed to parse available extensions:', e);
-                this.availableExtensions = [];
-            }
-        }
-        // Listen for upload button clicks from button bar
-        document.addEventListener('click', this.handleUploadButtonClick);
-        // Load initial state from URL
-        this.loadStateFromUrl();
-        // Load initial data
-        this.loadContentBlocks(this.activeTab);
-    }
-    disconnectedCallback() {
-        super.disconnectedCallback();
-        document.removeEventListener('click', this.handleUploadButtonClick);
-    }
-    createRenderRoot() {
-        // Don't use Shadow DOM to allow Bootstrap CSS styling
-        return this;
-    }
-    render() {
-        return html `
+import{LitElement as U,html as l}from"lit";import{state as w,customElement as B}from"lit/decorators.js";import L from"@typo3/core/ajax/ajax-request.js";import m from"@typo3/backend/modal.js";import{lll as C}from"@typo3/core/lit-helper.js";import{SeverityEnum as x}from"@typo3/backend/enum/severity.js";import"@typo3/backend/element/icon-element.js";import"@friendsoftypo3/content-blocks-gui/upload.js";var f=function(S,e,t,a){var s=arguments.length,n=s<3?e:a===null?a=Object.getOwnPropertyDescriptor(e,t):a,i;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")n=Reflect.decorate(S,e,t,a);else for(var r=S.length-1;r>=0;r--)(i=S[r])&&(n=(s<3?i(n):s>3?i(e,t,n):i(e,t))||n);return s>3&&n&&Object.defineProperty(e,t,n),n};let b=class extends U{constructor(){super(...arguments),this.activeTab="content-element",this.searchTerm="",this.items=[],this.counts={},this.isLoading=!1,this.sortField="name",this.sortDirection="asc",this.availableExtensions=[],this.selectionMode=!1,this.selectedBlocks=new Set,this.debounceTimeout=null,this.handleUploadButtonClick=e=>{e.target.closest('[data-action="upload-content-blocks"]')&&(e.preventDefault(),this.openUploadModal())}}connectedCallback(){super.connectedCallback();const e=this.getAttribute("data-available-extensions");if(e)try{this.availableExtensions=JSON.parse(e)}catch(t){console.error("Failed to parse available extensions:",t),this.availableExtensions=[]}document.addEventListener("click",this.handleUploadButtonClick),this.loadStateFromUrl(),this.loadContentBlocks(this.activeTab)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("click",this.handleUploadButtonClick)}createRenderRoot(){return this}render(){return l`
       <div class="content-block-list-view">
         <!-- Search Bar -->
         <div class="row mb-3">
@@ -94,401 +23,178 @@ let ContentBlockList = class ContentBlockList extends LitElement {
                 .value="${this.searchTerm}"
                 @input="${this.handleSearchInput}"
               />
-              ${this.searchTerm.length > 0 && this.searchTerm.length < 3 ? html `
+              ${this.searchTerm.length>0&&this.searchTerm.length<3?l`
                 <small class="form-text text-muted">Enter at least 3 characters to search</small>
-              ` : ''}
+              `:""}
             </div>
           </div>
         </div>
 
         <!-- Tabs -->
         <ul class="nav nav-tabs mb-3" role="tablist">
-          ${this.renderTab('content-element', 'Content Elements')}
-          ${this.renderTab('page-type', 'Page Types')}
-          ${this.renderTab('record-type', 'Record Types')}
-          ${this.renderTab('basic', 'Basics')}
+          ${this.renderTab("content-element","Content Elements")}
+          ${this.renderTab("page-type","Page Types")}
+          ${this.renderTab("record-type","Record Types")}
+          ${this.renderTab("basic","Basics")}
         </ul>
 
         <!-- Loading State -->
-        ${this.isLoading ? html `
+        ${this.isLoading?l`
           <div class="alert alert-info">
             <typo3-backend-icon identifier="spinner-circle" size="small"></typo3-backend-icon>
             Loading...
           </div>
-        ` : ''}
+        `:""}
 
         <!-- Content -->
-        ${!this.isLoading ? this.renderContent() : ''}
+        ${this.isLoading?"":this.renderContent()}
       </div>
-    `;
-    }
-    renderTab(type, label) {
-        const count = this.counts[type] || 0;
-        const isActive = this.activeTab === type;
-        return html `
+    `}renderTab(e,t){const a=this.counts[e]||0,s=this.activeTab===e;return l`
       <li class="nav-item" role="presentation">
         <button
-          class="nav-link ${isActive ? 'active' : ''}"
-          @click="${() => this.switchTab(type)}"
+          class="nav-link ${s?"active":""}"
+          @click="${()=>this.switchTab(e)}"
           role="tab"
-          aria-selected="${isActive}">
-          ${label}
-          <span class="badge bg-primary ms-2" style="color: white;">${count}</span>
+          aria-selected="${s}">
+          ${t}
+          <span class="badge bg-primary ms-2" style="color: white;">${a}</span>
         </button>
       </li>
-    `;
-    }
-    renderToolbar() {
-        return html `
+    `}renderToolbar(){return l`
       <div class="btn-toolbar mb-3" role="toolbar">
         <button
-          class="btn ${this.selectionMode ? 'btn-warning' : 'btn-default'}"
+          class="btn ${this.selectionMode?"btn-warning":"btn-default"}"
           @click="${this.toggleSelectionMode}"
-          title="${this.selectionMode ? 'Cancel Selection' : 'Select Multiple for Download'}">
-          <typo3-backend-icon identifier="${this.selectionMode ? 'actions-close' : 'actions-check-square'}" size="small"></typo3-backend-icon>
-          ${this.selectionMode ? 'Cancel Selection' : 'Select Multiple'}
+          title="${this.selectionMode?"Cancel Selection":"Select Multiple for Download"}">
+          <typo3-backend-icon identifier="${this.selectionMode?"actions-close":"actions-check-square"}" size="small"></typo3-backend-icon>
+          ${this.selectionMode?"Cancel Selection":"Select Multiple"}
         </button>
 
-        ${this.selectionMode ? html `
+        ${this.selectionMode?l`
           <button
             class="btn btn-primary ms-2"
             @click="${this.handleMultiDownload}"
-            ?disabled="${this.selectedBlocks.size === 0}"
+            ?disabled="${this.selectedBlocks.size===0}"
             title="Download ${this.selectedBlocks.size} selected block(s)">
             <typo3-backend-icon identifier="actions-download" size="small"></typo3-backend-icon>
             Download Selected (${this.selectedBlocks.size})
           </button>
-        ` : ''}
+        `:""}
       </div>
-    `;
-    }
-    renderContent() {
-        const filteredItems = this.getFilteredAndSortedItems();
-        if (filteredItems.length === 0) {
-            return this.renderEmptyState();
-        }
-        return html `
+    `}renderContent(){const e=this.getFilteredAndSortedItems();return e.length===0?this.renderEmptyState():l`
       ${this.renderToolbar()}
       <div class="list-table-container">
         <div class="table-fit">
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                ${this.selectionMode ? html `<th style="width: 40px;"><input type="checkbox" disabled /></th>` : ''}
+                ${this.selectionMode?l`<th style="width: 40px;"><input type="checkbox" disabled /></th>`:""}
                 <th></th>
-                <th class="sortable" @click="${() => this.handleSort('name')}" style="cursor: pointer;">
+                <th class="sortable" @click="${()=>this.handleSort("name")}" style="cursor: pointer;">
                   Content Block name
-                  ${this.sortField === 'name' ? html `
-                    <span class="text-primary">${this.sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
-                  ` : ''}
+                  ${this.sortField==="name"?l`
+                    <span class="text-primary">${this.sortDirection==="asc"?" \u25B2":" \u25BC"}</span>
+                  `:""}
                 </th>
-                <th class="sortable" @click="${() => this.handleSort('label')}" style="cursor: pointer;">
+                <th class="sortable" @click="${()=>this.handleSort("label")}" style="cursor: pointer;">
                   Label
-                  ${this.sortField === 'label' ? html `
-                    <span class="text-primary">${this.sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
-                  ` : ''}
+                  ${this.sortField==="label"?l`
+                    <span class="text-primary">${this.sortDirection==="asc"?" \u25B2":" \u25BC"}</span>
+                  `:""}
                 </th>
-                <th class="sortable" @click="${() => this.handleSort('extension')}" style="cursor: pointer;">
+                <th class="sortable" @click="${()=>this.handleSort("extension")}" style="cursor: pointer;">
                   Extension
-                  ${this.sortField === 'extension' ? html `
-                    <span class="text-primary">${this.sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
-                  ` : ''}
+                  ${this.sortField==="extension"?l`
+                    <span class="text-primary">${this.sortDirection==="asc"?" \u25B2":" \u25BC"}</span>
+                  `:""}
                 </th>
-                ${this.activeTab !== 'basic' ? html `<th>References</th>` : ''}
+                ${this.activeTab!=="basic"?l`<th>References</th>`:""}
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              ${filteredItems.map(item => this.renderRow(item))}
+              ${e.map(t=>this.renderRow(t))}
             </tbody>
           </table>
         </div>
       </div>
-    `;
-    }
-    getTypeName() {
-        const typeNames = {
-            'content-element': 'Content Element',
-            'page-type': 'Page Type',
-            'record-type': 'Record Type',
-            'basic': 'Basic'
-        };
-        return typeNames[this.activeTab] || 'Content Block';
-    }
-    renderRow(item) {
-        const typeName = this.getTypeName();
-        const key = `${this.activeTab}:${item.name}`;
-        const isSelected = this.selectedBlocks.has(key);
-        return html `
+    `}getTypeName(){return{"content-element":"Content Element","page-type":"Page Type","record-type":"Record Type",basic:"Basic"}[this.activeTab]||"Content Block"}renderRow(e){const t=this.getTypeName(),a=`${this.activeTab}:${e.name}`,s=this.selectedBlocks.has(a);return l`
       <tr>
-        ${this.selectionMode ? html `
+        ${this.selectionMode?l`
           <td class="col-checkbox">
             <input
               type="checkbox"
-              ?checked="${isSelected}"
-              @change="${() => this.toggleBlockSelection(item.name, this.activeTab)}"
+              ?checked="${s}"
+              @change="${()=>this.toggleBlockSelection(e.name,this.activeTab)}"
             />
           </td>
-        ` : ''}
+        `:""}
         <td class="col-icon">
-          ${item.icon ? html `
-            <typo3-backend-icon identifier="${item.icon}" size="small"></typo3-backend-icon>
-          ` : html `
+          ${e.icon?l`
+            <typo3-backend-icon identifier="${e.icon}" size="small"></typo3-backend-icon>
+          `:l`
             <typo3-backend-icon identifier="content-extension" size="small"></typo3-backend-icon>
           `}
         </td>
         <td class="col">
-          ${item.editUrl ? html `
-            <a href="${item.editUrl}" title="Edit ${typeName}: ${item.name}">${item.name}</a>
-          ` : item.name}
+          ${e.editUrl?l`
+            <a href="${e.editUrl}" title="Edit ${t}: ${e.name}">${e.name}</a>
+          `:e.name}
         </td>
         <td class="col">
-          ${item.editUrl ? html `
-            <a href="${item.editUrl}" title="Edit ${typeName}: ${item.name}">${item.label}</a>
-          ` : item.label}
+          ${e.editUrl?l`
+            <a href="${e.editUrl}" title="Edit ${t}: ${e.name}">${e.label}</a>
+          `:e.label}
         </td>
-        <td><code>${item.extension}</code></td>
-        ${this.activeTab !== 'basic' ? html `
+        <td><code>${e.extension}</code></td>
+        ${this.activeTab!=="basic"?l`
           <td>
             <span class="badge badge-default">
-              ${item.usages || 0} References
+              ${e.usages||0} References
             </span>
           </td>
-        ` : ''}
+        `:""}
         <td class="col-control">
           <div class="btn-group" role="group">
-            ${item.editUrl ? html `
-              <a class="btn btn-default" href="${item.editUrl}" title="Edit this ${typeName}">
+            ${e.editUrl?l`
+              <a class="btn btn-default" href="${e.editUrl}" title="Edit this ${t}">
                 <typo3-backend-icon identifier="actions-open"></typo3-backend-icon>
               </a>
-            ` : ''}
-            ${item.duplicateUrl ? html `
+            `:""}
+            ${e.duplicateUrl?l`
               <button class="btn btn-default"
-                      title="Duplicate this ${typeName}"
-                      @click="${() => this.handleDuplicate(item)}">
+                      title="Duplicate this ${t}"
+                      @click="${()=>this.handleDuplicate(e)}">
                 <typo3-backend-icon identifier="actions-duplicate"></typo3-backend-icon>
               </button>
-            ` : ''}
+            `:""}
             <button class="btn btn-default"
-                    title="Download this ${typeName}"
-                    @click="${() => this.handleDownload(item.name)}">
+                    title="Download this ${t}"
+                    @click="${()=>this.handleDownload(e.name)}">
               <typo3-backend-icon identifier="actions-download"></typo3-backend-icon>
             </button>
-            ${item.deleteUrl ? html `
+            ${e.deleteUrl?l`
               <button class="btn btn-default"
-                      title="Delete this ${typeName}"
-                      @click="${() => this.handleDelete(item.deleteUrl)}">
+                      title="Delete this ${t}"
+                      @click="${()=>this.handleDelete(e.deleteUrl)}">
                 <typo3-backend-icon identifier="actions-delete"></typo3-backend-icon>
               </button>
-            ` : ''}
+            `:""}
           </div>
         </td>
       </tr>
-    `;
-    }
-    renderEmptyState() {
-        if (this.searchTerm.length > 0) {
-            return html `
+    `}renderEmptyState(){return this.searchTerm.length>0?l`
         <div class="alert alert-warning">
           No results found for "${this.searchTerm}"
         </div>
-      `;
-        }
-        return html `
+      `:l`
       <div class="alert alert-info">
         No content blocks available
       </div>
-    `;
-    }
-    getFilteredAndSortedItems() {
-        let filtered = this.items;
-        // Apply search filter (min 3 characters)
-        if (this.searchTerm.length >= 3) {
-            const searchLower = this.searchTerm.toLowerCase();
-            filtered = filtered.filter(item => item.name.toLowerCase().includes(searchLower) ||
-                item.label.toLowerCase().includes(searchLower) ||
-                item.extension.toLowerCase().includes(searchLower));
-        }
-        // Apply sorting
-        filtered.sort((a, b) => {
-            const aValue = a[this.sortField] || '';
-            const bValue = b[this.sortField] || '';
-            const comparison = aValue.localeCompare(bValue);
-            return this.sortDirection === 'asc' ? comparison : -comparison;
-        });
-        return filtered;
-    }
-    async switchTab(type) {
-        if (type === this.activeTab) {
-            return;
-        }
-        this.activeTab = type;
-        this.updateUrl();
-        await this.loadContentBlocks(type);
-    }
-    async loadContentBlocks(type) {
-        this.isLoading = true;
-        try {
-            const ajaxUrl = TYPO3.settings.ajaxUrls.content_blocks_gui_list_by_type;
-            const response = await new AjaxRequest(ajaxUrl)
-                .withQueryArguments({ type })
-                .get();
-            const data = await response.resolve();
-            this.items = data.items;
-            this.counts = data.counts;
-        }
-        catch (error) {
-            console.error('Failed to load content blocks:', error);
-            this.items = [];
-        }
-        finally {
-            this.isLoading = false;
-        }
-    }
-    handleSearchInput(event) {
-        const input = event.target;
-        this.searchTerm = input.value;
-        // Debounce the filtering
-        if (this.debounceTimeout !== null) {
-            clearTimeout(this.debounceTimeout);
-        }
-        this.debounceTimeout = window.setTimeout(() => {
-            this.updateUrl();
-            this.requestUpdate();
-        }, 300);
-    }
-    handleSort(field) {
-        if (this.sortField === field) {
-            // Toggle direction if same field
-            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-        }
-        else {
-            // New field, default to ascending
-            this.sortField = field;
-            this.sortDirection = 'asc';
-        }
-        this.updateUrl();
-        this.requestUpdate();
-    }
-    updateUrl() {
-        const params = new URLSearchParams();
-        params.set('type', this.activeTab);
-        if (this.searchTerm.length >= 3) {
-            params.set('search', this.searchTerm);
-        }
-        if (this.sortField !== 'name' || this.sortDirection !== 'asc') {
-            params.set('sort', `${this.sortField}:${this.sortDirection}`);
-        }
-        const url = `${window.location.pathname}?${params.toString()}`;
-        window.history.pushState({}, '', url);
-    }
-    loadStateFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        const type = params.get('type');
-        if (type) {
-            this.activeTab = type;
-        }
-        const search = params.get('search');
-        if (search) {
-            this.searchTerm = search;
-        }
-        const sort = params.get('sort');
-        if (sort) {
-            const [field, direction] = sort.split(':');
-            this.sortField = field;
-            this.sortDirection = direction || 'asc';
-        }
-    }
-    handleDownload(name) {
-        // Determine which endpoint and payload to use based on type
-        const isBasic = this.activeTab === 'basic';
-        const ajaxUrl = isBasic
-            ? TYPO3.settings.ajaxUrls.content_blocks_gui_download_basic
-            : TYPO3.settings.ajaxUrls.content_blocks_gui_download_cb;
-        const payload = isBasic
-            ? { identifier: name }
-            : { name: name };
-        new AjaxRequest(ajaxUrl)
-            .post(payload, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/zip'
-            }
-        })
-            .then(async (response) => {
-            const responseData = response.raw();
-            const blob = await responseData.blob();
-            const contentDisposition = responseData.headers.get('content-disposition');
-            let filename = name + '.zip';
-            if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-                if (filenameMatch && filenameMatch.length > 1) {
-                    filename = filenameMatch[1];
-                }
-            }
-            filename = filename.replace(/"+$/, '');
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-        })
-            .catch((error) => {
-            console.error(error);
-        });
-    }
-    handleDelete(url) {
-        const modal = Modal.confirm(lll('make.remove.confirm.title'), lll('make.remove.confirm.message'), SeverityEnum.warning, [
-            {
-                text: lll('make.remove.button.close'),
-                active: true,
-                btnClass: 'btn-default',
-                name: 'cancel',
-            },
-            {
-                text: lll('make.remove.button.ok'),
-                btnClass: 'btn-warning remove-button',
-                name: 'delete',
-            },
-        ]);
-        modal.addEventListener('button.clicked', (e) => {
-            const target = e.target;
-            if (target.getAttribute('name') === 'delete') {
-                // Append current tab to URL for redirect back
-                const urlWithTab = new URL(url, window.location.origin);
-                urlWithTab.searchParams.set('returnTab', this.activeTab);
-                window.location.href = urlWithTab.toString();
-            }
-            modal.hideModal();
-        });
-    }
-    handleDuplicate(item) {
-        // Check if this is a Basic (handled differently)
-        if (this.activeTab === 'basic') {
-            this.handleDuplicateBasic(item);
-            return;
-        }
-        // Parse source name to extract vendor and name
-        const nameParts = item.name.split('/');
-        const sourceVendor = nameParts[0] || '';
-        const sourceBlockName = nameParts[1] || '';
-        // Check if this is a multi-type RecordType
-        const isMultiTypeRecordType = item.contentType === 'RECORD_TYPE' && item.typeField;
-        // Generate extension options
-        let extensionOptions = '';
-        this.availableExtensions.forEach((ext) => {
-            const selected = ext.extension === item.extension ? 'selected' : '';
-            extensionOptions += `<option value="${ext.extension}" ${selected}>${ext.package} (${ext.extension})</option>`;
-        });
-        // Create content as a DOM element
-        const content = document.createElement('div');
-        let strategySection = '';
-        if (isMultiTypeRecordType) {
-            strategySection = `
+    `}getFilteredAndSortedItems(){let e=this.items;if(this.searchTerm.length>=3){const t=this.searchTerm.toLowerCase();e=e.filter(a=>a.name.toLowerCase().includes(t)||a.label.toLowerCase().includes(t)||a.extension.toLowerCase().includes(t))}return e.sort((t,a)=>{const s=t[this.sortField]||"",n=a[this.sortField]||"",i=s.localeCompare(n);return this.sortDirection==="asc"?i:-i}),e}async switchTab(e){e!==this.activeTab&&(this.activeTab=e,this.updateUrl(),await this.loadContentBlocks(e))}async loadContentBlocks(e){this.isLoading=!0;try{const t=TYPO3.settings.ajaxUrls.content_blocks_gui_list_by_type,s=await(await new L(t).withQueryArguments({type:e}).get()).resolve();this.items=s.items,this.counts=s.counts}catch(t){console.error("Failed to load content blocks:",t),this.items=[]}finally{this.isLoading=!1}}handleSearchInput(e){const t=e.target;this.searchTerm=t.value,this.debounceTimeout!==null&&clearTimeout(this.debounceTimeout),this.debounceTimeout=window.setTimeout(()=>{this.updateUrl(),this.requestUpdate()},300)}handleSort(e){this.sortField===e?this.sortDirection=this.sortDirection==="asc"?"desc":"asc":(this.sortField=e,this.sortDirection="asc"),this.updateUrl(),this.requestUpdate()}updateUrl(){const e=new URLSearchParams;e.set("type",this.activeTab),this.searchTerm.length>=3&&e.set("search",this.searchTerm),(this.sortField!=="name"||this.sortDirection!=="asc")&&e.set("sort",`${this.sortField}:${this.sortDirection}`);const t=`${window.location.pathname}?${e.toString()}`;window.history.pushState({},"",t)}loadStateFromUrl(){const e=new URLSearchParams(window.location.search),t=e.get("type");t&&(this.activeTab=t);const a=e.get("search");a&&(this.searchTerm=a);const s=e.get("sort");if(s){const[n,i]=s.split(":");this.sortField=n,this.sortDirection=i||"asc"}}handleDownload(e){const t=this.activeTab==="basic",a=t?TYPO3.settings.ajaxUrls.content_blocks_gui_download_basic:TYPO3.settings.ajaxUrls.content_blocks_gui_download_cb,s=t?{identifier:e}:{name:e};new L(a).post(s,{headers:{"Content-Type":"application/json",Accept:"application/zip"}}).then(async n=>{const i=n.raw(),r=await i.blob(),u=i.headers.get("content-disposition");let o=e+".zip";if(u){const h=u.match(/filename="?([^"]+)"?/);h&&h.length>1&&(o=h[1])}o=o.replace(/"+$/,"");const c=window.URL.createObjectURL(r),d=document.createElement("a");d.href=c,d.setAttribute("download",o),document.body.appendChild(d),d.click()}).catch(n=>{console.error(n)})}handleDelete(e){const t=m.confirm(C("make.remove.confirm.title"),C("make.remove.confirm.message"),x.warning,[{text:C("make.remove.button.close"),active:!0,btnClass:"btn-default",name:"cancel"},{text:C("make.remove.button.ok"),btnClass:"btn-warning remove-button",name:"delete"}]);t.addEventListener("button.clicked",a=>{if(a.target.getAttribute("name")==="delete"){const n=new URL(e,window.location.origin);n.searchParams.set("returnTab",this.activeTab),window.location.href=n.toString()}t.hideModal()})}handleDuplicate(e){if(this.activeTab==="basic"){this.handleDuplicateBasic(e);return}const t=e.name.split("/"),a=t[0]||"",s=t[1]||"",n=e.contentType==="RECORD_TYPE"&&e.typeField;let i="";this.availableExtensions.forEach(c=>{const d=c.extension===e.extension?"selected":"";i+=`<option value="${c.extension}" ${d}>${c.package} (${c.extension})</option>`});const r=document.createElement("div");let u="";n&&(u=`
         <div class="alert alert-info mb-3">
           <strong>RecordType Duplication</strong><br>
-          This is a multi-type RecordType sharing table <code>${item.tableName}</code>.<br>
+          This is a multi-type RecordType sharing table <code>${e.tableName}</code>.<br>
           Choose how to duplicate it:
         </div>
         <div class="form-group mb-3">
@@ -509,483 +215,60 @@ let ContentBlockList = class ContentBlockList extends LitElement {
           </div>
         </div>
         <div id="strategy-fields-container"></div>
-      `;
-        }
-        content.innerHTML = `
+      `),r.innerHTML=`
       <form id="duplicate-content-block-form">
-        ${strategySection}
+        ${u}
         <div class="form-group mb-3">
           <label for="duplicate-extension" class="form-label">Extension</label>
           <select class="form-control form-select" id="duplicate-extension" name="extension" required>
-            ${extensionOptions}
+            ${i}
           </select>
           <div class="form-text">The extension where the duplicated content block will be stored</div>
         </div>
         <div class="form-group mb-3">
           <label for="duplicate-vendor" class="form-label">Vendor Name</label>
-          <input type="text" class="form-control" id="duplicate-vendor" name="vendor" value="${sourceVendor}" required pattern="[a-z0-9\\-]+">
+          <input type="text" class="form-control" id="duplicate-vendor" name="vendor" value="${a}" required pattern="[a-z0-9\\-]+">
           <div class="form-text">Lowercase letters, numbers, and hyphens only</div>
         </div>
         <div class="form-group mb-3">
           <label for="duplicate-name" class="form-label">Content Block Name</label>
-          <input type="text" class="form-control" id="duplicate-name" name="name" value="${sourceBlockName}-copy" required pattern="[a-z0-9\\-]+">
+          <input type="text" class="form-control" id="duplicate-name" name="name" value="${s}-copy" required pattern="[a-z0-9\\-]+">
           <div class="form-text">Lowercase letters, numbers, and hyphens only</div>
           <div id="duplicate-name-error" class="text-danger d-none">The new name must be different from the original</div>
         </div>
       </form>
-    `;
-        const modal = Modal.advanced({
-            title: 'Duplicate Content Block',
-            content: content,
-            severity: SeverityEnum.info,
-            size: Modal.sizes.medium,
-            buttons: [
-                {
-                    text: 'Cancel',
-                    active: true,
-                    btnClass: 'btn-default',
-                    name: 'cancel',
-                    trigger: () => {
-                        modal.hideModal();
-                    }
-                },
-                {
-                    text: 'Duplicate',
-                    btnClass: 'btn-primary',
-                    name: 'duplicate',
-                    trigger: () => {
-                        if (this.validateAndSubmitDuplicate(item, sourceVendor, sourceBlockName, modal)) {
-                            modal.hideModal();
-                        }
-                    }
-                }
-            ]
-        });
-        // If multi-type RecordType, set up strategy change handlers
-        if (isMultiTypeRecordType) {
-            const sharedTableRadio = modal.querySelector('#strategy-shared-table');
-            const newTableRadio = modal.querySelector('#strategy-new-table');
-            const strategyContainer = modal.querySelector('#strategy-fields-container');
-            const updateStrategyFields = () => {
-                const strategy = sharedTableRadio?.checked ? 'shared-table' : 'new-table';
-                const vendorValue = modal.querySelector('#duplicate-vendor')?.value || sourceVendor;
-                const nameValue = modal.querySelector('#duplicate-name')?.value || sourceBlockName;
-                const suggestedIdentifier = `${vendorValue}_${nameValue}`.toLowerCase().replace(/[/-]/g, '_');
-                if (strategy === 'shared-table') {
-                    strategyContainer.innerHTML = `
+    `;const o=m.advanced({title:"Duplicate Content Block",content:r,severity:x.info,size:m.sizes.medium,buttons:[{text:"Cancel",active:!0,btnClass:"btn-default",name:"cancel",trigger:()=>{o.hideModal()}},{text:"Duplicate",btnClass:"btn-primary",name:"duplicate",trigger:()=>{this.validateAndSubmitDuplicate(e,a,s,o)&&o.hideModal()}}]});if(n){const c=o.querySelector("#strategy-shared-table"),d=o.querySelector("#strategy-new-table"),h=o.querySelector("#strategy-fields-container"),v=()=>{const y=c?.checked?"shared-table":"new-table",p=o.querySelector("#duplicate-vendor")?.value||a,T=o.querySelector("#duplicate-name")?.value||s,k=`${p}_${T}`.toLowerCase().replace(/[/-]/g,"_");y==="shared-table"?h.innerHTML=`
             <div class="form-group mb-3">
               <label for="custom-type-name" class="form-label">Type Name</label>
-              <input type="text" class="form-control" id="custom-type-name" name="typeName" value="${suggestedIdentifier}" required pattern="[a-zA-Z0-9_]+">
+              <input type="text" class="form-control" id="custom-type-name" name="typeName" value="${k}" required pattern="[a-zA-Z0-9_]+">
               <div class="form-text">Unique identifier for this type in the shared table</div>
               <div id="type-name-validation" class="mt-2"></div>
             </div>
-          `;
-                }
-                else {
-                    strategyContainer.innerHTML = `
+          `:h.innerHTML=`
             <div class="form-group mb-3">
               <label for="custom-table-name" class="form-label">Table Name</label>
-              <input type="text" class="form-control" id="custom-table-name" name="tableName" value="tx_${suggestedIdentifier}" required pattern="[a-zA-Z][a-zA-Z0-9_]*">
+              <input type="text" class="form-control" id="custom-table-name" name="tableName" value="tx_${k}" required pattern="[a-zA-Z][a-zA-Z0-9_]*">
               <div class="form-text">Database table name (should start with tx_)</div>
               <div id="table-name-validation" class="mt-2"></div>
             </div>
-          `;
-                }
-                // Set up real-time validation
-                this.setupRecordTypeValidation(item, modal);
-            };
-            sharedTableRadio?.addEventListener('change', updateStrategyFields);
-            newTableRadio?.addEventListener('change', updateStrategyFields);
-            // Initial setup
-            updateStrategyFields();
-        }
-    }
-    setupRecordTypeValidation(item, modal) {
-        const sharedTableRadio = modal.querySelector('#strategy-shared-table');
-        let validationTimer;
-        const validationDelay = 500; // ms
-        const performValidation = async () => {
-            const typeNameInput = modal.querySelector('#custom-type-name');
-            const tableNameInput = modal.querySelector('#custom-table-name');
-            const typeNameValidationDiv = modal.querySelector('#type-name-validation');
-            const tableNameValidationDiv = modal.querySelector('#table-name-validation');
-            const currentStrategy = sharedTableRadio?.checked ? 'shared-table' : 'new-table';
-            const validationValue = currentStrategy === 'shared-table' ? typeNameInput?.value : tableNameInput?.value;
-            const validationDiv = currentStrategy === 'shared-table' ? typeNameValidationDiv : tableNameValidationDiv;
-            const inputElement = currentStrategy === 'shared-table' ? typeNameInput : tableNameInput;
-            if (!validationValue || !validationDiv || !inputElement) {
-                return;
-            }
-            // Show loading state
-            validationDiv.innerHTML = '<small class="text-muted">Validating...</small>';
-            try {
-                const url = new URL(window.TYPO3.settings.ajaxUrls.content_blocks_gui_validate_record_duplication, window.location.origin);
-                url.searchParams.append('sourceName', item.name);
-                url.searchParams.append('duplicationStrategy', currentStrategy);
-                if (currentStrategy === 'shared-table') {
-                    url.searchParams.append('typeName', validationValue);
-                }
-                else {
-                    url.searchParams.append('tableName', validationValue);
-                }
-                const request = new AjaxRequest(url.toString());
-                const response = await request.get();
-                const result = await response.resolve();
-                if (result.valid) {
-                    validationDiv.innerHTML = '<small class="text-success">✓ Valid</small>';
-                    inputElement.classList.remove('is-invalid');
-                    inputElement.classList.add('is-valid');
-                }
-                else {
-                    const errorMessages = result.errors.join('<br>');
-                    validationDiv.innerHTML = `<small class="text-danger">${errorMessages}</small>`;
-                    inputElement.classList.remove('is-valid');
-                    inputElement.classList.add('is-invalid');
-                }
-            }
-            catch (error) {
-                console.error('[ContentBlockList] Validation error:', error);
-                validationDiv.innerHTML = '<small class="text-danger">Validation failed</small>';
-            }
-        };
-        // Set up debounced validation on input
-        const typeNameInput = modal.querySelector('#custom-type-name');
-        const tableNameInput = modal.querySelector('#custom-table-name');
-        const debouncedValidation = () => {
-            clearTimeout(validationTimer);
-            validationTimer = window.setTimeout(performValidation, validationDelay);
-        };
-        typeNameInput?.addEventListener('input', debouncedValidation);
-        tableNameInput?.addEventListener('input', debouncedValidation);
-        // Perform initial validation
-        performValidation();
-    }
-    handleDuplicateBasic(item) {
-        // Generate extension options
-        let extensionOptions = '';
-        this.availableExtensions.forEach((ext) => {
-            const selected = ext.extension === item.extension ? 'selected' : '';
-            extensionOptions += `<option value="${ext.extension}" ${selected}>${ext.package} (${ext.extension})</option>`;
-        });
-        // Create content as a DOM element
-        const content = document.createElement('div');
-        content.innerHTML = `
+          `,this.setupRecordTypeValidation(e,o)};c?.addEventListener("change",v),d?.addEventListener("change",v),v()}}setupRecordTypeValidation(e,t){const a=t.querySelector("#strategy-shared-table");let s;const n=500,i=async()=>{const c=t.querySelector("#custom-type-name"),d=t.querySelector("#custom-table-name"),h=t.querySelector("#type-name-validation"),v=t.querySelector("#table-name-validation"),y=a?.checked?"shared-table":"new-table",p=y==="shared-table"?c?.value:d?.value,T=y==="shared-table"?h:v,k=y==="shared-table"?c:d;if(!(!p||!T||!k)){T.innerHTML='<small class="text-muted">Validating...</small>';try{const g=new URL(window.TYPO3.settings.ajaxUrls.content_blocks_gui_validate_record_duplication,window.location.origin);g.searchParams.append("sourceName",e.name),g.searchParams.append("duplicationStrategy",y),y==="shared-table"?g.searchParams.append("typeName",p):g.searchParams.append("tableName",p);const D=await(await new L(g.toString()).get()).resolve();if(D.valid)T.innerHTML='<small class="text-success">\u2713 Valid</small>',k.classList.remove("is-invalid"),k.classList.add("is-valid");else{const E=D.errors.join("<br>");T.innerHTML=`<small class="text-danger">${E}</small>`,k.classList.remove("is-valid"),k.classList.add("is-invalid")}}catch(g){console.error("[ContentBlockList] Validation error:",g),T.innerHTML='<small class="text-danger">Validation failed</small>'}}},r=t.querySelector("#custom-type-name"),u=t.querySelector("#custom-table-name"),o=()=>{clearTimeout(s),s=window.setTimeout(i,n)};r?.addEventListener("input",o),u?.addEventListener("input",o),i()}handleDuplicateBasic(e){let t="";this.availableExtensions.forEach(n=>{const i=n.extension===e.extension?"selected":"";t+=`<option value="${n.extension}" ${i}>${n.package} (${n.extension})</option>`});const a=document.createElement("div");a.innerHTML=`
       <form id="duplicate-basic-form">
         <div class="alert alert-info mb-3">
           <strong>Basic Duplication</strong><br>
-          Duplicating Basic: <code>${item.name}</code>
+          Duplicating Basic: <code>${e.name}</code>
         </div>
         <div class="form-group mb-3">
           <label for="duplicate-extension" class="form-label">Extension</label>
           <select class="form-control form-select" id="duplicate-extension" name="extension" required>
-            ${extensionOptions}
+            ${t}
           </select>
           <div class="form-text">The extension where the duplicated basic will be stored</div>
         </div>
         <div class="form-group mb-3">
           <label for="duplicate-identifier" class="form-label">Basic Identifier</label>
-          <input type="text" class="form-control" id="duplicate-identifier" name="identifier" value="${item.name}-copy" required pattern="[a-z0-9\\-\\/]+">
+          <input type="text" class="form-control" id="duplicate-identifier" name="identifier" value="${e.name}-copy" required pattern="[a-z0-9\\-\\/]+">
           <div class="form-text">Format: vendor/name (e.g., basic-99/basic-99-copy)</div>
           <div id="duplicate-identifier-error" class="text-danger d-none">The new identifier must be different from the original</div>
         </div>
       </form>
-    `;
-        const modal = Modal.advanced({
-            title: 'Duplicate Basic',
-            content: content,
-            severity: SeverityEnum.info,
-            size: Modal.sizes.medium,
-            buttons: [
-                {
-                    text: 'Cancel',
-                    active: true,
-                    btnClass: 'btn-default',
-                    name: 'cancel',
-                    trigger: () => {
-                        modal.hideModal();
-                    }
-                },
-                {
-                    text: 'Duplicate',
-                    btnClass: 'btn-primary',
-                    name: 'duplicate',
-                    trigger: () => {
-                        if (this.validateAndSubmitDuplicateBasic(item.name, item.duplicateUrl, modal)) {
-                            modal.hideModal();
-                        }
-                    }
-                }
-            ]
-        });
-    }
-    validateAndSubmitDuplicateBasic(sourceIdentifier, duplicateUrl, modal) {
-        // Search within the modal element
-        const form = modal.querySelector('#duplicate-basic-form');
-        if (!form) {
-            return false;
-        }
-        const extension = modal.querySelector('#duplicate-extension');
-        const identifier = modal.querySelector('#duplicate-identifier');
-        const errorDiv = modal.querySelector('#duplicate-identifier-error');
-        const extensionValue = extension?.value;
-        const identifierValue = identifier?.value;
-        if (!extensionValue || !identifierValue) {
-            console.error('[ContentBlockList] Missing form values');
-            return false;
-        }
-        // Validate pattern
-        const pattern = /^[a-z0-9/-]+$/;
-        if (!pattern.test(identifierValue)) {
-            console.error('[ContentBlockList] Invalid pattern');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-            }
-            return false;
-        }
-        // Check if the new identifier is the same as the old identifier
-        if (identifierValue === sourceIdentifier) {
-            // Show error message
-            if (errorDiv) {
-                errorDiv.classList.remove('d-none');
-            }
-            if (identifier) {
-                identifier.classList.add('is-invalid');
-                identifier.focus();
-            }
-            return false;
-        }
-        // Hide error message if it was shown
-        if (errorDiv) {
-            errorDiv.classList.add('d-none');
-        }
-        if (identifier) {
-            identifier.classList.remove('is-invalid');
-        }
-        // Build URL with query parameters
-        const url = new URL(duplicateUrl, window.location.origin);
-        url.searchParams.append('targetExtension', extensionValue);
-        url.searchParams.append('targetIdentifier', identifierValue);
-        url.searchParams.append('returnTab', this.activeTab);
-        // Navigate to the backend route (PHP will handle redirect)
-        window.location.href = url.toString();
-        return true;
-    }
-    validateAndSubmitDuplicate(item, sourceVendor, sourceBlockName, modal) {
-        // Search within the modal element
-        const form = modal.querySelector('#duplicate-content-block-form');
-        if (!form) {
-            return false;
-        }
-        const extension = modal.querySelector('#duplicate-extension');
-        const vendor = modal.querySelector('#duplicate-vendor');
-        const name = modal.querySelector('#duplicate-name');
-        const errorDiv = modal.querySelector('#duplicate-name-error');
-        const nameInput = modal.querySelector('#duplicate-name');
-        const extensionValue = extension?.value;
-        const vendorValue = vendor?.value;
-        const nameValue = name?.value;
-        if (!extensionValue || !vendorValue || !nameValue) {
-            console.error('[ContentBlockList] Missing form values');
-            return false;
-        }
-        // Validate pattern
-        const pattern = /^[a-z0-9-]+$/;
-        if (!pattern.test(vendorValue) || !pattern.test(nameValue)) {
-            console.error('[ContentBlockList] Invalid pattern');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-            }
-            return false;
-        }
-        // Check if the new name is the same as the old name
-        if (vendorValue === sourceVendor && nameValue === sourceBlockName) {
-            // Show error message
-            if (errorDiv) {
-                errorDiv.classList.remove('d-none');
-            }
-            if (nameInput) {
-                nameInput.classList.add('is-invalid');
-                nameInput.focus();
-            }
-            return false;
-        }
-        // Hide error message if it was shown
-        if (errorDiv) {
-            errorDiv.classList.add('d-none');
-        }
-        if (nameInput) {
-            nameInput.classList.remove('is-invalid');
-        }
-        // Build URL with query parameters
-        const url = new URL(item.duplicateUrl, window.location.origin);
-        url.searchParams.append('targetExtension', extensionValue);
-        url.searchParams.append('targetVendor', vendorValue);
-        url.searchParams.append('targetName', nameValue);
-        // Add RecordType strategy parameters if applicable
-        const isMultiTypeRecordType = item.contentType === 'RECORD_TYPE' && item.typeField;
-        if (isMultiTypeRecordType) {
-            const sharedTableRadio = modal.querySelector('#strategy-shared-table');
-            const strategy = sharedTableRadio?.checked ? 'shared-table' : 'new-table';
-            url.searchParams.append('duplicationStrategy', strategy);
-            if (strategy === 'shared-table') {
-                const typeNameInput = modal.querySelector('#custom-type-name');
-                if (typeNameInput?.value) {
-                    url.searchParams.append('customTypeName', typeNameInput.value);
-                }
-            }
-            else {
-                const tableNameInput = modal.querySelector('#custom-table-name');
-                if (tableNameInput?.value) {
-                    url.searchParams.append('customTableName', tableNameInput.value);
-                }
-            }
-        }
-        // Append current tab for redirect back
-        url.searchParams.append('returnTab', this.activeTab);
-        // Navigate to the backend route (PHP will handle redirect)
-        window.location.href = url.toString();
-        return true;
-    }
-    /**
-     * Toggle selection mode on/off
-     */
-    toggleSelectionMode() {
-        this.selectionMode = !this.selectionMode;
-        if (!this.selectionMode) {
-            this.selectedBlocks.clear();
-        }
-    }
-    /**
-     * Toggle selection of a single block
-     */
-    toggleBlockSelection(identifier, type) {
-        const key = `${type}:${identifier}`;
-        if (this.selectedBlocks.has(key)) {
-            this.selectedBlocks.delete(key);
-        }
-        else {
-            this.selectedBlocks.add(key);
-        }
-        this.requestUpdate();
-    }
-    /**
-     * Handle multi-select download
-     */
-    async handleMultiDownload() {
-        if (this.selectedBlocks.size === 0) {
-            Modal.confirm('No Selection', 'Please select at least one content block or basic.', SeverityEnum.warning, [
-                {
-                    text: 'OK',
-                    active: true,
-                    btnClass: 'btn-default',
-                    trigger: () => {
-                        Modal.dismiss();
-                    }
-                }
-            ]);
-            return;
-        }
-        // Convert selected blocks to array
-        const selected = Array.from(this.selectedBlocks).map(key => {
-            const [type, identifier] = key.split(':', 2);
-            return { type, identifier };
-        });
-        try {
-            // Call AJAX endpoint
-            const response = await new AjaxRequest(TYPO3.settings.ajaxUrls.content_blocks_gui_multi_download)
-                .post({ blocks: selected });
-            // Get the response as blob for file download
-            const blob = await response.raw().blob();
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            // Extract filename from Content-Disposition header or use default
-            const disposition = response.raw().headers.get('Content-Disposition');
-            let filename = `${selected.length}-blocks_${Date.now()}.zip`;
-            if (disposition) {
-                const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-                if (filenameMatch) {
-                    filename = filenameMatch[1];
-                }
-            }
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            // Exit selection mode after successful download
-            this.toggleSelectionMode();
-        }
-        catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            Modal.confirm('Download Failed', `Error downloading content blocks: ${errorMessage}`, SeverityEnum.error, [
-                {
-                    text: 'OK',
-                    active: true,
-                    btnClass: 'btn-default',
-                    trigger: () => {
-                        Modal.dismiss();
-                    }
-                }
-            ]);
-        }
-    }
-    /**
-     * Open upload modal
-     */
-    openUploadModal() {
-        // Create container with upload component
-        const content = document.createElement('div');
-        const uploadComponent = document.createElement('content-block-upload');
-        content.appendChild(uploadComponent);
-        // Pass available extensions after component is connected
-        setTimeout(() => {
-            uploadComponent.availableExtensions = this.availableExtensions;
-        }, 0);
-        const modal = Modal.advanced({
-            title: 'Upload Content Block(s)',
-            content: content,
-            size: Modal.sizes.large,
-            buttons: []
-        });
-        // Listen for close event from upload component
-        uploadComponent.addEventListener('close', () => {
-            modal.hideModal();
-        });
-    }
-};
-__decorate([
-    state()
-], ContentBlockList.prototype, "activeTab", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "searchTerm", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "items", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "counts", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "isLoading", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "sortField", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "sortDirection", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "availableExtensions", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "selectionMode", void 0);
-__decorate([
-    state()
-], ContentBlockList.prototype, "selectedBlocks", void 0);
-ContentBlockList = __decorate([
-    customElement('content-block-list')
-], ContentBlockList);
-export { ContentBlockList };
+    `;const s=m.advanced({title:"Duplicate Basic",content:a,severity:x.info,size:m.sizes.medium,buttons:[{text:"Cancel",active:!0,btnClass:"btn-default",name:"cancel",trigger:()=>{s.hideModal()}},{text:"Duplicate",btnClass:"btn-primary",name:"duplicate",trigger:()=>{this.validateAndSubmitDuplicateBasic(e.name,e.duplicateUrl,s)&&s.hideModal()}}]})}validateAndSubmitDuplicateBasic(e,t,a){const s=a.querySelector("#duplicate-basic-form");if(!s)return!1;const n=a.querySelector("#duplicate-extension"),i=a.querySelector("#duplicate-identifier"),r=a.querySelector("#duplicate-identifier-error"),u=n?.value,o=i?.value;if(!u||!o)return console.error("[ContentBlockList] Missing form values"),!1;if(!/^[a-z0-9/-]+$/.test(o))return console.error("[ContentBlockList] Invalid pattern"),s.checkValidity()||s.reportValidity(),!1;if(o===e)return r&&r.classList.remove("d-none"),i&&(i.classList.add("is-invalid"),i.focus()),!1;r&&r.classList.add("d-none"),i&&i.classList.remove("is-invalid");const d=new URL(t,window.location.origin);return d.searchParams.append("targetExtension",u),d.searchParams.append("targetIdentifier",o),d.searchParams.append("returnTab",this.activeTab),window.location.href=d.toString(),!0}validateAndSubmitDuplicate(e,t,a,s){const n=s.querySelector("#duplicate-content-block-form");if(!n)return!1;const i=s.querySelector("#duplicate-extension"),r=s.querySelector("#duplicate-vendor"),u=s.querySelector("#duplicate-name"),o=s.querySelector("#duplicate-name-error"),c=s.querySelector("#duplicate-name"),d=i?.value,h=r?.value,v=u?.value;if(!d||!h||!v)return console.error("[ContentBlockList] Missing form values"),!1;const y=/^[a-z0-9-]+$/;if(!y.test(h)||!y.test(v))return console.error("[ContentBlockList] Invalid pattern"),n.checkValidity()||n.reportValidity(),!1;if(h===t&&v===a)return o&&o.classList.remove("d-none"),c&&(c.classList.add("is-invalid"),c.focus()),!1;o&&o.classList.add("d-none"),c&&c.classList.remove("is-invalid");const p=new URL(e.duplicateUrl,window.location.origin);if(p.searchParams.append("targetExtension",d),p.searchParams.append("targetVendor",h),p.searchParams.append("targetName",v),e.contentType==="RECORD_TYPE"&&e.typeField){const g=s.querySelector("#strategy-shared-table")?.checked?"shared-table":"new-table";if(p.searchParams.append("duplicationStrategy",g),g==="shared-table"){const $=s.querySelector("#custom-type-name");$?.value&&p.searchParams.append("customTypeName",$.value)}else{const $=s.querySelector("#custom-table-name");$?.value&&p.searchParams.append("customTableName",$.value)}}return p.searchParams.append("returnTab",this.activeTab),window.location.href=p.toString(),!0}toggleSelectionMode(){this.selectionMode=!this.selectionMode,this.selectionMode||this.selectedBlocks.clear()}toggleBlockSelection(e,t){const a=`${t}:${e}`;this.selectedBlocks.has(a)?this.selectedBlocks.delete(a):this.selectedBlocks.add(a),this.requestUpdate()}async handleMultiDownload(){if(this.selectedBlocks.size===0){m.confirm("No Selection","Please select at least one content block or basic.",x.warning,[{text:"OK",active:!0,btnClass:"btn-default",trigger:()=>{m.dismiss()}}]);return}const e=Array.from(this.selectedBlocks).map(t=>{const[a,s]=t.split(":",2);return{type:a,identifier:s}});try{const t=await new L(TYPO3.settings.ajaxUrls.content_blocks_gui_multi_download).post({blocks:e}),a=await t.raw().blob(),s=window.URL.createObjectURL(a),n=document.createElement("a");n.href=s;const i=t.raw().headers.get("Content-Disposition");let r=`${e.length}-blocks_${Date.now()}.zip`;if(i){const u=i.match(/filename="?([^"]+)"?/);u&&(r=u[1])}n.download=r,document.body.appendChild(n),n.click(),document.body.removeChild(n),window.URL.revokeObjectURL(s),this.toggleSelectionMode()}catch(t){const a=t instanceof Error?t.message:"Unknown error";m.confirm("Download Failed",`Error downloading content blocks: ${a}`,x.error,[{text:"OK",active:!0,btnClass:"btn-default",trigger:()=>{m.dismiss()}}])}}openUploadModal(){const e=document.createElement("div"),t=document.createElement("content-block-upload");e.appendChild(t),setTimeout(()=>{t.availableExtensions=this.availableExtensions},0);const a=m.advanced({title:"Upload Content Block(s)",content:e,size:m.sizes.large,buttons:[]});t.addEventListener("close",()=>{a.hideModal()})}};f([w()],b.prototype,"activeTab",void 0),f([w()],b.prototype,"searchTerm",void 0),f([w()],b.prototype,"items",void 0),f([w()],b.prototype,"counts",void 0),f([w()],b.prototype,"isLoading",void 0),f([w()],b.prototype,"sortField",void 0),f([w()],b.prototype,"sortDirection",void 0),f([w()],b.prototype,"availableExtensions",void 0),f([w()],b.prototype,"selectionMode",void 0),f([w()],b.prototype,"selectedBlocks",void 0),b=f([B("content-block-list")],b);export{b as ContentBlockList};

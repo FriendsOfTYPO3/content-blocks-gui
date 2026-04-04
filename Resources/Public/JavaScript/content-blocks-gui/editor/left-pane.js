@@ -1,46 +1,16 @@
 /*
-* This file is part of the TYPO3 CMS project.
-*
-* It is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, either version 2
-* of the License, or any later version.
-*
-* For the full copyright and license information, please read the
-* LICENSE.txt file that was distributed with this source code.
-*
-* The TYPO3 project - inspiring people to share!
-*/
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import '@typo3/backend/element/icon-element.js';
-import '@friendsoftypo3/content-blocks-gui/editor/left-pane-content-block-settings.js';
-import '@friendsoftypo3/content-blocks-gui/editor/left-pane-components.js';
-import '@friendsoftypo3/content-blocks-gui/editor/left-pane-basics.js';
-/**
- * Module: @typo3/module/web/ContentBlocksGui
+ * This file is part of the TYPO3 CMS project.
  *
- * @example
- * <content-block-editor-left-pain></content-block-editor-left-pain>
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let ContentBlockEditorLeftPane = class ContentBlockEditorLeftPane extends LitElement {
-    constructor() {
-        super(...arguments);
-        this.activeTab = 'settings';
-        this.availableBasics = [];
-    }
-    render() {
-        // For Basic mode, hide the Basics tab (Basics can't have root-level basics)
-        const isBasicMode = this.contenttype === 'basic';
-        const isShowSettings = this.activeTab === 'settings';
-        const isShowComponents = this.activeTab === 'components';
-        const isShowBasics = this.activeTab === 'basics';
-        return html `
+import{LitElement as m,html as c,nothing as b}from"lit";import{property as n,customElement as v}from"lit/decorators.js";import"@typo3/backend/element/icon-element.js";import"@friendsoftypo3/content-blocks-gui/editor/left-pane-content-block-settings.js";import"@friendsoftypo3/content-blocks-gui/editor/left-pane-components.js";import"@friendsoftypo3/content-blocks-gui/editor/left-pane-basics.js";var o=function(l,t,s,i){var r=arguments.length,a=r<3?t:i===null?i=Object.getOwnPropertyDescriptor(t,s):i,p;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")a=Reflect.decorate(l,t,s,i);else for(var d=l.length-1;d>=0;d--)(p=l[d])&&(a=(r<3?p(a):r>3?p(t,s,a):p(t,s))||a);return r>3&&a&&Object.defineProperty(t,s,a),a};let e=class extends m{constructor(){super(...arguments),this.activeTab="settings",this.availableBasics=[]}render(){const t=this.contenttype==="basic",s=this.activeTab==="settings",i=this.activeTab==="components",r=this.activeTab==="basics";return c`
       <style>
         #tabs-content-elements {
           border-bottom: 1px solid var(--typo3-component-border-color);
@@ -106,10 +76,10 @@ let ContentBlockEditorLeftPane = class ContentBlockEditorLeftPane extends LitEle
         <ul class="nav nav-tabs t3js-tabs" role="tablist" id="tabs-content-elements" data-store-last-tab="1">
           <li role="presentation" class="t3js-tabmenu-item">
             <a href="#"
-               @click="${() => { this.setActiveTab('settings'); }}"
+               @click="${()=>{this.setActiveTab("settings")}}"
                title=""
-               aria-selected="${isShowSettings ? 'true' : 'false'}"
-               class="${isShowSettings ? 'active' : nothing}"
+               aria-selected="${s?"true":"false"}"
+               class="${s?"active":b}"
             >
               Settings
             </a>
@@ -117,21 +87,21 @@ let ContentBlockEditorLeftPane = class ContentBlockEditorLeftPane extends LitEle
           <li role="presentation" class="t3js-tabmenu-item ">
             <a
               href="#"
-              @click="${() => { this.setActiveTab('components'); }}"
+              @click="${()=>{this.setActiveTab("components")}}"
               title=""
-              aria-selected="${isShowComponents ? 'true' : 'false'}"
-              class="${isShowComponents ? 'active' : nothing}"
+              aria-selected="${i?"true":"false"}"
+              class="${i?"active":b}"
             >
               Components
             </a>
           </li>
-          ${isBasicMode ? nothing : html `
+          ${t?b:c`
             <li role="presentation" class="t3js-tabmenu-item ">
               <a href="#"
-                 @click="${() => { this.setActiveTab('basics'); }}"
+                 @click="${()=>{this.setActiveTab("basics")}}"
                  title=""
-                 aria-selected="${isShowBasics ? 'true' : 'false'}"
-                 class="${isShowBasics ? 'active' : nothing}"
+                 aria-selected="${r?"true":"false"}"
+                 class="${r?"active":b}"
               >
                 Basics
               </a>
@@ -148,65 +118,4 @@ let ContentBlockEditorLeftPane = class ContentBlockEditorLeftPane extends LitEle
           </div>
         </div>
       </div>
-    `;
-    }
-    createRenderRoot() {
-        // @todo Switch to Shadow DOM once Bootstrap CSS style can be applied correctly
-        // const renderRoot = this.attachShadow({mode: 'open'});
-        return this;
-    }
-    renderTab() {
-        switch (this.activeTab) {
-            case 'settings':
-                return html `<editor-left-pane-content-block-settings .contentBlockYaml="${this.contentBlockYaml}" .groups="${this.groups}" .extensions="${this.extensions}" .hostExtension="${this.hostExtension}" .mode="${this.mode}" .contenttype="${this.contenttype}" @settings-changed="${this.handleSettingsChanged}"></editor-left-pane-content-block-settings>`;
-            case 'components':
-                return html `<editor-left-pane-components .fieldTypes="${this.fieldTypes}"></editor-left-pane-components>`;
-            case 'basics':
-                return html `<editor-left-pane-basics .availableBasics="${this.availableBasics}" .selectedBasics="${this.contentBlockYaml.basics || []}"></editor-left-pane-basics>`;
-            default:
-                return html `Unknown tab: ${this.activeTab}`;
-        }
-    }
-    handleSettingsChanged(event) {
-        // Forward the event to the parent editor component
-        this.dispatchEvent(new CustomEvent('settings-changed', {
-            detail: event.detail,
-            bubbles: true,
-            composed: true
-        }));
-    }
-    setActiveTab(tab) {
-        this.activeTab = tab;
-    }
-};
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "activeTab", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "groups", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "extensions", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "contentBlockYaml", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "fieldTypes", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "hostExtension", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "mode", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "contenttype", void 0);
-__decorate([
-    property()
-], ContentBlockEditorLeftPane.prototype, "availableBasics", void 0);
-ContentBlockEditorLeftPane = __decorate([
-    customElement('content-block-editor-left-pane')
-], ContentBlockEditorLeftPane);
-export { ContentBlockEditorLeftPane };
+    `}createRenderRoot(){return this}renderTab(){switch(this.activeTab){case"settings":return c`<editor-left-pane-content-block-settings .contentBlockYaml="${this.contentBlockYaml}" .groups="${this.groups}" .extensions="${this.extensions}" .hostExtension="${this.hostExtension}" .mode="${this.mode}" .contenttype="${this.contenttype}" @settings-changed="${this.handleSettingsChanged}"></editor-left-pane-content-block-settings>`;case"components":return c`<editor-left-pane-components .fieldTypes="${this.fieldTypes}"></editor-left-pane-components>`;case"basics":return c`<editor-left-pane-basics .availableBasics="${this.availableBasics}" .selectedBasics="${this.contentBlockYaml.basics||[]}"></editor-left-pane-basics>`;default:return c`Unknown tab: ${this.activeTab}`}}handleSettingsChanged(t){this.dispatchEvent(new CustomEvent("settings-changed",{detail:t.detail,bubbles:!0,composed:!0}))}setActiveTab(t){this.activeTab=t}};o([n()],e.prototype,"activeTab",void 0),o([n()],e.prototype,"groups",void 0),o([n()],e.prototype,"extensions",void 0),o([n()],e.prototype,"contentBlockYaml",void 0),o([n()],e.prototype,"fieldTypes",void 0),o([n()],e.prototype,"hostExtension",void 0),o([n()],e.prototype,"mode",void 0),o([n()],e.prototype,"contenttype",void 0),o([n()],e.prototype,"availableBasics",void 0),e=o([v("content-block-editor-left-pane")],e);export{e as ContentBlockEditorLeftPane};
