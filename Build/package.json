@@ -1,0 +1,45 @@
+{
+  "name": "content-blocks-gui-build",
+  "description": "Build tooling for TYPO3 Content Blocks GUI",
+  "private": true,
+  "type": "module",
+  "license": "GPL-2.0-or-later",
+  "engines": {
+    "node": ">=22.13.0 <23.0.0",
+    "npm": ">=10.0.0"
+  },
+  "dependencies": {
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.9.0",
+    "@lit/task": "^1.0.3",
+    "@stylistic/eslint-plugin": "^2.6.2",
+    "@types/bootstrap": "^5.2.10",
+    "@types/dompurify": "^3.0.5",
+    "@types/jquery": "^4.0.0",
+    "@types/luxon": "^3.7.1",
+    "@types/nprogress": "^0.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "esbuild": "^0.25.1",
+    "eslint": "^9.9.0",
+    "eslint-plugin-lit": "^1.14.0",
+    "eslint-plugin-wc": "^2.1.0",
+    "estree-walker": "^2.0.2",
+    "magic-string": "^0.30.10",
+    "marked": "^17.0.5",
+    "rollup": "^4.37.0",
+    "rollup-plugin-esbuild": "^6.2.1",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "build": "npm run lint:fix && npm run ts && npm run process-js",
+    "ts": "tsc --project tsconfig.json",
+    "process-js": "node scripts/process-javascript.mjs",
+    "lint": "eslint 'Sources/TypeScript/friendsoftypo3/**/*.ts'",
+    "lint:fix": "eslint --fix 'Sources/TypeScript/friendsoftypo3/**/*.ts'",
+    "watch": "tsc --project tsconfig.json --watch"
+  }
+}

@@ -1,0 +1,54 @@
+{
+    "compilerOptions": {
+        "target": "es2023",
+        "lib": [
+            "es2023",
+            "dom",
+            "dom.iterable",
+            "esnext.collection"
+        ],
+        "module": "es2022",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "incremental": true,
+        "tsBuildInfoFile": "./.cache/tsconfig.tsbuildinfo",
+        "sourceMap": false,
+        "removeComments": false,
+        "alwaysStrict": true,
+        "strictBindCallApply": true,
+        "strictBuiltinIteratorReturn": true,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false,
+        "noImplicitAny": true,
+        "noImplicitOverride": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "useUnknownInCatchVariables": true,
+        "verbatimModuleSyntax": true,
+        "pretty": true,
+        "skipLibCheck": true,
+        "noEmitOnError": false,
+        "baseUrl": "Sources/TypeScript",
+        "paths": {
+            "@typo3/*": [
+                "./*"
+            ],
+            "@friendsoftypo3/*": [
+                "./friendsoftypo3/*"
+            ]
+        },
+        "outDir": "./JavaScript/",
+        "types": [
+            "TYPO3"
+        ],
+        "typeRoots": [
+            "node_modules/@types",
+            "types"
+        ]
+    },
+    "include": [
+        "Sources/TypeScript/**/*.ts"
+    ]
+}
