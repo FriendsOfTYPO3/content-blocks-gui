@@ -1,23 +1,5 @@
 name: example/example-page-type
 typeName: 942
-allowedRecordTypes:
-  - tx_hov_domain_model_notype
-isViewable: true
-wizardSteps:
-  setup:
-    title: Setup
-    fields:
-      - title
-      - slug
-      - nav_title
-      - hidden
-      - nav_hide
-  special:
-    title: Special
-    fields:
-      - additional_field
-    after:
-      - setup
 fields:
   - identifier: additional_field
     type: Text

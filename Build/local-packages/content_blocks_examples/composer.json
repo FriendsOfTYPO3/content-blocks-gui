@@ -1,18 +1,14 @@
 {
 	"name": "contentblocks/examples",
 	"type": "typo3-cms-extension",
-	"version": "2.2.2",
+	"version": "1.0.0",
 	"description": "TYPO3 CMS Content Blocks examples",
 	"homepage": "https://typo3.org",
-	"license": [
-		"GPL-2.0-or-later"
-	],
-	"authors": [
-		{
-			"name": "TYPO3 Content Types Team",
-			"role": "Developer"
-		}
-	],
+	"license": ["GPL-2.0-or-later"],
+	"authors": [{
+		"name": "TYPO3 Content Types Team",
+		"role": "Developer"
+	}],
 	"support": {
 		"issues": "",
 		"source": ""
@@ -25,10 +21,7 @@
 	},
 	"extra": {
 		"typo3/cms": {
-			"extension-key": "content_blocks_examples",
-			"Package": {
-				"providesPackages": {}
-			}
+			"extension-key": "content_blocks_examples"
 		}
 	},
 	"autoload": {

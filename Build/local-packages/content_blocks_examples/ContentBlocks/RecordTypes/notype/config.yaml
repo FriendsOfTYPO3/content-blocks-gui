@@ -30,11 +30,3 @@ fields:
     identifier: check
     type: Checkbox
     invertStateDisplay: true
-  -
-    identifier: country
-    type: Country
-    labelField: 'localizedName'
-    prioritizedCountries:
-      - DE
-      - AT
-      - CH
