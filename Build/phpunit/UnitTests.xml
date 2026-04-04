@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.2/phpunit.xsd"
+    backupGlobals="true"
+    bootstrap="../../Tests/UnitTestsBootstrap.php"
+    cacheDirectory="../../.cache/phpunit"
+    cacheResult="false"
+    colors="true"
+    failOnDeprecation="true"
+    failOnNotice="true"
+    failOnRisky="true"
+    failOnWarning="true"
+>
+    <testsuites>
+        <testsuite name="Content Blocks GUI Unit Tests">
+            <directory>../../Tests/Unit/</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="E_ALL"/>
+        <env name="TYPO3_CONTEXT" value="Testing"/>
+    </php>
+</phpunit>
