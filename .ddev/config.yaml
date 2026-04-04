@@ -1,0 +1,10 @@
+name: content-blocks-gui
+type: typo3
+docroot: .Build/public
+php_version: "8.3"
+webserver_type: nginx-fpm
+database:
+  type: mariadb
+  version: "10.11"
+nodejs_version: "22"
+composer_version: "2"

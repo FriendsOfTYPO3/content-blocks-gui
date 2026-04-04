@@ -1,0 +1,57 @@
+name: example/icon-group
+fields:
+  - identifier: header
+    useExistingField: true
+  - identifier: row_items
+    type: SelectNumber
+    items:
+      - value: 1
+      - value: 2
+      - value: 3
+      - value: 4
+  - identifier: pi_flexform
+    useExistingField: true
+    fields:
+      - identifier: alignment
+        type: Select
+        renderType: selectSingle
+        items:
+          - value: 'left'
+          - value: 'center'
+          - value: 'right'
+      - identifier: icon_position
+        type: Select
+        renderType: selectSingle
+        items:
+          - value: above
+          - value: below
+          - value: left-top
+          - value: left-center
+          - value: right-top
+          - value: right-center
+  - identifier: icon_group_item
+    type: Collection
+    labelField: title
+    minitems: 1
+    fields:
+      - identifier: title
+        type: Text
+      - identifier: icon
+        type: File
+        relationship: oneToOne
+        allowed: png,svg,gif
+      - identifier: bodytext
+        type: Textarea
+        enableRichtext: true
+      - identifier: link_palette
+        type: Palette
+        fields:
+          - identifier: link
+            type: Link
+            autocomplete: true
+            allowedTypes:
+              - page
+              - url
+              - file
+          - identifier: link_title
+            type: Text

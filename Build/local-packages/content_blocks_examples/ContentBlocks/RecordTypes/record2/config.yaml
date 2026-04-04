@@ -1,0 +1,12 @@
+name: hov/record2
+table: tx_hov_domain_model_record1
+prefixFields: false
+typeName: record2
+priority: 30
+fields:
+  - identifier: title
+    type: Text
+  - identifier: text
+    type: Textarea
+  - identifier: text3
+    type: Textarea

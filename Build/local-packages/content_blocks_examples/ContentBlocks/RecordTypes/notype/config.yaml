@@ -1,0 +1,40 @@
+name: hov/notype
+table: tx_hov_domain_model_notype
+prefixFields: false
+security:
+  ignorePageTypeRestriction: true
+fields:
+  -
+    identifier: title
+    type: Text
+  -
+    identifier: slug
+    label: 'URL'
+    type: Slug
+    eval: unique
+    size: 50
+    generatorOptions:
+      fields:
+        - title
+  -
+    identifier: text
+    type: Textarea
+  -
+    identifier: image
+    type: File
+    extendedPalette: false
+  -
+    identifier: text3
+    type: Textarea
+  -
+    identifier: check
+    type: Checkbox
+    invertStateDisplay: true
+  -
+    identifier: country
+    type: Country
+    labelField: 'localizedName'
+    prioritizedCountries:
+      - DE
+      - AT
+      - CH
