@@ -1,1 +1,16 @@
-.idea
+.Build/
+.cache/
+.DS_Store
+.idea/
+.vscode/
+Build/JavaScript/
+Build/node_modules/
+Build/.cache/
+Tests/Playwright/node_modules/
+Tests/Playwright/.env
+Tests/Playwright/auth.json
+Tests/Playwright/test-results/
+Resources/Public/dist/
+composer.lock
+config
+var
