@@ -133,8 +133,11 @@ ddev test-functional        # PHPUnit functional tests (uses the ddev db)
 ddev test-playwright        # Playwright E2E tests (installs deps on first run)
 ```
 
-Pass extra arguments through to the underlying runner with `--`, e.g.
-`ddev test-unit -- --filter MyTest` or `ddev test-playwright -- --ui`.
+Extra arguments are forwarded directly to the underlying runner, e.g.
+`ddev test-unit --filter MyTest` or `ddev test-playwright --ui`. Do **not**
+prefix them with `--`: PHPUnit treats `--` as "the rest are test file paths",
+so `ddev test-unit -- --filter MyTest` would make PHPUnit look for a file named
+`--filter`.
 
 On the first run, `ddev test-playwright` installs its npm dependencies and the
 chromium browser binary into `Tests/Playwright/`. If chromium fails to launch
