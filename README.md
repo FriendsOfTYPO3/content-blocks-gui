@@ -125,18 +125,21 @@ on how to sync them when upgrading TYPO3 versions.
 
 ## Testing
 
-### PHP Tests
+Run the test suites via DDEV custom commands:
 
 ```
-ddev exec .Build/bin/phpunit -c Build/phpunit/UnitTests.xml
-ddev exec bash -c '\
-  typo3DatabaseName=func_test \
-  typo3DatabaseHost=db \
-  typo3DatabaseUsername=root \
-  typo3DatabasePassword=root \
-  typo3DatabasePort=3306 \
-  .Build/bin/phpunit -c Build/phpunit/FunctionalTests.xml'
+ddev test-unit              # PHPUnit unit tests
+ddev test-functional        # PHPUnit functional tests (uses the ddev db)
+ddev test-playwright        # Playwright E2E tests (installs deps on first run)
 ```
+
+Pass extra arguments through to the underlying runner with `--`, e.g.
+`ddev test-unit -- --filter MyTest` or `ddev test-playwright -- --ui`.
+
+On the first run, `ddev test-playwright` installs its npm dependencies and the
+chromium browser binary into `Tests/Playwright/`. If chromium fails to launch
+due to missing system libraries, add them via `webimage_extra_packages` in
+`.ddev/config.yaml`.
 
 ### PHPStan
 

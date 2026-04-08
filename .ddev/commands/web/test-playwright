@@ -1,0 +1,44 @@
+#!/bin/bash
+
+## Description: Run Playwright E2E tests (installs deps on first run)
+## Usage: test-playwright [-- <playwright args>]
+## Example: ddev test-playwright -- --ui
+
+cd /var/www/html/Tests/Playwright
+
+if [ ! -d "node_modules" ]; then
+  echo "==> Installing Playwright npm dependencies..."
+  npm install
+fi
+
+if [ ! -d "$HOME/.cache/ms-playwright" ]; then
+  echo "==> Installing Playwright chromium browser..."
+  npx playwright install chromium
+fi
+
+if [ ! -f ".env" ]; then
+  echo "ERROR: Tests/Playwright/.env is missing."
+  echo "       Create it with PLAYWRIGHT_BASE_URL, BACKEND_ADMIN_USERNAME and BACKEND_ADMIN_PASSWORD."
+  exit 1
+fi
+
+# Load .env so we can validate required vars
+set -a
+# shellcheck disable=SC1091
+. ./.env
+set +a
+
+missing=()
+for var in PLAYWRIGHT_BASE_URL BACKEND_ADMIN_USERNAME BACKEND_ADMIN_PASSWORD; do
+  if [ -z "${!var}" ]; then
+    missing+=("$var")
+  fi
+done
+
+if [ ${#missing[@]} -ne 0 ]; then
+  echo "ERROR: Playwright is not configured correctly — missing credentials in Tests/Playwright/.env: ${missing[*]}"
+  echo "       Please set these values before running the E2E tests."
+  exit 1
+fi
+
+npx playwright test "$@"

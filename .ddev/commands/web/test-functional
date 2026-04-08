@@ -1,0 +1,15 @@
+#!/bin/bash
+
+## Description: Run PHPUnit functional tests (uses the ddev db service)
+## Usage: test-functional [-- <phpunit args>]
+## Example: ddev test-functional -- --filter MyTest
+
+cd /var/www/html
+
+export typo3DatabaseName=func_test
+export typo3DatabaseHost=db
+export typo3DatabaseUsername=root
+export typo3DatabasePassword=root
+export typo3DatabasePort=3306
+
+.Build/bin/phpunit -c Build/phpunit/FunctionalTests.xml "$@"
