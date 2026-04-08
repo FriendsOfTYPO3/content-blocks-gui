@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Description: Run TYPO3 Comands (typo3) command inside the web container
+## Usage: typo3 [args]
+## Example: "ddev typo3 list" to show all commands"
+## ProjectTypes: typo3
+
+./.Build/bin/typo3 "$@"
