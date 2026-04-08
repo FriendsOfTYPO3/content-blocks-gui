@@ -75,6 +75,31 @@ test.describe('Editor', () => {
     await context.close();
   });
 
+  test('extension dropdown lists destination extensions', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const editorFrame = await openNewEditor(page);
+    if (editorFrame) {
+      const extensionSelect = editorFrame.locator('#extension');
+      await expect(extensionSelect).toBeAttached();
+
+      // The dropdown must contain at least one real option besides the
+      // "please choose" placeholder (value="0"). If this fails, it means
+      // ExtensionUtility::findAvailableExtensions() did not detect any
+      // host extension that requires friendsoftypo3/content-blocks.
+      const realOptions = extensionSelect.locator('option:not([value="0"])');
+      const count = await realOptions.count();
+      expect(count).toBeGreaterThan(0);
+
+      // Each listed option should expose a non-empty extension key as value.
+      for (let i = 0; i < count; i++) {
+        const value = await realOptions.nth(i).getAttribute('value');
+        expect(value).toBeTruthy();
+      }
+    }
+    await context.close();
+  });
+
   test('save content block roundtrip', async ({ browser }) => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
