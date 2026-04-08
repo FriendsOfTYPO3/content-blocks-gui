@@ -59,29 +59,24 @@ class ExtensionUtility
                 continue;
             }
 
-            // Check if package requires content-blocks
-            $requiredPackages = $package->getValueFromComposerManifest('require');
-
-            // If no require section, skip this package
-            if ($requiredPackages === null) {
+            // Read composer.json directly from disk instead of relying on
+            // PackageInterface::getValueFromComposerManifest('require'). In
+            // legacy (non-composer) mode TYPO3 core overwrites the require
+            // section with data mapped from ext_emconf.php (using extkeys
+            // like "content_blocks" instead of composer names like
+            // "friendsoftypo3/content-blocks"), which would make this filter
+            // miss valid host extensions. Reading composer.json directly is
+            // mode-agnostic and matches user expectation.
+            $composerJsonPath = $package->getPackagePath() . 'composer.json';
+            if (!is_file($composerJsonPath)) {
                 continue;
             }
-
-            // Convert stdClass to array if needed
-            if (is_object($requiredPackages)) {
-                $requiredPackages = (array) $requiredPackages;
+            $manifest = json_decode((string)file_get_contents($composerJsonPath), true);
+            if (!is_array($manifest)) {
+                continue;
             }
-
-            // Check if friendsoftypo3/content-blocks is in the dependencies
-            $hasContentBlocksDependency = false;
-            foreach ($requiredPackages as $packageName => $version) {
-                if ($packageName === 'friendsoftypo3/content-blocks') {
-                    $hasContentBlocksDependency = true;
-                    break;
-                }
-            }
-
-            if (!$hasContentBlocksDependency) {
+            $requiredPackages = $manifest['require'] ?? [];
+            if (!isset($requiredPackages['friendsoftypo3/content-blocks'])) {
                 continue;
             }
 
