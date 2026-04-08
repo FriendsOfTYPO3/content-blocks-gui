@@ -131,10 +131,23 @@ The `ddev test-playwright` command aborts with a clear error message if the file
 
 ```bash
 ddev test-playwright                  # all tests, headless
-ddev test-playwright --ui             # interactive UI mode
-ddev test-playwright --debug          # debug mode
 ddev test-playwright --project=editor # only one project (login/list/editor)
 ```
+
+> **Interactive `--ui` / `--debug` modes do not work via `ddev test-playwright`.**
+> Both flags launch a *headed* chromium window, but the ddev web container has
+> no X server, so chromium aborts with `Looks like you launched a headed browser
+> without having a XServer running`. To use UI or debug mode, install Playwright
+> on the host and run it from there:
+> ```bash
+> cd Tests/Playwright
+> npm install                  # once
+> npx playwright install chromium
+> npm run test:ui              # or: npm run test:debug
+> ```
+> Note that the host invocation still needs the same `.env` and a reachable
+> `PLAYWRIGHT_BASE_URL` (the default `https://content-blocks-gui.ddev.site/typo3/`
+> works as long as ddev is running).
 
 **Run a single test:**
 
