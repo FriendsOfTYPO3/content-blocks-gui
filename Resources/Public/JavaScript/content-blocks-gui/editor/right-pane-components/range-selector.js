@@ -1,52 +1,30 @@
 /*
-* This file is part of the TYPO3 CMS project.
-*
-* It is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, either version 2
-* of the License, or any later version.
-*
-* For the full copyright and license information, please read the
-* LICENSE.txt file that was distributed with this source code.
-*
-* The TYPO3 project - inspiring people to share!
-*/
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { live } from 'lit/directives/live.js';
-/**
- * Module: @typo3/module/web/ContentBlocksGui
+ * This file is part of the TYPO3 CMS project.
  *
- * @example
- * <content-block-editor-range-selector></content-block-editor-range-selector>
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let ContentBlockEditorRangeSelector = class ContentBlockEditorRangeSelector extends LitElement {
-    constructor() {
-        super(...arguments);
-        this.isRangeEnabled = false;
-    }
-    render() {
-        this.updateRangeEnabledState();
-        return html `
+import{LitElement as h,html as u}from"lit";import{property as i,customElement as g}from"lit/decorators.js";import{live as c}from"lit/directives/live.js";var r=function(o,e,t,n){var s=arguments.length,l=s<3?e:n===null?n=Object.getOwnPropertyDescriptor(e,t):n,d;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")l=Reflect.decorate(o,e,t,n);else for(var p=o.length-1;p>=0;p--)(d=o[p])&&(l=(s<3?d(l):s>3?d(e,t,l):d(e,t))||l);return s>3&&l&&Object.defineProperty(e,t,l),l};let a=class extends h{constructor(){super(...arguments),this.isRangeEnabled=!1}render(){return this.updateRangeEnabledState(),u`
       <div class="component-container">
         <div class="component-header">
           <div class="form-check">
             <input @change="${this.handleRangeEnabledChange}" 
               type="checkbox" 
               id="range_enabled" 
-              ?checked="${live(this.isRangeEnabled)}" 
+              ?checked="${c(this.isRangeEnabled)}" 
               class="form-check-input" />
             <label class="form-check-label" for="range_enabled">
               Range Configuration
             </label>
           </div>
         </div>
-        ${this.isRangeEnabled ? html `
+        ${this.isRangeEnabled?u`
           <div class="component-body">
             <div class="row g-3">
               <div class="col-6">
@@ -54,7 +32,7 @@ let ContentBlockEditorRangeSelector = class ContentBlockEditorRangeSelector exte
                 <input @blur="${this.handleRangeInputChange}" 
                   type="number" 
                   id="range_lower" 
-                  .value="${live(this.values.range?.lower || 0)}"
+                  .value="${c(this.values.range?.lower||0)}"
                   class="form-control" />
               </div>
               <div class="col-6">
@@ -62,100 +40,10 @@ let ContentBlockEditorRangeSelector = class ContentBlockEditorRangeSelector exte
                 <input @blur="${this.handleRangeInputChange}" 
                   type="number" 
                   id="range_upper" 
-                  .value="${live(this.values.range?.upper || 100)}"
+                  .value="${c(this.values.range?.upper||100)}"
                   class="form-control" />
               </div>
             </div>
           </div>
-        ` : ''}
-      </div>`;
-    }
-    updateRangeEnabledState() {
-        const range = this.values.range;
-        if (range && Object.prototype.hasOwnProperty.call(range, 'enabled')) {
-            // If enabled property is explicitly set, use that value
-            this.isRangeEnabled = !!range.enabled;
-        }
-        else if (range && (range.lower !== undefined || range.upper !== undefined)) {
-            // If no enabled property but has range values, consider it enabled on initial render
-            this.isRangeEnabled = true;
-        }
-        else {
-            // Default to disabled if no range or no values
-            this.isRangeEnabled = false;
-        }
-    }
-    handleRangeEnabledChange(event) {
-        event.preventDefault();
-        const target = event.target;
-        if (!this.values.range) {
-            this.values.range = {};
-        }
-        this.isRangeEnabled = target.checked;
-        const range = this.values.range;
-        range.enabled = target.checked;
-        if (target.checked) {
-            if (range.lower === undefined) {
-                range.lower = 0;
-            }
-            if (range.upper === undefined) {
-                range.upper = 100;
-            }
-        }
-        this.dispatchUpdateEvent();
-    }
-    handleRangeInputChange(event) {
-        event.preventDefault();
-        const target = event.target;
-        if (!this.values.range) {
-            this.values.range = {};
-        }
-        const range = this.values.range;
-        if (target.id === 'range_lower') {
-            range.lower = parseInt(target.value, 10);
-        }
-        else if (target.id === 'range_upper') {
-            range.upper = parseInt(target.value, 10);
-        }
-        this.dispatchUpdateEvent();
-    }
-    dispatchUpdateEvent() {
-        this.dispatchEvent(new CustomEvent('updateCbFieldData', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                position: this.position,
-                level: this.level,
-                parent: this.parent,
-                values: this.values,
-            },
-        }));
-    }
-    createRenderRoot() {
-        // @todo Switch to Shadow DOM once Bootstrap CSS style can be applied correctly
-        // const renderRoot = this.attachShadow({mode: 'open'});
-        return this;
-    }
-};
-__decorate([
-    property()
-], ContentBlockEditorRangeSelector.prototype, "fieldTypeProperty", void 0);
-__decorate([
-    property()
-], ContentBlockEditorRangeSelector.prototype, "values", void 0);
-__decorate([
-    property()
-], ContentBlockEditorRangeSelector.prototype, "position", void 0);
-__decorate([
-    property()
-], ContentBlockEditorRangeSelector.prototype, "level", void 0);
-__decorate([
-    property()
-], ContentBlockEditorRangeSelector.prototype, "parent", void 0);
-__decorate([
-    property()
-], ContentBlockEditorRangeSelector.prototype, "isRangeEnabled", void 0);
-ContentBlockEditorRangeSelector = __decorate([
-    customElement('content-block-editor-range-selector')
-], ContentBlockEditorRangeSelector);
-export { ContentBlockEditorRangeSelector };
+        `:""}
+      </div>`}updateRangeEnabledState(){const e=this.values.range;e&&Object.prototype.hasOwnProperty.call(e,"enabled")?this.isRangeEnabled=!!e.enabled:e&&(e.lower!==void 0||e.upper!==void 0)?this.isRangeEnabled=!0:this.isRangeEnabled=!1}handleRangeEnabledChange(e){e.preventDefault();const t=e.target;this.values.range||(this.values.range={}),this.isRangeEnabled=t.checked;const n=this.values.range;n.enabled=t.checked,t.checked&&(n.lower===void 0&&(n.lower=0),n.upper===void 0&&(n.upper=100)),this.dispatchUpdateEvent()}handleRangeInputChange(e){e.preventDefault();const t=e.target;this.values.range||(this.values.range={});const n=this.values.range;t.id==="range_lower"?n.lower=parseInt(t.value,10):t.id==="range_upper"&&(n.upper=parseInt(t.value,10)),this.dispatchUpdateEvent()}dispatchUpdateEvent(){this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parent:this.parent,values:this.values}}))}createRenderRoot(){return this}};r([i()],a.prototype,"fieldTypeProperty",void 0),r([i()],a.prototype,"values",void 0),r([i()],a.prototype,"position",void 0),r([i()],a.prototype,"level",void 0),r([i()],a.prototype,"parent",void 0),r([i()],a.prototype,"isRangeEnabled",void 0),a=r([g("content-block-editor-range-selector")],a);export{a as ContentBlockEditorRangeSelector};

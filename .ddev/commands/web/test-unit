@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Description: Run PHPUnit unit tests
+## Usage: test-unit [-- <phpunit args>]
+## Example: ddev test-unit -- --filter MyTest
+
+cd /var/www/html
+.Build/bin/phpunit -c Build/phpunit/UnitTests.xml "$@"

@@ -1,0 +1,19 @@
+<?php
+
+$EM_CONF[$_EXTKEY] = [
+    'title' => 'TYPO3 CMS Content Blocks Examples',
+    'description' => 'TYPO3 CMS Content Blocks Examples',
+    'category' => 'be',
+    'author' => 'TYPO3 Content Types Team',
+    'author_email' => 'typo3cms@typo3.org',
+    'author_company' => '',
+    'state' => 'stable',
+    'version' => '1.4.5',
+    'constraints' => [
+        'depends' => [
+            'typo3' => '13.4.19-13.4.99',
+        ],
+        'conflicts' => [],
+        'suggests' => [],
+    ],
+];

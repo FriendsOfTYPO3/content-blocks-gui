@@ -1,0 +1,45 @@
+#!/bin/bash
+
+## Description: Sync TYPO3 core TypeScript files for type-checking (rarely needed, only on TYPO3 version upgrades)
+## Usage: sync-typo3-core-typescript-files [path-to-typo3-core]
+## Example: ddev sync-typo3-core-typescript-files ../typo3
+## Example: ddev sync-typo3-core-typescript-files ~/typo3/typo3-core
+
+CORE_PATH="${1:-../typo3}"
+CORE_TS_PATH="$CORE_PATH/Build/Sources/TypeScript"
+TARGET_PATH="Build/Sources/TypeScript"
+
+if [ ! -d "$CORE_TS_PATH/backend" ] || [ ! -d "$CORE_TS_PATH/core" ]; then
+  echo "Error: TYPO3 core TypeScript sources not found at: $CORE_TS_PATH"
+  echo ""
+  echo "Usage: ddev sync-typo3-core-typescript-files [path-to-typo3-core]"
+  echo ""
+  echo "The path should point to a TYPO3 core development checkout that contains:"
+  echo "  Build/Sources/TypeScript/backend/"
+  echo "  Build/Sources/TypeScript/core/"
+  echo ""
+  echo "Default path: ../typo3"
+  exit 1
+fi
+
+echo "==> Syncing TYPO3 core TypeScript files..."
+echo "    Source: $CORE_TS_PATH"
+echo "    Target: $TARGET_PATH"
+
+# Sync backend/ and core/ directories
+rsync -av --delete \
+  "$CORE_TS_PATH/backend/" "$TARGET_PATH/backend/"
+
+rsync -av --delete \
+  "$CORE_TS_PATH/core/" "$TARGET_PATH/core/"
+
+# Also sync the TYPO3 global type declaration if it exists
+if [ -f "$CORE_PATH/Build/types/TYPO3/index.d.ts" ]; then
+  mkdir -p "Build/types/TYPO3"
+  cp "$CORE_PATH/Build/types/TYPO3/index.d.ts" "Build/types/TYPO3/index.d.ts"
+  echo "    Synced TYPO3 global type declaration"
+fi
+
+echo ""
+echo "==> Done. Core TypeScript files synced."
+echo "    Commit the changes if you want to update the repo."

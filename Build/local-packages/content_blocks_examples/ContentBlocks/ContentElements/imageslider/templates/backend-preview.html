@@ -1,0 +1,18 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:cb="http://typo3.org/ns/TYPO3/CMS/ContentBlocks/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Preview"/>
+
+<f:section name="Content">
+    <f:asset.css identifier="cbIconGroupCssBackend" href="{cb:assetPath()}/preview.css"/>
+    <div class="cb-imageslider">
+        <f:for each="{data.assets}" as="asset">
+            <f:image image="{asset}" height="75"/>
+        </f:for>
+    </div>
+</f:section>
+
+</html>

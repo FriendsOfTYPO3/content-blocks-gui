@@ -1,0 +1,25 @@
+name: example/cta
+fields:
+  - identifier: tab_1
+    type: Tab
+  - identifier: header
+    useExistingField: true
+  - identifier: bodytext
+    useExistingField: true
+    enableRichtext: true
+  - identifier: link
+    type: Link
+    autocomplete: true
+    allowedTypes:
+      - page
+      - url
+      - file
+    required: true
+  - identifier: link_title
+    type: Text
+    required: true
+  - identifier: background_image
+    type: File
+    relationship: oneToOne
+    minitems: 1
+    allowed: common-image-types

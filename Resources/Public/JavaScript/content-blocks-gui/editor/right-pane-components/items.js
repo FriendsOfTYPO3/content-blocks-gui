@@ -1,68 +1,43 @@
 /*
-* This file is part of the TYPO3 CMS project.
-*
-* It is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, either version 2
-* of the License, or any later version.
-*
-* For the full copyright and license information, please read the
-* LICENSE.txt file that was distributed with this source code.
-*
-* The TYPO3 project - inspiring people to share!
-*/
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { live } from 'lit/directives/live.js';
-/**
- * Module: @typo3/module/web/ContentBlocksGui
+ * This file is part of the TYPO3 CMS project.
  *
- * @example
- * <content-block-editor-items></content-block-editor-items>
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let ContentBlockEditorItems = class ContentBlockEditorItems extends LitElement {
-    constructor() {
-        super(...arguments);
-        this.isItemsEnabled = false;
-    }
-    render() {
-        this.normalizeItems();
-        this.updateItemsEnabledState();
-        const itemsObject = this.values.items || {};
-        const currentItems = itemsObject.items || [];
-        return html `
+import{LitElement as p,html as h}from"lit";import{property as o,customElement as u}from"lit/decorators.js";import{live as c}from"lit/directives/live.js";var d=function(r,e,t,a){var s=arguments.length,i=s<3?e:a===null?a=Object.getOwnPropertyDescriptor(e,t):a,l;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")i=Reflect.decorate(r,e,t,a);else for(var m=r.length-1;m>=0;m--)(l=r[m])&&(i=(s<3?l(i):s>3?l(e,t,i):l(e,t))||i);return s>3&&i&&Object.defineProperty(e,t,i),i};let n=class extends p{constructor(){super(...arguments),this.isItemsEnabled=!1}render(){this.normalizeItems(),this.updateItemsEnabledState();const t=(this.values.items||{}).items||[];return h`
       <div class="component-container">
         <div class="component-header">
           <div class="form-check">
             <input @change="${this.handleItemsEnabledChange}" 
               type="checkbox" 
               id="items_enabled" 
-              ?checked="${live(this.isItemsEnabled)}" 
+              ?checked="${c(this.isItemsEnabled)}" 
               class="form-check-input" />
             <label class="form-check-label" for="items_enabled">
               Items Configuration
             </label>
           </div>
         </div>
-        ${this.isItemsEnabled ? html `
+        ${this.isItemsEnabled?h`
           <div class="component-body">
             <div class="form-group mb-3">
               <div class="items-list">
-                ${currentItems.map((item, index) => html `
+                ${t.map((a,s)=>h`
                   <div class="item-row border rounded p-3 mb-2 position-relative">
                     <div class="row g-2">
                       <div class="col-md-5">
                         <label class="form-label">Label</label>
                         <input @blur="${this.handleItemValueChange}" 
                           type="text" 
-                          data-index="${index}"
+                          data-index="${s}"
                           data-field="label"
-                          .value="${live(item.label || '')}" 
+                          .value="${c(a.label||"")}" 
                           class="form-control form-control-sm"
                           placeholder="Display label" />
                       </div>
@@ -70,16 +45,16 @@ let ContentBlockEditorItems = class ContentBlockEditorItems extends LitElement {
                         <label class="form-label">Value</label>
                         <input @blur="${this.handleItemValueChange}" 
                           type="text" 
-                          data-index="${index}"
+                          data-index="${s}"
                           data-field="value"
-                          .value="${live(item.value || '')}" 
+                          .value="${c(a.value||"")}" 
                           class="form-control form-control-sm"
                           placeholder="Stored value" />
                       </div>
                       <div class="col-md-2 d-flex align-items-center justify-content-center" style="padding-top: 2rem;">
                         <button @click="${this.handleRemoveItem}" 
                           type="button" 
-                          data-index="${index}"
+                          data-index="${s}"
                           class="btn btn-sm btn-outline-danger"
                           title="Remove item">
                           <typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>
@@ -91,9 +66,9 @@ let ContentBlockEditorItems = class ContentBlockEditorItems extends LitElement {
                         <label class="form-label">Checked Label</label>
                         <input @blur="${this.handleItemValueChange}" 
                           type="text" 
-                          data-index="${index}"
+                          data-index="${s}"
                           data-field="labelChecked"
-                          .value="${live(item.labelChecked || '')}" 
+                          .value="${c(a.labelChecked||"")}" 
                           class="form-control form-control-sm"
                           placeholder="When checked" />
                       </div>
@@ -101,9 +76,9 @@ let ContentBlockEditorItems = class ContentBlockEditorItems extends LitElement {
                         <label class="form-label">Unchecked Label</label>
                         <input @blur="${this.handleItemValueChange}" 
                           type="text" 
-                          data-index="${index}"
+                          data-index="${s}"
                           data-field="labelUnchecked"
-                          .value="${live(item.labelUnchecked || '')}" 
+                          .value="${c(a.labelUnchecked||"")}" 
                           class="form-control form-control-sm"
                           placeholder="When unchecked" />
                       </div>
@@ -113,12 +88,12 @@ let ContentBlockEditorItems = class ContentBlockEditorItems extends LitElement {
                         <div class="form-check">
                           <input @change="${this.handleItemBooleanChange}" 
                             type="checkbox" 
-                            data-index="${index}"
+                            data-index="${s}"
                             data-field="invertStateDisplay"
-                            ?checked="${live(item.invertStateDisplay || false)}" 
+                            ?checked="${c(a.invertStateDisplay||!1)}" 
                             class="form-check-input"
-                            id="invertStateDisplay_${index}" />
-                          <label class="form-check-label" for="invertStateDisplay_${index}">
+                            id="invertStateDisplay_${s}" />
+                          <label class="form-check-label" for="invertStateDisplay_${s}">
                             Invert State Display
                           </label>
                         </div>
@@ -135,155 +110,5 @@ let ContentBlockEditorItems = class ContentBlockEditorItems extends LitElement {
               </button>
             </div>
           </div>
-        ` : ''}
-      </div>`;
-    }
-    /**
-     * Normalize items from flat array (YAML) to internal wrapper format.
-     * YAML stores items as a flat array, but the UI uses { enabled, items: [...] }.
-     */
-    normalizeItems() {
-        if (Array.isArray(this.values.items)) {
-            this.values.items = { enabled: true, items: this.values.items };
-        }
-    }
-    updateItemsEnabledState() {
-        const itemsObject = this.values.items;
-        if (itemsObject && Object.prototype.hasOwnProperty.call(itemsObject, 'enabled')) {
-            // If enabled property is explicitly set, use that value
-            this.isItemsEnabled = !!itemsObject.enabled;
-        }
-        else if (itemsObject?.items && itemsObject.items.length > 0) {
-            // If no enabled property but has items, consider it enabled on initial render
-            this.isItemsEnabled = true;
-        }
-        else {
-            // Default to disabled if no items object or no items
-            this.isItemsEnabled = false;
-        }
-    }
-    handleItemsEnabledChange(event) {
-        event.preventDefault();
-        const target = event.target;
-        if (!this.values.items) {
-            this.values.items = {};
-        }
-        this.isItemsEnabled = target.checked;
-        const items = this.values.items;
-        items.enabled = target.checked;
-        if (target.checked) {
-            if (!items.items) {
-                items.items = [{ label: '', value: '' }];
-            }
-        }
-        else {
-            items.items = [];
-        }
-        this.dispatchUpdateEvent();
-    }
-    handleItemValueChange(event) {
-        event.preventDefault();
-        const target = event.target;
-        const index = parseInt(target.dataset.index, 10);
-        const field = target.dataset.field;
-        if (!this.values.items) {
-            this.values.items = { items: [], enabled: true };
-        }
-        const itemsCfg = this.values.items;
-        if (!itemsCfg.items || !Array.isArray(itemsCfg.items)) {
-            itemsCfg.items = [];
-        }
-        const currentItems = itemsCfg.items;
-        if (currentItems[index]) {
-            currentItems[index][field] = target.value;
-        }
-        this.dispatchUpdateEvent();
-    }
-    handleItemBooleanChange(event) {
-        event.preventDefault();
-        const target = event.target;
-        const index = parseInt(target.dataset.index, 10);
-        const field = target.dataset.field;
-        if (!this.values.items) {
-            this.values.items = { items: [], enabled: true };
-        }
-        const itemsCfg = this.values.items;
-        if (!itemsCfg.items || !Array.isArray(itemsCfg.items)) {
-            itemsCfg.items = [];
-        }
-        const currentItems = itemsCfg.items;
-        if (currentItems[index]) {
-            currentItems[index][field] = target.checked;
-        }
-        this.dispatchUpdateEvent();
-    }
-    handleAddItem(event) {
-        event.preventDefault();
-        if (!this.values.items) {
-            this.values.items = { items: [], enabled: true };
-        }
-        const itemsCfg = this.values.items;
-        if (!itemsCfg.items || !Array.isArray(itemsCfg.items)) {
-            itemsCfg.items = [];
-        }
-        itemsCfg.items.push({ label: '', value: '' });
-        this.requestUpdate();
-        this.dispatchUpdateEvent();
-    }
-    handleRemoveItem(event) {
-        event.preventDefault();
-        const target = event.target;
-        const index = parseInt(target.dataset.index, 10);
-        const itemsCfg = this.values.items;
-        if (!itemsCfg || !itemsCfg.items || !Array.isArray(itemsCfg.items)) {
-            return;
-        }
-        itemsCfg.items.splice(index, 1);
-        // If no items left, disable the feature
-        if (itemsCfg.items.length === 0) {
-            this.isItemsEnabled = false;
-            itemsCfg.enabled = false;
-        }
-        this.requestUpdate();
-        this.dispatchUpdateEvent();
-    }
-    dispatchUpdateEvent() {
-        this.dispatchEvent(new CustomEvent('updateCbFieldData', {
-            bubbles: true,
-            composed: true,
-            detail: {
-                position: this.position,
-                level: this.level,
-                parent: this.parent,
-                values: this.values,
-            },
-        }));
-    }
-    createRenderRoot() {
-        // @todo Switch to Shadow DOM once Bootstrap CSS style can be applied correctly
-        // const renderRoot = this.attachShadow({mode: 'open'});
-        return this;
-    }
-};
-__decorate([
-    property()
-], ContentBlockEditorItems.prototype, "fieldTypeProperty", void 0);
-__decorate([
-    property()
-], ContentBlockEditorItems.prototype, "values", void 0);
-__decorate([
-    property()
-], ContentBlockEditorItems.prototype, "position", void 0);
-__decorate([
-    property()
-], ContentBlockEditorItems.prototype, "level", void 0);
-__decorate([
-    property()
-], ContentBlockEditorItems.prototype, "parent", void 0);
-__decorate([
-    property()
-], ContentBlockEditorItems.prototype, "isItemsEnabled", void 0);
-ContentBlockEditorItems = __decorate([
-    customElement('content-block-editor-items')
-], ContentBlockEditorItems);
-export { ContentBlockEditorItems };
+        `:""}
+      </div>`}normalizeItems(){Array.isArray(this.values.items)&&(this.values.items={enabled:!0,items:this.values.items})}updateItemsEnabledState(){const e=this.values.items;e&&Object.prototype.hasOwnProperty.call(e,"enabled")?this.isItemsEnabled=!!e.enabled:e?.items&&e.items.length>0?this.isItemsEnabled=!0:this.isItemsEnabled=!1}handleItemsEnabledChange(e){e.preventDefault();const t=e.target;this.values.items||(this.values.items={}),this.isItemsEnabled=t.checked;const a=this.values.items;a.enabled=t.checked,t.checked?a.items||(a.items=[{label:"",value:""}]):a.items=[],this.dispatchUpdateEvent()}handleItemValueChange(e){e.preventDefault();const t=e.target,a=parseInt(t.dataset.index,10),s=t.dataset.field;this.values.items||(this.values.items={items:[],enabled:!0});const i=this.values.items;(!i.items||!Array.isArray(i.items))&&(i.items=[]);const l=i.items;l[a]&&(l[a][s]=t.value),this.dispatchUpdateEvent()}handleItemBooleanChange(e){e.preventDefault();const t=e.target,a=parseInt(t.dataset.index,10),s=t.dataset.field;this.values.items||(this.values.items={items:[],enabled:!0});const i=this.values.items;(!i.items||!Array.isArray(i.items))&&(i.items=[]);const l=i.items;l[a]&&(l[a][s]=t.checked),this.dispatchUpdateEvent()}handleAddItem(e){e.preventDefault(),this.values.items||(this.values.items={items:[],enabled:!0});const t=this.values.items;(!t.items||!Array.isArray(t.items))&&(t.items=[]),t.items.push({label:"",value:""}),this.requestUpdate(),this.dispatchUpdateEvent()}handleRemoveItem(e){e.preventDefault();const t=e.target,a=parseInt(t.dataset.index,10),s=this.values.items;!s||!s.items||!Array.isArray(s.items)||(s.items.splice(a,1),s.items.length===0&&(this.isItemsEnabled=!1,s.enabled=!1),this.requestUpdate(),this.dispatchUpdateEvent())}dispatchUpdateEvent(){this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parent:this.parent,values:this.values}}))}createRenderRoot(){return this}};d([o()],n.prototype,"fieldTypeProperty",void 0),d([o()],n.prototype,"values",void 0),d([o()],n.prototype,"position",void 0),d([o()],n.prototype,"level",void 0),d([o()],n.prototype,"parent",void 0),d([o()],n.prototype,"isItemsEnabled",void 0),n=d([u("content-block-editor-items")],n);export{n as ContentBlockEditorItems};

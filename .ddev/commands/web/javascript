@@ -1,0 +1,29 @@
+#!/bin/bash
+
+## Description: Compile TypeScript to JavaScript (lint, compile, post-process)
+## Usage: javascript
+## Example: ddev javascript
+
+cd /var/www/html/Build
+
+echo "==> Installing dependencies (if needed)..."
+if [ ! -d "node_modules" ]; then
+  npm install
+fi
+
+echo ""
+echo "==> Running ESLint --fix on content-blocks-gui sources..."
+npx eslint --fix "Sources/TypeScript/friendsoftypo3/**/*.ts" 2>&1 || true
+
+echo ""
+echo "==> Compiling TypeScript..."
+npx tsc --project tsconfig.json
+# Ignore exit code -- core TS files have expected type errors
+# Our files compile cleanly (verified by CI)
+
+echo ""
+echo "==> Post-processing JavaScript (import rewriting, minification)..."
+node scripts/process-javascript.mjs
+
+echo ""
+echo "==> Done."

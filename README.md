@@ -12,13 +12,12 @@ It serves as a kickstarter and YAML editor for the Content Blocks extension,
 allowing integrators to build Content Elements, Page Types, Record Types, and
 Basics through a drag-and-drop interface instead of writing YAML by hand.
 
-|                              | URL                                                                                                          |
-|------------------------------|--------------------------------------------------------------------------------------------------------------|
-| **Repository:**              | https://github.com/FriendsOfTYPO3/content-blocks-gui                                                        |
-| **Development:**             | https://github.com/krausandre/typo3-content-blocks/tree/feature/friendsoftypo3-content-blocks-gui            |
-| **TER:**                     | https://extensions.typo3.org/extension/content_blocks_gui                                                    |
-| **Content Blocks:**          | https://github.com/friendsoftypo3/content-blocks                                                             |
-| **Content Blocks Docs:**     | https://docs.typo3.org/p/friendsoftypo3/content-blocks/main/en-us/                                          |
+|                              | URL                                                                                 |
+|------------------------------|-------------------------------------------------------------------------------------|
+| **Repository:**              | https://github.com/FriendsOfTYPO3/content-blocks-gui                               |
+| **TER:**                     | https://extensions.typo3.org/extension/content_blocks_gui                           |
+| **Content Blocks:**          | https://github.com/friendsoftypo3/content-blocks                                    |
+| **Content Blocks Docs:**     | https://docs.typo3.org/p/friendsoftypo3/content-blocks/main/en-us/                  |
 
 ## Features
 
@@ -26,7 +25,7 @@ Basics through a drag-and-drop interface instead of writing YAML by hand.
 
 - Three-pane drag-and-drop editor for composing Content Block field definitions
 - Left pane with settings, field component library, and Basics management
-- Middle pane for visual field arrangement with nested field support (Collections)
+- Middle pane for visual field arrangement with nested field support (Collections, Palettes)
 - Right pane with field-specific property configuration (value pickers, ranges, sliders, items, allowed types)
 - Base field auto-detection for `tt_content` and `pages` columns
 - Field validation and system reserved field detection
@@ -86,6 +85,80 @@ refresh the package metadata. Otherwise the extension dropdown in the editor wil
 
 After installation, the module is available in the TYPO3 backend under
 **Admin Tools > Content Blocks**.
+
+## Developing
+
+There is a DDEV setup ready to use. Ensure [DDEV](https://github.com/ddev/ddev)
+is installed on your machine. Then run:
+
+```
+ddev start
+ddev composer install
+touch .Build/public/FIRST_INSTALL
+ddev launch
+```
+
+Continue with the TYPO3 installation process.
+
+### Building JavaScript
+
+The frontend is built with TypeScript and Lit. The build runs inside the DDEV
+container, no local Node.js installation needed:
+
+```
+ddev javascript
+```
+
+This compiles TypeScript, runs ESLint with auto-fix, and post-processes the
+output (import rewriting, minification) to `Resources/Public/JavaScript/content-blocks-gui/`.
+
+TypeScript sources are in `Build/Sources/TypeScript/friendsoftypo3/content-blocks-gui/`.
+
+### TYPO3 Core TypeScript Files
+
+The `Build/Sources/TypeScript/backend/` and `Build/Sources/TypeScript/core/` directories
+contain TypeScript files from the TYPO3 core, needed for type resolution during compilation.
+These are committed to the repo and rarely need updating.
+
+See [Build/TYPO3_CORE_TYPESCRIPT_SYNC.md](Build/TYPO3_CORE_TYPESCRIPT_SYNC.md) for details
+on how to sync them when upgrading TYPO3 versions.
+
+## Testing
+
+Run the test suites via DDEV custom commands:
+
+```
+ddev test-unit              # PHPUnit unit tests
+ddev test-functional        # PHPUnit functional tests (uses the ddev db)
+ddev test-playwright        # Playwright E2E tests (installs deps on first run)
+```
+
+Extra arguments are forwarded directly to the underlying runner, e.g.
+`ddev test-unit --filter MyTest` or `ddev test-playwright --ui`. Do **not**
+prefix them with `--`: PHPUnit treats `--` as "the rest are test file paths",
+so `ddev test-unit -- --filter MyTest` would make PHPUnit look for a file named
+`--filter`.
+
+On the first run, `ddev test-playwright` installs its npm dependencies and the
+chromium browser binary into `Tests/Playwright/`. If chromium fails to launch
+due to missing system libraries, add them via `webimage_extra_packages` in
+`.ddev/config.yaml`.
+
+### PHPStan
+
+```
+ddev exec .Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon
+```
+
+### PHP-CS-Fixer
+
+```
+ddev exec .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer/config.php --dry-run --diff
+```
+
+### Playwright E2E Tests
+
+See `Tests/Playwright/` for setup instructions.
 
 ## Feedback and Support
 

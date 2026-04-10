@@ -1,0 +1,10 @@
+name: example/tabs
+fields:
+  - identifier: header
+    useExistingField: true
+  - identifier: tabs_item
+    type: Collection
+    minitems: 1
+    foreign_table: tt_content
+    allowedRecordTypes:
+      - example_text

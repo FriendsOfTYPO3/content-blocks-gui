@@ -1,73 +1,30 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { LitElement, html, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import AjaxRequest from '@typo3/core/ajax/ajax-request.js';
-/**
- * Upload component for importing content blocks from ZIP files
+/*
+ * This file is part of the TYPO3 CMS project.
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let ContentBlockUpload = class ContentBlockUpload extends LitElement {
-    constructor() {
-        super(...arguments);
-        this.availableExtensions = [];
-        this.uploadedFile = null;
-        this.analysis = null;
-        this.targetExtension = 'samples';
-        this.conflicts = new Map();
-        this.step = 'upload';
-        this.isUploading = false;
-        this.result = null;
-        this.error = null;
-    }
-    createRenderRoot() {
-        return this;
-    }
-    firstUpdated() {
-        // Set default target extension if available
-        if (this.availableExtensions.length > 0 && !this.targetExtension) {
-            this.targetExtension = this.availableExtensions[0].extension;
-        }
-    }
-    render() {
-        return html `
+import{LitElement as m,html as i,nothing as h}from"lit";import{state as c,customElement as f}from"lit/decorators.js";import u from"@typo3/core/ajax/ajax-request.js";var a=function(p,e,t,s){var r=arguments.length,n=r<3?e:s===null?s=Object.getOwnPropertyDescriptor(e,t):s,o;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")n=Reflect.decorate(p,e,t,s);else for(var d=p.length-1;d>=0;d--)(o=p[d])&&(n=(r<3?o(n):r>3?o(e,t,n):o(e,t))||n);return r>3&&n&&Object.defineProperty(e,t,n),n};let l=class extends m{constructor(){super(...arguments),this.availableExtensions=[],this.uploadedFile=null,this.analysis=null,this.targetExtension="samples",this.conflicts=new Map,this.step="upload",this.isUploading=!1,this.result=null,this.error=null}createRenderRoot(){return this}firstUpdated(){this.availableExtensions.length>0&&!this.targetExtension&&(this.targetExtension=this.availableExtensions[0].extension)}render(){return i`
       <div class="content-block-upload">
         ${this.renderStepContent()}
       </div>
-    `;
-    }
-    renderStepContent() {
-        switch (this.step) {
-            case 'upload':
-                return this.renderUploadStep();
-            case 'analysis':
-                return this.renderAnalysisStep();
-            case 'import':
-                return this.renderImportStep();
-            case 'result':
-                return this.renderResultStep();
-            default:
-                return nothing;
-        }
-    }
-    /**
-     * Step 1: File selection and upload
-     */
-    renderUploadStep() {
-        return html `
+    `}renderStepContent(){switch(this.step){case"upload":return this.renderUploadStep();case"analysis":return this.renderAnalysisStep();case"import":return this.renderImportStep();case"result":return this.renderResultStep();default:return h}}renderUploadStep(){return i`
       <div class="card">
         <div class="card-header">
           <h3>Upload Content Block(s)</h3>
         </div>
         <div class="card-body">
-          ${this.error ? html `
+          ${this.error?i`
             <div class="alert alert-danger" role="alert">
               <strong>Error:</strong> ${this.error}
             </div>
-          ` : ''}
+          `:""}
 
           <div class="form-group mb-3">
             <label for="zipFile" class="form-label">
@@ -81,11 +38,11 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
               @change="${this.handleFileSelect}"
               ?disabled="${this.isUploading}"
             />
-            ${this.uploadedFile ? html `
+            ${this.uploadedFile?i`
               <small class="form-text text-muted">
                 Selected: ${this.uploadedFile.name} (${this.formatFileSize(this.uploadedFile.size)})
               </small>
-            ` : ''}
+            `:""}
           </div>
 
           <div class="form-group mb-3">
@@ -96,11 +53,11 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
               id="targetExtension"
               class="form-select"
               .value="${this.targetExtension}"
-              @change="${(e) => this.targetExtension = e.target.value}"
+              @change="${e=>this.targetExtension=e.target.value}"
               ?disabled="${this.isUploading}"
             >
-              ${this.availableExtensions.map(ext => html `
-                <option value="${ext.extension}">${ext.package} (${ext.extension})</option>
+              ${this.availableExtensions.map(e=>i`
+                <option value="${e.extension}">${e.package} (${e.extension})</option>
               `)}
             </select>
           </div>
@@ -113,7 +70,7 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
         <div class="card-footer">
           <button
             class="btn btn-default"
-            @click="${() => this.dispatchEvent(new CustomEvent('close'))}"
+            @click="${()=>this.dispatchEvent(new CustomEvent("close"))}"
             ?disabled="${this.isUploading}"
           >
             Cancel
@@ -121,27 +78,16 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
           <button
             class="btn btn-primary ms-2"
             @click="${this.handleAnalyze}"
-            ?disabled="${!this.uploadedFile || this.isUploading}"
+            ?disabled="${!this.uploadedFile||this.isUploading}"
           >
-            ${this.isUploading ? html `
+            ${this.isUploading?i`
               <span class="spinner-border spinner-border-sm me-1"></span>
               Analyzing...
-            ` : 'Analyze & Continue'}
+            `:"Analyze & Continue"}
           </button>
         </div>
       </div>
-    `;
-    }
-    /**
-     * Step 2: Display analysis results with conflict resolution
-     */
-    renderAnalysisStep() {
-        if (!this.analysis) {
-            return nothing;
-        }
-        const blocksWithConflicts = this.analysis.blocks.filter(b => b.conflict !== '');
-        const blocksWithoutConflicts = this.analysis.blocks.filter(b => b.conflict === '');
-        return html `
+    `}renderAnalysisStep(){if(!this.analysis)return h;const e=this.analysis.blocks.filter(s=>s.conflict!==""),t=this.analysis.blocks.filter(s=>s.conflict==="");return i`
       <div class="card">
         <div class="card-header">
           <h3>Import to Extension: "${this.targetExtension}"</h3>
@@ -149,13 +95,13 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
         <div class="card-body" style="max-height: 60vh; overflow-y: auto;">
           <p class="lead">Found ${this.analysis.blocks.length} item(s):</p>
 
-          ${this.renderBlocksByType(blocksWithoutConflicts, 'Ready to Import', false)}
-          ${this.renderBlocksByType(blocksWithConflicts, 'Conflicts Detected', true)}
+          ${this.renderBlocksByType(t,"Ready to Import",!1)}
+          ${this.renderBlocksByType(e,"Conflicts Detected",!0)}
         </div>
         <div class="card-footer">
           <button
             class="btn btn-default"
-            @click="${() => this.resetToUpload()}"
+            @click="${()=>this.resetToUpload()}"
           >
             Back
           </button>
@@ -167,13 +113,7 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
           </button>
         </div>
       </div>
-    `;
-    }
-    /**
-     * Step 3: Import progress
-     */
-    renderImportStep() {
-        return html `
+    `}renderImportStep(){return i`
       <div class="card">
         <div class="card-header">
           <h3>Importing Content Blocks...</h3>
@@ -185,115 +125,90 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
           <p class="mt-3">Please wait while content blocks are being imported...</p>
         </div>
       </div>
-    `;
-    }
-    /**
-     * Step 4: Import results
-     */
-    renderResultStep() {
-        if (!this.result) {
-            return nothing;
-        }
-        const hasErrors = this.result.errors.length > 0;
-        const hasImported = this.result.imported.length > 0;
-        const hasSkipped = this.result.skipped.length > 0;
-        return html `
+    `}renderResultStep(){if(!this.result)return h;const e=this.result.errors.length>0,t=this.result.imported.length>0,s=this.result.skipped.length>0;return i`
       <div class="card">
         <div class="card-header">
           <h3>
-            ${hasErrors ? 'Import Completed with Errors' : 'Import Complete'}
+            ${e?"Import Completed with Errors":"Import Complete"}
           </h3>
         </div>
         <div class="card-body">
-          ${hasImported ? html `
+          ${t?i`
             <div class="alert alert-success">
               <h4>Successfully Imported (${this.result.imported.length}):</h4>
               ${this.renderResultBlocksByType(this.result.imported)}
             </div>
-          ` : ''}
+          `:""}
 
-          ${hasSkipped ? html `
+          ${s?i`
             <div class="alert alert-info">
               <h4>Skipped (${this.result.skipped.length}):</h4>
-              ${this.renderResultBlocksByType(this.result.skipped, true)}
+              ${this.renderResultBlocksByType(this.result.skipped,!0)}
             </div>
-          ` : ''}
+          `:""}
 
-          ${hasErrors ? html `
+          ${e?i`
             <div class="alert alert-danger">
               <h4>Errors (${this.result.errors.length}):</h4>
               <ul class="mb-0">
-                ${this.result.errors.map(err => html `
-                  <li><strong>${err.block}:</strong> ${err.error}</li>
+                ${this.result.errors.map(r=>i`
+                  <li><strong>${r.block}:</strong> ${r.error}</li>
                 `)}
               </ul>
             </div>
-          ` : ''}
+          `:""}
 
-          ${hasImported ? html `
+          ${t?i`
             <p class="mt-3">
               <strong>Success:</strong> Cache cleared and content blocks registered.
             </p>
-          ` : ''}
+          `:""}
         </div>
         <div class="card-footer">
           <button
             class="btn btn-default"
-            @click="${() => this.resetToUpload()}"
+            @click="${()=>this.resetToUpload()}"
           >
             Import Another
           </button>
           <button
             class="btn btn-primary ms-2"
-            @click="${() => this.closeAndReload()}"
+            @click="${()=>this.closeAndReload()}"
           >
             Close
           </button>
         </div>
       </div>
-    `;
-    }
-    /**
-     * Render block info without conflict
-     */
-    renderBlockInfo(block) {
-        return html `
+    `}renderBlockInfo(e){return i`
       <div class="card mb-2 border-success">
         <div class="card-body">
           <h5 class="card-title">
-            ${block.name}
+            ${e.name}
           </h5>
           <p class="card-text mb-1">
-            <strong>Type:</strong> ${this.getTypeLabel(block.type)}
-            ${block.table !== '' ? html `<span class="text-muted">(${block.table})</span>` : ''}
+            <strong>Type:</strong> ${this.getTypeLabel(e.type)}
+            ${e.table!==""?i`<span class="text-muted">(${e.table})</span>`:""}
           </p>
           <p class="card-text mb-1">
-            <strong>Files:</strong> ${block.files.length} file(s)
+            <strong>Files:</strong> ${e.files.length} file(s)
           </p>
           <p class="card-text mb-0 text-muted">
-            <small>→ ContentBlocks/${this.getTypeDirectory(block.type)}/${block.directoryName !== '' ? block.directoryName : block.fileName}</small>
+            <small>→ ContentBlocks/${this.getTypeDirectory(e.type)}/${e.directoryName!==""?e.directoryName:e.fileName}</small>
           </p>
         </div>
       </div>
-    `;
-    }
-    /**
-     * Render block info with conflict resolution
-     */
-    renderBlockInfoWithConflict(block) {
-        const conflictResolution = this.conflicts.get(block.name) || 'skip';
-        return html `
+    `}renderBlockInfoWithConflict(e){const t=this.conflicts.get(e.name)||"skip";return i`
       <div class="card mb-2 border-warning">
         <div class="card-body">
           <h5 class="card-title">
-            ${block.name}
+            ${e.name}
           </h5>
           <p class="card-text mb-1">
-            <strong>Type:</strong> ${this.getTypeLabel(block.type)}
-            ${block.table !== '' ? html `<span class="text-muted">(${block.table})</span>` : ''}
+            <strong>Type:</strong> ${this.getTypeLabel(e.type)}
+            ${e.table!==""?i`<span class="text-muted">(${e.table})</span>`:""}
           </p>
           <p class="card-text mb-2">
-            <strong>Files:</strong> ${block.files.length} file(s)
+            <strong>Files:</strong> ${e.files.length} file(s)
           </p>
 
           <div class="alert alert-warning mb-2">
@@ -304,13 +219,13 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
             <input
               class="form-check-input"
               type="radio"
-              name="conflict_${block.name}"
-              id="skip_${block.name}"
+              name="conflict_${e.name}"
+              id="skip_${e.name}"
               value="skip"
-              ?checked="${conflictResolution === 'skip'}"
-              @change="${() => this.setConflictResolution(block.name, 'skip')}"
+              ?checked="${t==="skip"}"
+              @change="${()=>this.setConflictResolution(e.name,"skip")}"
             />
-            <label class="form-check-label" for="skip_${block.name}">
+            <label class="form-check-label" for="skip_${e.name}">
               Skip this content block (keep existing)
             </label>
           </div>
@@ -318,277 +233,31 @@ let ContentBlockUpload = class ContentBlockUpload extends LitElement {
             <input
               class="form-check-input"
               type="radio"
-              name="conflict_${block.name}"
-              id="overwrite_${block.name}"
+              name="conflict_${e.name}"
+              id="overwrite_${e.name}"
               value="overwrite"
-              ?checked="${conflictResolution === 'overwrite'}"
-              @change="${() => this.setConflictResolution(block.name, 'overwrite')}"
+              ?checked="${t==="overwrite"}"
+              @change="${()=>this.setConflictResolution(e.name,"overwrite")}"
             />
-            <label class="form-check-label" for="overwrite_${block.name}">
+            <label class="form-check-label" for="overwrite_${e.name}">
               Overwrite existing content block
             </label>
           </div>
         </div>
       </div>
-    `;
-    }
-    /**
-     * Handle file selection
-     */
-    handleFileSelect(event) {
-        const input = event.target;
-        this.uploadedFile = input.files?.[0] || null;
-        this.error = null;
-    }
-    /**
-     * Handle analyze button click
-     */
-    async handleAnalyze() {
-        if (!this.uploadedFile) {
-            return;
-        }
-        this.isUploading = true;
-        this.error = null;
-        try {
-            const formData = new FormData();
-            formData.append('file', this.uploadedFile);
-            formData.append('targetExtension', this.targetExtension);
-            const response = await new AjaxRequest(TYPO3.settings.ajaxUrls.content_blocks_gui_upload)
-                .post(formData);
-            const data = await response.resolve();
-            if (data.success) {
-                this.analysis = data.analysis;
-                this.step = 'analysis';
-                // Initialize conflict resolutions to 'skip' by default
-                this.conflicts.clear();
-                data.analysis.blocks.forEach((block) => {
-                    if (block.conflict !== '') {
-                        this.conflicts.set(block.name, 'skip');
-                    }
-                });
-                this.requestUpdate();
-            }
-            else {
-                this.error = data.error || 'Failed to analyze ZIP file';
-            }
-        }
-        catch (error) {
-            // Extract detailed error message from AJAX response
-            let errorMessage = 'Unknown error';
-            if (error?.response) {
-                try {
-                    const errorData = await error.response.json();
-                    errorMessage = errorData.error || errorData.message || errorMessage;
-                }
-                catch {
-                    errorMessage = error.response.statusText || errorMessage;
-                }
-            }
-            else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            else if (typeof error === 'string') {
-                errorMessage = error;
-            }
-            this.error = errorMessage;
-        }
-        finally {
-            this.isUploading = false;
-        }
-    }
-    /**
-     * Handle import button click
-     */
-    async handleImport() {
-        if (!this.analysis) {
-            return;
-        }
-        this.step = 'import';
-        try {
-            const conflictsObj = {};
-            this.conflicts.forEach((value, key) => {
-                conflictsObj[key] = value;
-            });
-            const response = await new AjaxRequest(TYPO3.settings.ajaxUrls.content_blocks_gui_import)
-                .post({
-                analysis: this.analysis,
-                targetExtension: this.targetExtension,
-                conflicts: conflictsObj
-            });
-            const data = await response.resolve();
-            if (data.success) {
-                this.result = data.result;
-                this.step = 'result';
-            }
-            else {
-                this.error = data.error || 'Failed to import content blocks';
-                this.step = 'upload';
-            }
-        }
-        catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            this.error = `Failed to import: ${errorMessage}`;
-            this.step = 'upload';
-        }
-    }
-    /**
-     * Set conflict resolution for a block
-     */
-    setConflictResolution(blockName, resolution) {
-        this.conflicts.set(blockName, resolution);
-        this.requestUpdate();
-    }
-    /**
-     * Calculate how many blocks will be imported
-     */
-    getImportCount() {
-        if (!this.analysis) {
-            return 0;
-        }
-        let count = 0;
-        this.analysis.blocks.forEach(block => {
-            if (block.conflict === '' || this.conflicts.get(block.name) === 'overwrite') {
-                count++;
-            }
-        });
-        return count;
-    }
-    /**
-     * Close modal and reload page to show updated content blocks
-     */
-    closeAndReload() {
-        // Dispatch close event to close the modal
-        this.dispatchEvent(new CustomEvent('close'));
-        // Reload page after a short delay to ensure modal closes first
-        setTimeout(() => {
-            window.location.reload();
-        }, 100);
-    }
-    /**
-     * Reset to upload step
-     */
-    resetToUpload() {
-        this.step = 'upload';
-        this.uploadedFile = null;
-        this.analysis = null;
-        this.result = null;
-        this.error = null;
-        this.conflicts.clear();
-        // Reset file input
-        const fileInput = this.querySelector('#zipFile');
-        if (fileInput) {
-            fileInput.value = '';
-        }
-    }
-    /**
-     * Group blocks by type and render with section headers
-     */
-    renderBlocksByType(blocks, title, withConflict) {
-        if (blocks.length === 0) {
-            return nothing;
-        }
-        const grouped = this.groupByType(blocks);
-        return html `
-      <h4 class="mt-3">${title} (${blocks.length})</h4>
-      ${grouped.map(([type, typeBlocks]) => html `
-        <h5 class="mt-2 text-muted">${this.getTypeLabel(type)}s (${typeBlocks.length})</h5>
-        ${typeBlocks.map(block => withConflict ? this.renderBlockInfoWithConflict(block) : this.renderBlockInfo(block))}
+    `}handleFileSelect(e){const t=e.target;this.uploadedFile=t.files?.[0]||null,this.error=null}async handleAnalyze(){if(this.uploadedFile){this.isUploading=!0,this.error=null;try{const e=new FormData;e.append("file",this.uploadedFile),e.append("targetExtension",this.targetExtension);const s=await(await new u(TYPO3.settings.ajaxUrls.content_blocks_gui_upload).post(e)).resolve();s.success?(this.analysis=s.analysis,this.step="analysis",this.conflicts.clear(),s.analysis.blocks.forEach(r=>{r.conflict!==""&&this.conflicts.set(r.name,"skip")}),this.requestUpdate()):this.error=s.error||"Failed to analyze ZIP file"}catch(e){let t="Unknown error";if(e?.response)try{const s=await e.response.json();t=s.error||s.message||t}catch{t=e.response.statusText||t}else e instanceof Error?t=e.message:typeof e=="string"&&(t=e);this.error=t}finally{this.isUploading=!1}}}async handleImport(){if(this.analysis){this.step="import";try{const e={};this.conflicts.forEach((r,n)=>{e[n]=r});const s=await(await new u(TYPO3.settings.ajaxUrls.content_blocks_gui_import).post({analysis:this.analysis,targetExtension:this.targetExtension,conflicts:e})).resolve();s.success?(this.result=s.result,this.step="result"):(this.error=s.error||"Failed to import content blocks",this.step="upload")}catch(e){const t=e instanceof Error?e.message:"Unknown error";this.error=`Failed to import: ${t}`,this.step="upload"}}}setConflictResolution(e,t){this.conflicts.set(e,t),this.requestUpdate()}getImportCount(){if(!this.analysis)return 0;let e=0;return this.analysis.blocks.forEach(t=>{(t.conflict===""||this.conflicts.get(t.name)==="overwrite")&&e++}),e}closeAndReload(){this.dispatchEvent(new CustomEvent("close")),setTimeout(()=>{window.location.reload()},100)}resetToUpload(){this.step="upload",this.uploadedFile=null,this.analysis=null,this.result=null,this.error=null,this.conflicts.clear();const e=this.querySelector("#zipFile");e&&(e.value="")}renderBlocksByType(e,t,s){if(e.length===0)return h;const r=this.groupByType(e);return i`
+      <h4 class="mt-3">${t} (${e.length})</h4>
+      ${r.map(([n,o])=>i`
+        <h5 class="mt-2 text-muted">${this.getTypeLabel(n)}s (${o.length})</h5>
+        ${o.map(d=>s?this.renderBlockInfoWithConflict(d):this.renderBlockInfo(d))}
       `)}
-    `;
-    }
-    /**
-     * Group blocks by type and render as lists in result step
-     */
-    renderResultBlocksByType(blocks, showAlreadyExists = false) {
-        const grouped = this.groupByType(blocks);
-        return html `
-      ${grouped.map(([type, typeBlocks]) => html `
-        <h5 class="mb-1 mt-2">${this.getTypeLabel(type)}s (${typeBlocks.length}):</h5>
+    `}renderResultBlocksByType(e,t=!1){const s=this.groupByType(e);return i`
+      ${s.map(([r,n])=>i`
+        <h5 class="mb-1 mt-2">${this.getTypeLabel(r)}s (${n.length}):</h5>
         <ul class="mb-0">
-          ${typeBlocks.map(block => html `
-            <li>${block.name}${showAlreadyExists ? ' (already exists)' : ''}</li>
+          ${n.map(o=>i`
+            <li>${o.name}${t?" (already exists)":""}</li>
           `)}
         </ul>
       `)}
-    `;
-    }
-    /**
-     * Group blocks by their type
-     */
-    groupByType(blocks) {
-        const map = new Map();
-        for (const block of blocks) {
-            const list = map.get(block.type) || [];
-            list.push(block);
-            map.set(block.type, list);
-        }
-        return [...map.entries()];
-    }
-    /**
-     * Get human-readable type label
-     */
-    getTypeLabel(type) {
-        return {
-            'CONTENT_ELEMENT': 'Content Element',
-            'PAGE_TYPE': 'Page Type',
-            'RECORD_TYPE': 'Record Type',
-            'FILE_TYPE': 'File Type',
-            'BASIC': 'Basic'
-        }[type] || type;
-    }
-    /**
-     * Get type directory name
-     */
-    getTypeDirectory(type) {
-        return {
-            'CONTENT_ELEMENT': 'ContentElements',
-            'PAGE_TYPE': 'PageTypes',
-            'RECORD_TYPE': 'RecordTypes',
-            'FILE_TYPE': 'FileTypes',
-            'BASIC': 'Basics'
-        }[type] || type;
-    }
-    /**
-     * Format file size in human-readable format
-     */
-    formatFileSize(bytes) {
-        if (bytes < 1024) {
-            return bytes + ' B';
-        }
-        if (bytes < 1024 * 1024) {
-            return (bytes / 1024).toFixed(1) + ' KB';
-        }
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-};
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "availableExtensions", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "uploadedFile", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "analysis", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "targetExtension", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "conflicts", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "step", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "isUploading", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "result", void 0);
-__decorate([
-    state()
-], ContentBlockUpload.prototype, "error", void 0);
-ContentBlockUpload = __decorate([
-    customElement('content-block-upload')
-], ContentBlockUpload);
-export { ContentBlockUpload };
+    `}groupByType(e){const t=new Map;for(const s of e){const r=t.get(s.type)||[];r.push(s),t.set(s.type,r)}return[...t.entries()]}getTypeLabel(e){return{CONTENT_ELEMENT:"Content Element",PAGE_TYPE:"Page Type",RECORD_TYPE:"Record Type",FILE_TYPE:"File Type",BASIC:"Basic"}[e]||e}getTypeDirectory(e){return{CONTENT_ELEMENT:"ContentElements",PAGE_TYPE:"PageTypes",RECORD_TYPE:"RecordTypes",FILE_TYPE:"FileTypes",BASIC:"Basics"}[e]||e}formatFileSize(e){return e<1024?e+" B":e<1024*1024?(e/1024).toFixed(1)+" KB":(e/(1024*1024)).toFixed(1)+" MB"}};a([c()],l.prototype,"availableExtensions",void 0),a([c()],l.prototype,"uploadedFile",void 0),a([c()],l.prototype,"analysis",void 0),a([c()],l.prototype,"targetExtension",void 0),a([c()],l.prototype,"conflicts",void 0),a([c()],l.prototype,"step",void 0),a([c()],l.prototype,"isUploading",void 0),a([c()],l.prototype,"result",void 0),a([c()],l.prototype,"error",void 0),l=a([f("content-block-upload")],l);export{l as ContentBlockUpload};

@@ -1,44 +1,16 @@
 /*
-* This file is part of the TYPO3 CMS project.
-*
-* It is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, either version 2
-* of the License, or any later version.
-*
-* For the full copyright and license information, please read the
-* LICENSE.txt file that was distributed with this source code.
-*
-* The TYPO3 project - inspiring people to share!
-*/
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { html, LitElement, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import '@typo3/backend/element/icon-element.js';
-/**
- * Module: @typo3/module/web/ContentBlocksGui
+ * This file is part of the TYPO3 CMS project.
  *
- * @example
- * <editor-left-pane-basics></editor-left-pane-basics>
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let EditorLeftPaneBasics = class EditorLeftPaneBasics extends LitElement {
-    constructor() {
-        super(...arguments);
-        this.availableBasics = [];
-        this.selectedBasics = [];
-        this.draggedIndex = null;
-    }
-    static { this.styles = css ``; }
-    render() {
-        const selected = this.selectedBasics.map(identifier => {
-            return this.availableBasics.find(b => b.identifier === identifier);
-        }).filter(b => b !== undefined);
-        const unselected = this.availableBasics.filter(b => !this.selectedBasics.includes(b.identifier));
-        return html `
+import{LitElement as m,css as g,html as r}from"lit";import{property as p,state as b,customElement as u}from"lit/decorators.js";import"@typo3/backend/element/icon-element.js";var c=function(d,t,a,e){var s=arguments.length,i=s<3?t:e===null?e=Object.getOwnPropertyDescriptor(t,a):e,n;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")i=Reflect.decorate(d,t,a,e);else for(var l=d.length-1;l>=0;l--)(n=d[l])&&(i=(s<3?n(i):s>3?n(t,a,i):n(t,a))||i);return s>3&&i&&Object.defineProperty(t,a,i),i};let o=class extends m{constructor(){super(...arguments),this.availableBasics=[],this.selectedBasics=[],this.draggedIndex=null}static{this.styles=g``}render(){const t=this.selectedBasics.map(e=>this.availableBasics.find(s=>s.identifier===e)).filter(e=>e!==void 0),a=this.availableBasics.filter(e=>!this.selectedBasics.includes(e.identifier));return r`
       <style>
         .basics-section {
           margin-bottom: 1.5rem;
@@ -162,35 +134,35 @@ let EditorLeftPaneBasics = class EditorLeftPaneBasics extends LitElement {
 
       <div class="basics-section">
         <h3 class="basics-section-title">Selected Basics (drag to reorder)</h3>
-        ${selected.length > 0 ? html `
+        ${t.length>0?r`
           <ul class="basics-list">
-            ${selected.map((basic, index) => html `
+            ${t.map((e,s)=>r`
               <li
-                class="basic-item draggable ${this.draggedIndex === index ? 'dragging' : ''}"
+                class="basic-item draggable ${this.draggedIndex===s?"dragging":""}"
                 draggable="true"
-                @dragstart="${() => this.handleDragStart(index)}"
-                @dragend="${() => this.handleDragEnd()}"
-                @dragover="${(e) => this.handleDragOver(e)}"
-                @drop="${(e) => this.handleDrop(e, index)}"
+                @dragstart="${()=>this.handleDragStart(s)}"
+                @dragend="${()=>this.handleDragEnd()}"
+                @dragover="${i=>this.handleDragOver(i)}"
+                @drop="${i=>this.handleDrop(i,s)}"
               >
                 <span class="basic-item-drag-handle">
                   <typo3-backend-icon identifier="actions-move-move" size="small"></typo3-backend-icon>
                 </span>
                 <div class="basic-item-content">
-                  <span class="basic-item-identifier">${basic.identifier}</span>
-                  <span class="basic-item-badge">${basic.fieldCount} field${basic.fieldCount !== 1 ? 's' : ''}</span>
+                  <span class="basic-item-identifier">${e.identifier}</span>
+                  <span class="basic-item-badge">${e.fieldCount} field${e.fieldCount!==1?"s":""}</span>
                 </div>
                 <button
                   class="basic-item-remove"
-                  @click="${() => this.handleRemove(basic.identifier)}"
-                  title="Remove ${basic.identifier}"
+                  @click="${()=>this.handleRemove(e.identifier)}"
+                  title="Remove ${e.identifier}"
                 >
                   Remove
                 </button>
               </li>
             `)}
           </ul>
-        ` : html `
+        `:r`
           <div class="empty-state">
             No basics selected. Select from available basics below.
           </div>
@@ -199,18 +171,18 @@ let EditorLeftPaneBasics = class EditorLeftPaneBasics extends LitElement {
 
       <div class="basics-section">
         <h3 class="basics-section-title">Available Basics</h3>
-        ${unselected.length > 0 ? html `
+        ${a.length>0?r`
           <ul class="basics-list">
-            ${unselected.map(basic => html `
+            ${a.map(e=>r`
               <li class="basic-item">
                 <div class="basic-item-content">
-                  <span class="basic-item-identifier">${basic.identifier}</span>
-                  <span class="basic-item-badge">${basic.fieldCount} field${basic.fieldCount !== 1 ? 's' : ''}</span>
+                  <span class="basic-item-identifier">${e.identifier}</span>
+                  <span class="basic-item-badge">${e.fieldCount} field${e.fieldCount!==1?"s":""}</span>
                 </div>
                 <button
                   class="basic-item-add"
-                  @click="${() => this.handleAdd(basic.identifier)}"
-                  title="Add ${basic.identifier}"
+                  @click="${()=>this.handleAdd(e.identifier)}"
+                  title="Add ${e.identifier}"
                 >
                   <typo3-backend-icon identifier="actions-add" size="small"></typo3-backend-icon>
                   Add
@@ -218,66 +190,10 @@ let EditorLeftPaneBasics = class EditorLeftPaneBasics extends LitElement {
               </li>
             `)}
           </ul>
-        ` : html `
+        `:r`
           <div class="empty-state">
             All available basics are selected.
           </div>
         `}
       </div>
-    `;
-    }
-    createRenderRoot() {
-        // @todo Switch to Shadow DOM once Bootstrap CSS style can be applied correctly
-        // const renderRoot = this.attachShadow({mode: 'open'});
-        return this;
-    }
-    handleAdd(identifier) {
-        const updated = [...this.selectedBasics, identifier];
-        this.dispatchBasicsChanged(updated);
-    }
-    handleRemove(identifier) {
-        const updated = this.selectedBasics.filter(id => id !== identifier);
-        this.dispatchBasicsChanged(updated);
-    }
-    handleDragStart(index) {
-        this.draggedIndex = index;
-    }
-    handleDragEnd() {
-        this.draggedIndex = null;
-    }
-    handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    }
-    handleDrop(e, dropIndex) {
-        e.preventDefault();
-        if (this.draggedIndex === null || this.draggedIndex === dropIndex) {
-            return;
-        }
-        const updated = [...this.selectedBasics];
-        const [draggedItem] = updated.splice(this.draggedIndex, 1);
-        updated.splice(dropIndex, 0, draggedItem);
-        this.dispatchBasicsChanged(updated);
-        this.draggedIndex = null;
-    }
-    dispatchBasicsChanged(basics) {
-        this.dispatchEvent(new CustomEvent('basics-changed', {
-            detail: { basics },
-            bubbles: true,
-            composed: true
-        }));
-    }
-};
-__decorate([
-    property({ type: Array })
-], EditorLeftPaneBasics.prototype, "availableBasics", void 0);
-__decorate([
-    property({ type: Array })
-], EditorLeftPaneBasics.prototype, "selectedBasics", void 0);
-__decorate([
-    state()
-], EditorLeftPaneBasics.prototype, "draggedIndex", void 0);
-EditorLeftPaneBasics = __decorate([
-    customElement('editor-left-pane-basics')
-], EditorLeftPaneBasics);
-export { EditorLeftPaneBasics };
+    `}createRenderRoot(){return this}handleAdd(t){const a=[...this.selectedBasics,t];this.dispatchBasicsChanged(a)}handleRemove(t){const a=this.selectedBasics.filter(e=>e!==t);this.dispatchBasicsChanged(a)}handleDragStart(t){this.draggedIndex=t}handleDragEnd(){this.draggedIndex=null}handleDragOver(t){t.preventDefault(),t.dataTransfer.dropEffect="move"}handleDrop(t,a){if(t.preventDefault(),this.draggedIndex===null||this.draggedIndex===a)return;const e=[...this.selectedBasics],[s]=e.splice(this.draggedIndex,1);e.splice(a,0,s),this.dispatchBasicsChanged(e),this.draggedIndex=null}dispatchBasicsChanged(t){this.dispatchEvent(new CustomEvent("basics-changed",{detail:{basics:t},bubbles:!0,composed:!0}))}};c([p({type:Array})],o.prototype,"availableBasics",void 0),c([p({type:Array})],o.prototype,"selectedBasics",void 0),c([b()],o.prototype,"draggedIndex",void 0),o=c([u("editor-left-pane-basics")],o);export{o as EditorLeftPaneBasics};

@@ -1,35 +1,16 @@
 /*
-* This file is part of the TYPO3 CMS project.
-*
-* It is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, either version 2
-* of the License, or any later version.
-*
-* For the full copyright and license information, please read the
-* LICENSE.txt file that was distributed with this source code.
-*
-* The TYPO3 project - inspiring people to share!
-*/
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
-import '@typo3/backend/element/icon-element.js';
-import '@friendsoftypo3/content-blocks-gui/editor/dropzone-field.js';
-/**
- * Module: @typo3/module/web/ContentBlocksGui
+ * This file is part of the TYPO3 CMS project.
  *
- * @example
- * <content-block-editor-middle-pane></content-block-editor-middle-pane>
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
-let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends LitElement {
-    render() {
-        return html `
+import{LitElement as y,html as c}from"lit";import{property as p,customElement as g}from"lit/decorators.js";import{classMap as v}from"lit/directives/class-map.js";import"@typo3/backend/element/icon-element.js";import"@friendsoftypo3/content-blocks-gui/editor/dropzone-field.js";var a=function(s,e,i,t){var r=arguments.length,o=r<3?e:t===null?t=Object.getOwnPropertyDescriptor(e,i):t,d;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")o=Reflect.decorate(s,e,i,t);else for(var n=s.length-1;n>=0;n--)(d=s[n])&&(o=(r<3?d(o):r>3?d(e,i,o):d(e,i))||o);return r>3&&o&&Object.defineProperty(e,i,o),o};let l=class extends y{render(){return c`
       <style>
         .content-block-field-builder {
           min-height: 400px;
@@ -177,16 +158,13 @@ let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends Li
             <dropzone-field position="0" level="0"></dropzone-field>
           </div>
           <div class="fields-list">
-            ${this.fieldList?.map((item, index) => {
-            const isActive = this.isFieldActive(index + 1, 0, null);
-            return html `
-                <div class=${classMap({ 'field-item': true, 'collection-type': item.type === 'Collection' || item.type === 'Palette', 'field-active': isActive })} data-field-index="${index}">
-                  ${this.renderFieldArea(item, index + 1, 0, null)}
+            ${this.fieldList?.map((e,i)=>{const t=this.isFieldActive(i+1,0,null);return c`
+                <div class=${v({"field-item":!0,"collection-type":e.type==="Collection"||e.type==="Palette","field-active":t})} data-field-index="${i}">
+                  ${this.renderFieldArea(e,i+1,0,null)}
                 </div>
-              `;
-        })}
+              `})}
           </div>
-          ${this.fieldList?.length === 0 ? html `
+          ${this.fieldList?.length===0?c`
             <div class="empty-state">
               <div class="empty-state-content">
                 <typo3-backend-icon identifier="content-elements-container" size="large"></typo3-backend-icon>
@@ -194,132 +172,67 @@ let ContentBlockEditorMiddlePane = class ContentBlockEditorMiddlePane extends Li
                 <p>Drag field types from the left panel to start building your content block.</p>
               </div>
             </div>
-          ` : ''}
+          `:""}
         </div>
       </div>
-    `;
-    }
-    isFieldActive(position, level, parent) {
-        return (this.activeFieldPosition === position - 1 &&
-            this.activeFieldLevel === level &&
-            this.activeFieldParent === parent);
-    }
-    renderFieldArea(cbField, position, level, parent) {
-        const fieldType = this.fieldTypes?.filter((fieldType) => fieldType.type === cbField.type)[0];
-        if (cbField.type === 'Collection' || cbField.type === 'Palette') {
-            const containerClass = cbField.type === 'Palette' ? 'palette-field' : 'collection-field';
-            return html `
-        <div class="collection-container" data-level="${level}">
-          <div class="${containerClass}">
+    `}isFieldActive(e,i,t){return this.activeFieldPosition===e-1&&this.activeFieldLevel===i&&this.activeFieldParent===t}renderFieldArea(e,i,t,r){const o=this.fieldTypes?.filter(d=>d.type===e.type)[0];if(e.type==="Collection"||e.type==="Palette"){const d=e.type==="Palette"?"palette-field":"collection-field";return c`
+        <div class="collection-container" data-level="${t}">
+          <div class="${d}">
             <div class="collection-header">
-              ${this.renderDraggableFieldType(fieldType, cbField, position, level, parent, true, false)}
+              ${this.renderDraggableFieldType(o,e,i,t,r,!0,!1)}
             </div>
             <div class="collection-body">
               <div class="collection-fields">
                 <div class="collection-initial-dropzone">
-                  ${this.renderDraggableFieldType(fieldType, cbField, 0, level + 1, cbField, false, true)}
+                  ${this.renderDraggableFieldType(o,e,0,t+1,e,!1,!0)}
                 </div>
-                ${cbField.fields?.map((field, index) => {
-                const isActive = this.isFieldActive(index + 1, level + 1, cbField);
-                return html `
-                    <div class=${classMap({ 'collection-field-item': true, 'field-active': isActive })} data-field-index="${index}">
-                      <div class=${classMap({ 'field-item': true, 'collection-type': field.type === 'Collection' || field.type === 'Palette' })} data-field-index="${index}">
-                        ${this.renderFieldArea(field, index + 1, level + 1, cbField)}
+                ${e.fields?.map((n,f)=>{const m=this.isFieldActive(f+1,t+1,e);return c`
+                    <div class=${v({"collection-field-item":!0,"field-active":m})} data-field-index="${f}">
+                      <div class=${v({"field-item":!0,"collection-type":n.type==="Collection"||n.type==="Palette"})} data-field-index="${f}">
+                        ${this.renderFieldArea(n,f+1,t+1,e)}
                       </div>
                     </div>
-                  `;
-            })}
+                  `})}
               </div>
             </div>
           </div>
           <div class="collection-footer">
-            ${this.renderDraggableFieldType(fieldType, cbField, position, level, cbField, false, true)}
+            ${this.renderDraggableFieldType(o,e,i,t,e,!1,!0)}
           </div>
         </div>
-      `;
-        }
-        else {
-            return html `
-        <div class="standard-field" data-level="${level}">
-          ${this.renderDraggableFieldType(fieldType, cbField, position, level, parent)}
+      `}else return c`
+        <div class="standard-field" data-level="${t}">
+          ${this.renderDraggableFieldType(o,e,i,t,r)}
         </div>
-      `;
-        }
-    }
-    renderDraggableFieldType(fieldType, fieldTypeInfo, position, level, parent, renderLabel = true, renderDropZone = true) {
-        if (renderLabel && !renderDropZone) {
-            return html `
+      `}renderDraggableFieldType(e,i,t,r,o,d=!0,n=!0){return d&&!n?c`
         <div class="field-component field-only">
           <draggable-field-type
-            .fieldTypeSetting="${fieldType}"
-            .fieldTypeInfo="${fieldTypeInfo}"
-            .position="${position}"
-            .level="${level}"
-            .parent="${parent}"
+            .fieldTypeSetting="${e}"
+            .fieldTypeInfo="${i}"
+            .position="${t}"
+            .level="${r}"
+            .parent="${o}"
             showDeleteButton="true"
           ></draggable-field-type>
         </div>
-      `;
-        }
-        if (!renderLabel && renderDropZone) {
-            return html `
+      `:!d&&n?c`
         <div class="field-component dropzone-only">
-          <dropzone-field .position="${position}" .level="${level}" .parent="${parent}"></dropzone-field>
+          <dropzone-field .position="${t}" .level="${r}" .parent="${o}"></dropzone-field>
         </div>
-      `;
-        }
-        return html `
+      `:c`
       <div class="field-component field-with-dropzone">
         <div class="field-wrapper">
           <draggable-field-type
-            .fieldTypeSetting="${fieldType}"
-            .fieldTypeInfo="${fieldTypeInfo}"
-            .position="${position}"
-            .level="${level}"
-            .parent="${parent}"
+            .fieldTypeSetting="${e}"
+            .fieldTypeInfo="${i}"
+            .position="${t}"
+            .level="${r}"
+            .parent="${o}"
             showDeleteButton="true"
           ></draggable-field-type>
         </div>
         <div class="dropzone-wrapper">
-          <dropzone-field .position="${position}" .level="${level}" .parent="${parent}"></dropzone-field>
+          <dropzone-field .position="${t}" .level="${r}" .parent="${o}"></dropzone-field>
         </div>
       </div>
-    `;
-    }
-    createRenderRoot() {
-        // @todo Switch to Shadow DOM once Bootstrap CSS style can be applied correctly
-        // const renderRoot = this.attachShadow({mode: 'open'});
-        return this;
-    }
-};
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "fieldList", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "fieldTypes", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "dragActive", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "position", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "level", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "parent", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "activeFieldPosition", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "activeFieldLevel", void 0);
-__decorate([
-    property()
-], ContentBlockEditorMiddlePane.prototype, "activeFieldParent", void 0);
-ContentBlockEditorMiddlePane = __decorate([
-    customElement('content-block-editor-middle-pane')
-], ContentBlockEditorMiddlePane);
-export { ContentBlockEditorMiddlePane };
+    `}createRenderRoot(){return this}};a([p()],l.prototype,"fieldList",void 0),a([p()],l.prototype,"fieldTypes",void 0),a([p()],l.prototype,"dragActive",void 0),a([p()],l.prototype,"position",void 0),a([p()],l.prototype,"level",void 0),a([p()],l.prototype,"parent",void 0),a([p()],l.prototype,"activeFieldPosition",void 0),a([p()],l.prototype,"activeFieldLevel",void 0),a([p()],l.prototype,"activeFieldParent",void 0),l=a([g("content-block-editor-middle-pane")],l);export{l as ContentBlockEditorMiddlePane};

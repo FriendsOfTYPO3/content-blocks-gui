@@ -1,0 +1,11 @@
+includes:
+  - ../../.Build/vendor/phpstan/phpstan-deprecation-rules/rules.neon
+  - ../../.Build/vendor/saschaegerer/phpstan-typo3/extension.neon
+
+parameters:
+  level: 5
+  paths:
+    - ../../Classes/
+  excludePaths:
+    - ../../Classes/Answer/
+  tmpDir: ../../.cache/phpstan
