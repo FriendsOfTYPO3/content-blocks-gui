@@ -103,7 +103,7 @@ Continue with the TYPO3 installation process.
 ### Building JavaScript
 
 The frontend is built with TypeScript and Lit. The build runs inside the DDEV
-container -- no local Node.js installation needed:
+container, no local Node.js installation needed:
 
 ```
 ddev javascript

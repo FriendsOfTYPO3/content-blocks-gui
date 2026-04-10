@@ -56,7 +56,7 @@ Configuration: `Build/phpunit/UnitTests.xml` (bootstrap: `Tests/UnitTestsBootstr
 ddev test-functional
 ```
 
-The DB credentials (`typo3DatabaseName=func_test`, host `db`, etc.) are set automatically by the `ddev test-functional` wrapper — no more manual env-var juggling.
+The DB credentials (`typo3DatabaseName=func_test`, host `db`, etc.) are set automatically by the `ddev test-functional` wrapper. No more manual env-var juggling.
 
 **Run a single test class:**
 ```bash
@@ -80,7 +80,7 @@ Configuration: `Build/phpunit/FunctionalTests.xml` (bootstrap: `Tests/Functional
 | `Functional/Fixtures/tt_content.csv` | Sample records for repository tests |
 | `Functional/Fixtures/BasicFixture.yaml` | Example basic for service tests |
 
-> **Note:** The files `Tests/phpunit.unit.xml` and `Tests/phpunit.functional.xml` are leftovers from the monorepo era and are no longer used — the active configs live under `Build/phpunit/`. They can be deleted at some point.
+> **Note:** The files `Tests/phpunit.unit.xml` and `Tests/phpunit.functional.xml` are leftovers from the monorepo era and are no longer used. The active configs live under `Build/phpunit/`. They can be deleted at some point.
 
 ---
 
@@ -134,20 +134,29 @@ ddev test-playwright                  # all tests, headless
 ddev test-playwright --project=editor # only one project (login/list/editor)
 ```
 
-> **Interactive `--ui` / `--debug` modes do not work via `ddev test-playwright`.**
-> Both flags launch a *headed* chromium window, but the ddev web container has
-> no X server, so chromium aborts with `Looks like you launched a headed browser
-> without having a XServer running`. To use UI or debug mode, install Playwright
-> on the host and run it from there:
+> **Interactive and headed modes do not work via `ddev test-playwright`.**
+> Flags like `--ui`, `--headed`, and `--debug` launch a visible browser window,
+> but the ddev web container has no X server, so chromium aborts immediately.
+> To use these modes, install Playwright on the host and run from there:
 > ```bash
 > cd Tests/Playwright
 > npm install                  # once
 > npx playwright install chromium
-> npm run test:ui              # or: npm run test:debug
+> ```
+> Then pick a mode:
+> ```bash
+> npm run test:headed          # live browser window, watch tests run in real chromium
+> npm run test:ui              # Playwright Test Runner UI (embedded browser preview)
+> npm run test:debug           # step-by-step debugging with Playwright Inspector
 > ```
 > Note that the host invocation still needs the same `.env` and a reachable
 > `PLAYWRIGHT_BASE_URL` (the default `https://content-blocks-gui.ddev.site/typo3/`
 > works as long as ddev is running).
+>
+> **Tip for `--ui` mode:** Playwright UI starts with the project filter set to
+> `login` (the first project in the config). The `list` and `editor` tests are
+> hidden by default — change the **"Projects: login"** dropdown in the top-left
+> corner to **all** to see every test file.
 
 **Run a single test:**
 
@@ -165,9 +174,9 @@ ddev test-playwright --grep dropdown
 > **Note:** `login` always runs alongside any selection because the `list` and
 > `editor` projects depend on it in `playwright.config.ts`.
 >
-> Multi-word patterns like `--grep "extension dropdown"` do **not** work — DDEV
-> custom commands lose the quotes when forwarding via `"$@"`, the argument is
-> word-split, and Playwright finds nothing. Use a single unique word, or filter
+> Multi-word patterns like `--grep "extension dropdown"` do **not** work. DDEV
+> custom commands lose the quotes when forwarding via `"$@"`, so the argument is
+> word-split and Playwright finds nothing. Use a single unique word, or filter
 > by `file:line` instead.
 
 ### Test cases
@@ -200,7 +209,7 @@ ddev test-playwright --grep dropdown
 ### Notes
 
 - Tests run **serially** (not in parallel) because `list` and `editor` depend on the login session from `login` (`auth.json`).
-- TYPO3 renders backend modules inside an **iframe** — tests use `page.frameLocator('typo3-iframe-module iframe')` to reach the module contents.
+- TYPO3 renders backend modules inside an **iframe**. Tests use `page.frameLocator('typo3-iframe-module iframe')` to reach the module contents.
 - The `tsconfig.json` only exists for IDE support (autocomplete and error highlighting in PhpStorm / VS Code). Playwright uses its own transpiler.
 
 ---
