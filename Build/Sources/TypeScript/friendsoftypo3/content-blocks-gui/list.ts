@@ -12,6 +12,7 @@
 */
 
 import { html, LitElement } from 'lit';
+import { live } from 'lit/directives/live.js';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import AjaxRequest from '@typo3/core/ajax/ajax-request.js';
@@ -219,7 +220,7 @@ export class ContentBlockList extends LitElement {
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                ${this.selectionMode ? html`<th style="width: 40px;"><input type="checkbox" disabled /></th>` : ''}
+                ${this.selectionMode ? html`<th style="width: 40px;"><input type="checkbox" @change="${this.toggleAllSelection}" .checked="${this.areAllVisibleSelected()}" .indeterminate="${this.areSomeVisibleSelected() && !this.areAllVisibleSelected()}" /></th>` : ''}
                 <th></th>
                 <th class="sortable" @click="${() => this.handleSort('name')}" style="cursor: pointer;">
                   Content Block name
@@ -273,7 +274,7 @@ export class ContentBlockList extends LitElement {
           <td class="col-checkbox">
             <input
               type="checkbox"
-              ?checked="${isSelected}"
+              .checked="${live(isSelected)}"
               @change="${() => this.toggleBlockSelection(item.name, this.activeTab)}"
             />
           </td>
@@ -1003,6 +1004,37 @@ export class ContentBlockList extends LitElement {
       this.selectedBlocks.add(key);
     }
     this.requestUpdate();
+  }
+
+  /**
+   * Toggle selection of all currently visible (filtered) blocks
+   */
+  protected toggleAllSelection(): void {
+    const visibleKeys = this.getFilteredAndSortedItems().map(
+      item => `${this.activeTab}:${item.name}`
+    );
+    if (this.areAllVisibleSelected()) {
+      visibleKeys.forEach(key => this.selectedBlocks.delete(key));
+    } else {
+      visibleKeys.forEach(key => this.selectedBlocks.add(key));
+    }
+    this.requestUpdate();
+  }
+
+  protected areAllVisibleSelected(): boolean {
+    const visibleItems = this.getFilteredAndSortedItems();
+    if (visibleItems.length === 0) {
+      return false;
+    }
+    return visibleItems.every(
+      item => this.selectedBlocks.has(`${this.activeTab}:${item.name}`)
+    );
+  }
+
+  protected areSomeVisibleSelected(): boolean {
+    return this.getFilteredAndSortedItems().some(
+      item => this.selectedBlocks.has(`${this.activeTab}:${item.name}`)
+    );
   }
 
   /**
