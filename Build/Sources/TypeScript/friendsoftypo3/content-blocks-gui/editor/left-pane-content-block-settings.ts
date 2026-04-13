@@ -51,7 +51,7 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
         <select class="form-control" id="extension" ?disabled="${isEditMode}" @change="${this.handleInputChange}">
           <option value="0">Choose...</option>
           ${this.extensions.map((extension: ExtensionDefinition) => html`
-            <option value="${extension.package}" ?selected="${extension.package === this.hostExtension}">${extension.extension}</option>
+            <option value="${extension.extension}" ?selected="${extension.extension === this.hostExtension}">${extension.extension}</option>
           `)}
         </select>
         ${isEditMode ? html`

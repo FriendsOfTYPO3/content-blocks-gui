@@ -130,15 +130,17 @@ class ContentBlocksUtility
             $absoluteContentBlockPath = ExtensionManagementUtility::resolvePackagePath(
                 $this->contentBlockRegistry->getContentBlockExtPath($name),
             );
-            return $this->deleteDirectoryRecursively($absoluteContentBlockPath);
-            //                return new DataAnswer(
-            //                    'list',
-            //                    $notDeletedFilePaths
-            //                );
+            $result = $this->deleteDirectoryRecursively($absoluteContentBlockPath);
+
+            // Flush caches so the DI container and content block registry
+            // no longer reference the deleted content block.
+            $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
+            $cacheManager->flushCachesInGroup('system');
+            $cacheManager->getCache('typoscript')->flush();
+
+            return $result;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            //            TODO: get user notified
-            //return new ErrorUnknownContentBlockPathAnswer($parsedBody['name']);
             return [];
         }
     }
@@ -497,6 +499,12 @@ class ContentBlocksUtility
                 'identifier' => $identifier,
                 'file' => $fileToDelete,
             ]);
+
+            // Flush caches so the DI container and basics registry
+            // no longer reference the deleted basic.
+            $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
+            $cacheManager->flushCachesInGroup('system');
+            $cacheManager->getCache('typoscript')->flush();
 
             return [];
         } catch (\Exception $e) {

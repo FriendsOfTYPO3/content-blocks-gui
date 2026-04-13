@@ -16,7 +16,7 @@ import{LitElement as y,css as b,html as p}from"lit";import{property as c,customE
         <select class="form-control" id="extension" ?disabled="${e}" @change="${this.handleInputChange}">
           <option value="0">Choose...</option>
           ${this.extensions.map(t=>p`
-            <option value="${t.package}" ?selected="${t.package===this.hostExtension}">${t.extension}</option>
+            <option value="${t.extension}" ?selected="${t.extension===this.hostExtension}">${t.extension}</option>
           `)}
         </select>
         ${e?p`

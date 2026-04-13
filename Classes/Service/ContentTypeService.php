@@ -6,6 +6,7 @@ namespace FriendsOfTYPO3\ContentBlocksGui\Service;
 
 use FriendsOfTYPO3\ContentBlocksGui\Answer\AnswerInterface;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\DataAnswer;
+use FriendsOfTYPO3\ContentBlocksGui\Utility\DatabaseUtility;
 use Symfony\Component\Yaml\Yaml;
 use TYPO3\CMS\ContentBlocks\Builder\ConfigBuilder;
 use TYPO3\CMS\ContentBlocks\Builder\ContentBlockBuilder;
@@ -36,6 +37,7 @@ class ContentTypeService
         protected readonly DefaultsLoader $defaultsLoader,
         protected readonly CacheManager $cacheManager,
         protected readonly LanguageFileGenerator $languageFileGenerator,
+        protected readonly DatabaseUtility $databaseUtility,
     ) {}
 
     public function getContentTypeData(array $contentBlockData): array
@@ -71,26 +73,37 @@ class ContentTypeService
         if ($data['contentType'] === 'content-element') {
             $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'] ?? [];
             $data['contentBlock']['basics'] = $contentBlockData['contentBlock']['basics'] ?? [];
-            $data['contentBlock']['group'] = $contentBlockData['contentBlock']['group'] ?? 'common';
-            $data['contentBlock']['prefixFields'] = $contentBlockData['contentBlock']['prefixFields'] ?? true;
-            $data['contentBlock']['prefixType'] = $contentBlockData['contentBlock']['prefixType'] ?? 'full';
-            $data['contentBlock']['table'] = $contentBlockData['contentBlock']['table'] ?? 'tt_content';
-            $data['contentBlock']['typeField'] = $contentBlockData['contentBlock']['typeField'] ?? 'CType';
-            $data['contentBlock']['typeName'] = $contentBlockData['contentBlock']['typeName'] ?? '';
-            $data['contentBlock']['priority'] = $contentBlockData['contentBlock']['priority'] ?? 0;
-            $data['contentBlock']['title'] = $contentBlockData['contentBlock']['title'] ?? '';
-            $data['contentBlock']['vendorPrefix'] = $contentBlockData['contentBlock']['vendorPrefix'] ?? '';
+            // Only include optional fields when they have non-empty values.
+            // Omitting them lets content-blocks core use its own defaults
+            // (e.g. typeName is auto-generated from the block name).
+            $optionalFields = [
+                'group', 'prefixFields', 'prefixType', 'table',
+                'typeField', 'typeName', 'priority', 'title', 'vendorPrefix',
+            ];
+            foreach ($optionalFields as $field) {
+                $value = $contentBlockData['contentBlock'][$field] ?? null;
+                if ($value !== null && $value !== '' && $value !== 0) {
+                    $data['contentBlock'][$field] = $value;
+                }
+            }
         } elseif ($data['contentType'] === 'page-type') {
             $typeName = $contentBlockData['contentBlock']['type'] ?? random_int(10000, 99999);
-            // Validate page type name using EXT:content_blocks validator
             PageTypeNameValidator::validate($typeName, $vendor . '/' . $name);
             $data['contentBlock']['type'] = (int) $typeName;
-            $data['contentBlock']['prefixFields'] = $contentBlockData['contentBlock']['prefixFields'] ?? true;
-            $data['contentBlock']['prefixType'] = $contentBlockData['contentBlock']['prefixType'] ?? 'full';
+            foreach (['prefixFields', 'prefixType'] as $field) {
+                $value = $contentBlockData['contentBlock'][$field] ?? null;
+                if ($value !== null && $value !== '') {
+                    $data['contentBlock'][$field] = $value;
+                }
+            }
         } elseif ($data['contentType'] === 'record-type') {
-            $data['contentBlock']['typeName'] = $contentBlockData['contentBlock']['typeName'] ?? '';
             $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'] ?? [];
-            $data['contentBlock']['title'] = $contentBlockData['contentBlock']['title'] ?? '';
+            foreach (['typeName', 'title'] as $field) {
+                $value = $contentBlockData['contentBlock'][$field] ?? null;
+                if ($value !== null && $value !== '') {
+                    $data['contentBlock'][$field] = $value;
+                }
+            }
         } elseif ($data['contentType'] === 'basic') {
             $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'];
         }
@@ -100,16 +113,32 @@ class ContentTypeService
 
     public function handleContentElement($data): AnswerInterface
     {
+        // name is already in vendor/name format from getContentTypeData()
+        $contentTypeName = $data['contentBlock']['name'];
+        [$vendor, $name] = explode('/', $contentTypeName, 2);
+
         // Validate that extension exists
         $availablePackages = $this->packageResolver->getAvailablePackages();
         if (!array_key_exists($data['extension'], $availablePackages)) {
             throw new \RuntimeException('The extension "' . $data['extension'] . '" could not be found.');
         }
+
+        // Use ConfigBuilder like CreateContentBlockCommand does.
+        // This ensures proper defaults (e.g. typeName auto-generated from name).
+        $yamlConfiguration = $this->configBuilder->build(
+            ContentType::CONTENT_ELEMENT,
+            $vendor,
+            $name,
+            $data['contentBlock']['title'] ?? $contentTypeName,
+            $data['contentBlock']['typeName'] ?? null,
+            $data['contentBlock'],
+        );
+
         $extPath = $this->getExtPath($data['extension'], ContentType::CONTENT_ELEMENT);
 
         $contentBlock = new LoadedContentBlock(
-            name: $data['contentBlock']['name'],
-            yaml: $data['contentBlock'],
+            name: $contentTypeName,
+            yaml: $yamlConfiguration,
             icon: new ContentTypeIcon(),
             hostExtension: $data['extension'],
             extPath: $extPath,
@@ -133,7 +162,9 @@ class ContentTypeService
     }
     public function handlePageType(array $data): AnswerInterface
     {
-        $contentTypeName = $data['contentBlock']['vendor'] . '/' . $data['contentBlock']['name'];
+        // name is already in vendor/name format from getContentTypeData()
+        $contentTypeName = $data['contentBlock']['name'];
+        [$vendor, $name] = explode('/', $contentTypeName, 2);
 
         // Validate that extension exists
         $availablePackages = $this->packageResolver->getAvailablePackages();
@@ -144,8 +175,8 @@ class ContentTypeService
         // Use ConfigBuilder like CreateContentBlockCommand does
         $yamlConfiguration = $this->configBuilder->build(
             ContentType::PAGE_TYPE,
-            $data['contentBlock']['vendor'],
-            $data['contentBlock']['name'],
+            $vendor,
+            $name,
             $data['contentBlock']['title'] ?? $contentTypeName,
             $data['contentBlock']['type'], // Page type needs the type number
             $data['contentBlock'], // Pass additional config
@@ -181,7 +212,9 @@ class ContentTypeService
 
     public function handleRecordType(array $data): AnswerInterface
     {
-        $contentTypeName = $data['contentBlock']['vendor'] . '/' . $data['contentBlock']['name'];
+        // name is already in vendor/name format from getContentTypeData()
+        $contentTypeName = $data['contentBlock']['name'];
+        [$vendor, $name] = explode('/', $contentTypeName, 2);
 
         // Validate that extension exists
         $availablePackages = $this->packageResolver->getAvailablePackages();
@@ -192,8 +225,8 @@ class ContentTypeService
         // Use ConfigBuilder like CreateContentBlockCommand does
         $yamlConfiguration = $this->configBuilder->build(
             ContentType::RECORD_TYPE,
-            $data['contentBlock']['vendor'],
-            $data['contentBlock']['name'],
+            $vendor,
+            $name,
             $data['contentBlock']['title'] ?? $contentTypeName,
             $data['contentBlock']['typeName'] ?? null,
             $data['contentBlock'], // Pass additional config
@@ -297,6 +330,13 @@ class ContentTypeService
             // Flush caches like CreateContentBlockCommand does
             $this->cacheManager->flushCachesInGroup('system');
             $this->cacheManager->getCache('typoscript')->flush();
+
+            // Update database schema (e.g. create tables for new Record Types).
+            // Like the CLI's `extension:setup` recommendation after `make:content-block`.
+            $result = $this->databaseUtility->updateDatabaseSchema();
+            if (isset($result['error'])) {
+                throw new \RuntimeException('Database schema update failed: ' . $result['error']);
+            }
         }
 
         // Reload the registry after any content block operation

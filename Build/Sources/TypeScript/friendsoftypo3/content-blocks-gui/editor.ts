@@ -415,14 +415,25 @@ export class ContentBlockEditor extends LitElement {
     } else {
       this.cbDefinition.yaml.fields.splice(position, 0, newField);
     }
-    this.fieldSettingsValues = newField;
+
+    // Create a new cbDefinition reference so Lit detects the change and
+    // re-renders downstream components (especially the middle pane).
+    // Without this, splice() mutates the array in place and Lit's dirty
+    // checking skips the update because the reference hasn't changed.
+    this.cbDefinition = structuredClone(this.cbDefinition);
+
+    // Re-resolve the field reference after cloning
+    const fields = level > 0 ? parent.fields : this.cbDefinition.yaml.fields;
+    const clonedField = fields[position];
+
+    this.fieldSettingsValues = clonedField;
     this.rightPaneActivePosition = position;
     this.rightPaneActiveLevel = level;
     this.rightPaneActiveParent = parent;
 
     // Validate the newly created field
-    const validation = this.validateField(newField, level);
-    newField._validation = validation;
+    const validation = this.validateField(clonedField, level);
+    clonedField._validation = validation;
     this.fieldSettingsValues._validation = validation;
   }
 
@@ -779,29 +790,34 @@ export class ContentBlockEditor extends LitElement {
         return;
       }
 
+      const contentBlock: Record<string, any> = {
+        fields: cleanedFields,
+        basics: this.cbDefinition.yaml.basics || [],
+      };
+
+      // Only include optional fields when they have non-empty values.
+      // Omitting them lets content-blocks core use its own defaults
+      // (e.g. typeName is auto-generated from the block name).
+      if (this.cbDefinition.yaml.group) {contentBlock.group = this.cbDefinition.yaml.group;}
+      if (this.cbDefinition.yaml.prefixFields !== undefined) {contentBlock.prefixFields = this.cbDefinition.yaml.prefixFields !== false;}
+      if (this.cbDefinition.yaml.prefixType) {contentBlock.prefixType = this.cbDefinition.yaml.prefixType;}
+      if (this.cbDefinition.yaml.table) {contentBlock.table = this.cbDefinition.yaml.table;}
+      if (this.cbDefinition.yaml.typeField) {contentBlock.typeField = this.cbDefinition.yaml.typeField;}
+      if (this.cbDefinition.yaml.typeName) {contentBlock.typeName = this.cbDefinition.yaml.typeName;}
+      if (this.cbDefinition.yaml.priority) {contentBlock.priority = this.cbDefinition.yaml.priority;}
+      if (this.cbDefinition.yaml.title) {contentBlock.title = this.cbDefinition.yaml.title;}
+      if (this.cbDefinition.yaml.vendorPrefix) {contentBlock.vendorPrefix = this.cbDefinition.yaml.vendorPrefix;}
+
       const saveData: Record<string, any> = {
-        contentType: 'content-element', // TODO: make configurable to support other page-type and record-type
+        contentType: this.contenttype || 'content-element',
         extension: this.cbDefinition.hostExtension,
-        mode: this.mode || 'edit', // Use edit mode by default
+        mode: this.mode || 'edit',
         name: this.cbDefinition.yaml.name,
         vendor: this.cbDefinition.yaml.vendor,
-        contentBlock: {
-          fields: cleanedFields,
-          basics: this.cbDefinition.yaml.basics || [],
-          group: this.cbDefinition.yaml.group || 'default',
-          prefixFields: this.cbDefinition.yaml.prefixFields !== false,
-          prefixType: this.cbDefinition.yaml.prefixType || 'full',
-          table: this.cbDefinition.yaml.table || 'tt_content',
-          typeField: this.cbDefinition.yaml.typeField || 'CType',
-          typeName: this.cbDefinition.yaml.typeName || '',
-          priority: this.cbDefinition.yaml.priority || 0,
-          title: this.cbDefinition.yaml.title || '',
-          vendorPrefix: this.cbDefinition.yaml.vendorPrefix || ''
-        }
+        contentBlock: contentBlock,
       };
 
       if (this.mode === 'copy') {
-        // These would need to be provided by the UI for copy operations
         saveData.contentBlock.initialVendor = (this.cbDefinition.yaml as any).initialVendor || '';
         saveData.contentBlock.initialName = (this.cbDefinition.yaml as any).initialName || '';
       }
@@ -1149,25 +1165,29 @@ export class ContentBlockEditor extends LitElement {
       }
 
       // Prepare data for save
+      const contentBlock: Record<string, any> = {
+        fields: cleanedFields,
+        basics: this.cbDefinition.yaml.basics || [],
+      };
+
+      // Only include optional fields when they have non-empty values.
+      if (this.cbDefinition.yaml.group) {contentBlock.group = this.cbDefinition.yaml.group;}
+      if (this.cbDefinition.yaml.prefixFields !== undefined) {contentBlock.prefixFields = this.cbDefinition.yaml.prefixFields !== false;}
+      if (this.cbDefinition.yaml.prefixType) {contentBlock.prefixType = this.cbDefinition.yaml.prefixType;}
+      if (this.cbDefinition.yaml.table) {contentBlock.table = this.cbDefinition.yaml.table;}
+      if (this.cbDefinition.yaml.typeField) {contentBlock.typeField = this.cbDefinition.yaml.typeField;}
+      if (this.cbDefinition.yaml.typeName) {contentBlock.typeName = this.cbDefinition.yaml.typeName;}
+      if (this.cbDefinition.yaml.priority) {contentBlock.priority = this.cbDefinition.yaml.priority;}
+      if (this.cbDefinition.yaml.title) {contentBlock.title = this.cbDefinition.yaml.title;}
+      if (this.cbDefinition.yaml.vendorPrefix) {contentBlock.vendorPrefix = this.cbDefinition.yaml.vendorPrefix;}
+
       const saveData: Record<string, any> = {
-        contentType: 'content-element', // TODO: make configurable to support other page-type and record-type
+        contentType: this.contenttype || 'content-element',
         extension: this.cbDefinition.hostExtension,
         mode: this.mode || 'edit',
         name: this.cbDefinition.yaml.name,
         vendor: this.cbDefinition.yaml.vendor,
-        contentBlock: {
-          fields: cleanedFields,
-          basics: this.cbDefinition.yaml.basics || [],
-          group: this.cbDefinition.yaml.group || 'default',
-          prefixFields: this.cbDefinition.yaml.prefixFields !== false,
-          prefixType: this.cbDefinition.yaml.prefixType || 'full',
-          table: this.cbDefinition.yaml.table || 'tt_content',
-          typeField: this.cbDefinition.yaml.typeField || 'CType',
-          typeName: this.cbDefinition.yaml.typeName || '',
-          priority: this.cbDefinition.yaml.priority || 0,
-          title: this.cbDefinition.yaml.title || '',
-          vendorPrefix: this.cbDefinition.yaml.vendorPrefix || ''
-        }
+        contentBlock: contentBlock,
       };
 
       if (this.mode === 'copy') {
