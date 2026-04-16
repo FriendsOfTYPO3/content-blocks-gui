@@ -59,7 +59,7 @@ Basics through a drag-and-drop interface instead of writing YAML by hand.
 
 | Extension version | TYPO3 version | PHP version |
 |-------------------|---------------|-------------|
-| 0.1.x (alpha)     | 13.4          | 8.2+        |
+| 0.2.x (alpha)     | 13.4          | 8.2+        |
 
 ## Requirements
 

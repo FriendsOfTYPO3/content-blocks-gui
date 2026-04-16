@@ -43,7 +43,13 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
 
   protected override render(): TemplateResult {
     const isBasicMode = this.contenttype === 'basic';
+    const isRecordType = this.contenttype === 'record-type';
     const isEditMode = this.mode === 'edit';
+
+    // Auto-generate table name suggestion from vendor/name for Record Types
+    const vendorVal = (this.contentBlockYaml.vendor || '').replace(/-/g, '');
+    const nameVal = (this.contentBlockYaml.name || '').replace(/-/g, '');
+    const suggestedTable = vendorVal && nameVal ? `tx_${vendorVal}_${nameVal}` : '';
 
     return html`
       <div class="form-group">
@@ -74,6 +80,35 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
           <label for="title" class="form-label">Title</label>
           <input type="text" id="title" class="form-control" value="${this.contentBlockYaml.title || ''}" @input="${this.handleInputChange}" />
         </div>
+        ${isRecordType ? html`
+          <div class="form-group">
+            <label for="table" class="form-label">Table name <span class="text-danger">*</span></label>
+            <input type="text" id="table" class="form-control" required
+              value="${this.contentBlockYaml.table || suggestedTable}"
+              placeholder="${suggestedTable || 'tx_vendor_name'}"
+              ?disabled="${isEditMode}"
+              @input="${this.handleInputChange}" />
+            <div class="form-text text-muted mt-1">
+              Database table for this Record Type. Auto-suggested from vendor/name.
+            </div>
+            ${isEditMode ? html`
+              <div class="form-text text-muted mt-1">
+                <typo3-backend-icon identifier="actions-document-info" size="small"></typo3-backend-icon>
+                Table name cannot be changed in edit mode.
+              </div>
+            ` : ''}
+          </div>
+          <div class="form-group">
+            <label for="labelField" class="form-label">Label field <span class="text-danger">*</span></label>
+            <input type="text" id="labelField" class="form-control" required
+              value="${this.contentBlockYaml.labelField || 'title'}"
+              placeholder="title"
+              @input="${this.handleInputChange}" />
+            <div class="form-text text-muted mt-1">
+              Field identifier used as record label in the backend.
+            </div>
+          </div>
+        ` : ''}
         <div class="form-group">
           <div class="form-check">
             <input type="checkbox" id="prefix" class="form-check-input" ?checked=${this.contentBlockYaml.prefixFields} @change="${this.handleInputChange}" />
@@ -156,7 +191,9 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
       const vendorPrefixInput = this.renderRoot.querySelector('#vendor-prefix') as HTMLInputElement;
       const priorityInput = this.renderRoot.querySelector('#priority') as HTMLInputElement;
       const groupSelect = this.renderRoot.querySelector('#group') as HTMLSelectElement;
-      const typeName = this.renderRoot.querySelector('#typeName') as HTMLSelectElement;
+      const typeName = this.renderRoot.querySelector('#typeName') as HTMLInputElement;
+      const tableInput = this.renderRoot.querySelector('#table') as HTMLInputElement;
+      const labelFieldInput = this.renderRoot.querySelector('#labelField') as HTMLInputElement;
 
       if (titleInput) {settings.title = titleInput.value;}
       if (prefixCheckbox) {settings.prefixFields = prefixCheckbox.checked;}
@@ -165,6 +202,8 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
       if (priorityInput) {settings.priority = priorityInput.value ? parseInt(priorityInput.value, 10) : undefined;}
       if (groupSelect) {settings.group = groupSelect.value;}
       if (typeName) {settings.typeName = typeName.value;}
+      if (tableInput) {settings.table = tableInput.value;}
+      if (labelFieldInput) {settings.labelField = labelFieldInput.value;}
     }
 
     // Dispatch custom event to parent

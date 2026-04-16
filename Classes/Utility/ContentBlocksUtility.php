@@ -999,12 +999,14 @@ class ContentBlocksUtility
             $result['editUrl'] = (string) $this->backendUriBuilder->buildUriFromRoute('content_block_gui_content_block_modify', [
                 'type' => 'edit',
                 'name' => $contentBlock->getName(),
+                'contentType' => $contentBlock->getContentType()->value,
             ]);
             $result['deleteUrl'] = (string) $this->backendUriBuilder->buildUriFromRoute('content_block_gui_content_block_delete', [
                 'name' => $contentBlock->getName(),
             ]);
             $result['duplicateUrl'] = (string) $this->backendUriBuilder->buildUriFromRoute('content_block_gui_content_block_duplicate', [
                 'sourceName' => $contentBlock->getName(),
+                'contentType' => $contentBlock->getContentType()->value,
             ]);
         }
 

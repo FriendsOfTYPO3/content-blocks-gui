@@ -745,13 +745,27 @@ export class ContentBlockEditor extends LitElement {
   /**
    * Save content block or basic via AJAX
    */
+  private showSavingOverlay(): void {
+    this.removeSavingOverlay();
+    const overlay = document.createElement('div');
+    overlay.id = 'cb-saving-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:var(--typo3-surface-bright, #fff);color:var(--typo3-text-color-base, #000);border-radius:8px;padding:2rem 3rem;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+        <typo3-backend-icon identifier="spinner-circle" size="large"></typo3-backend-icon>
+        <div style="margin-top:1rem;font-size:1.1rem;font-weight:500;">Saving, clearing caches and updating database...</div>
+        <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--typo3-text-color-variant, #666);">This may take a few seconds.</div>
+      </div>`;
+    document.body.appendChild(overlay);
+  }
+
+  private removeSavingOverlay(): void {
+    document.getElementById('cb-saving-overlay')?.remove();
+  }
+
   private async saveContentBlock(): Promise<void> {
     try {
-      const saveButtons = document.querySelectorAll('[data-action="save-content-block"]') as NodeListOf<HTMLButtonElement>;
-      saveButtons.forEach(button => {
-        button.disabled = true;
-        button.innerHTML = '<typo3-backend-icon identifier="spinner-circle" size="small"></typo3-backend-icon> Saving...';
-      });
+      this.showSavingOverlay();
 
       // Check if we're saving a Basic or Content Block
       if (this.contenttype === 'basic') {
@@ -766,11 +780,7 @@ export class ContentBlockEditor extends LitElement {
       // Validate unique identifiers before saving
       const validation = this.validateUniqueIdentifiers(cleanedFields);
       if (!validation.isValid) {
-        // Re-enable save buttons
-        saveButtons.forEach(button => {
-          button.disabled = false;
-          button.innerHTML = 'Save';
-        });
+        this.isSaving = false;
 
         // Show error message with duplicate identifiers
         Modal.confirm(
@@ -804,6 +814,7 @@ export class ContentBlockEditor extends LitElement {
       if (this.cbDefinition.yaml.table) {contentBlock.table = this.cbDefinition.yaml.table;}
       if (this.cbDefinition.yaml.typeField) {contentBlock.typeField = this.cbDefinition.yaml.typeField;}
       if (this.cbDefinition.yaml.typeName) {contentBlock.typeName = this.cbDefinition.yaml.typeName;}
+      if (this.cbDefinition.yaml.labelField) {contentBlock.labelField = this.cbDefinition.yaml.labelField;}
       if (this.cbDefinition.yaml.priority) {contentBlock.priority = this.cbDefinition.yaml.priority;}
       if (this.cbDefinition.yaml.title) {contentBlock.title = this.cbDefinition.yaml.title;}
       if (this.cbDefinition.yaml.vendorPrefix) {contentBlock.vendorPrefix = this.cbDefinition.yaml.vendorPrefix;}
@@ -877,12 +888,7 @@ export class ContentBlockEditor extends LitElement {
         }]
       );
     } finally {
-      // Restore save buttons
-      const saveButtons = document.querySelectorAll('[data-action="save-content-block"]') as NodeListOf<HTMLButtonElement>;
-      saveButtons.forEach(button => {
-        button.disabled = false;
-        button.innerHTML = '<typo3-backend-icon identifier="actions-save"></typo3-backend-icon> Save';
-      });
+      this.removeSavingOverlay();
     }
   }
 
@@ -998,12 +1004,7 @@ export class ContentBlockEditor extends LitElement {
         }]
       );
     } finally {
-      // Restore save buttons
-      const saveButtons = document.querySelectorAll('[data-action="save-content-block"]') as NodeListOf<HTMLButtonElement>;
-      saveButtons.forEach(button => {
-        button.disabled = false;
-        button.innerHTML = '<typo3-backend-icon identifier="actions-save"></typo3-backend-icon> Save';
-      });
+      this.removeSavingOverlay();
     }
   }
 
@@ -1107,12 +1108,7 @@ export class ContentBlockEditor extends LitElement {
         }]
       );
     } finally {
-      // Restore save & close button (in case of client-side validation error)
-      const saveAndCloseButtons = document.querySelectorAll('[data-action="save-and-close-content-block"]') as NodeListOf<HTMLButtonElement>;
-      saveAndCloseButtons.forEach(button => {
-        button.disabled = false;
-        button.innerHTML = '<typo3-backend-icon identifier="actions-save-close"></typo3-backend-icon> Save & Close';
-      });
+      this.removeSavingOverlay();
     }
   }
 
@@ -1120,17 +1116,7 @@ export class ContentBlockEditor extends LitElement {
    * Save & Close dispatcher (checks content type and calls appropriate method)
    */
   private async saveContentBlockAndClose(): Promise<void> {
-    // Disable both buttons during save
-    const saveButtons = document.querySelectorAll('[data-action="save-content-block"]') as NodeListOf<HTMLButtonElement>;
-    const saveAndCloseButtons = document.querySelectorAll('[data-action="save-and-close-content-block"]') as NodeListOf<HTMLButtonElement>;
-
-    saveButtons.forEach(button => {
-      button.disabled = true;
-    });
-    saveAndCloseButtons.forEach(button => {
-      button.disabled = true;
-      button.innerHTML = '<typo3-backend-icon identifier="spinner-circle" size="small"></typo3-backend-icon> Saving...';
-    });
+    this.showSavingOverlay();
 
     try {
       // Check if we're saving a Basic or Content Block
@@ -1177,6 +1163,7 @@ export class ContentBlockEditor extends LitElement {
       if (this.cbDefinition.yaml.table) {contentBlock.table = this.cbDefinition.yaml.table;}
       if (this.cbDefinition.yaml.typeField) {contentBlock.typeField = this.cbDefinition.yaml.typeField;}
       if (this.cbDefinition.yaml.typeName) {contentBlock.typeName = this.cbDefinition.yaml.typeName;}
+      if (this.cbDefinition.yaml.labelField) {contentBlock.labelField = this.cbDefinition.yaml.labelField;}
       if (this.cbDefinition.yaml.priority) {contentBlock.priority = this.cbDefinition.yaml.priority;}
       if (this.cbDefinition.yaml.title) {contentBlock.title = this.cbDefinition.yaml.title;}
       if (this.cbDefinition.yaml.vendorPrefix) {contentBlock.vendorPrefix = this.cbDefinition.yaml.vendorPrefix;}
@@ -1223,14 +1210,8 @@ export class ContentBlockEditor extends LitElement {
       // Note: form will be removed on page navigation
 
     } finally {
-      // Restore buttons (in case of error - if successful, page will redirect)
-      saveButtons.forEach(button => {
-        button.disabled = false;
-      });
-      saveAndCloseButtons.forEach(button => {
-        button.disabled = false;
-        button.innerHTML = '<typo3-backend-icon identifier="actions-save-close"></typo3-backend-icon> Save & Close';
-      });
+      // Restore overlay (in case of error - if successful, page will redirect)
+      this.isSaving = false;
     }
   }
 

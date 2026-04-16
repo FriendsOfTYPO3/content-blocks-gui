@@ -98,7 +98,7 @@ class ContentTypeService
             }
         } elseif ($data['contentType'] === 'record-type') {
             $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'] ?? [];
-            foreach (['typeName', 'title'] as $field) {
+            foreach (['typeName', 'title', 'table', 'labelField'] as $field) {
                 $value = $contentBlockData['contentBlock'][$field] ?? null;
                 if ($value !== null && $value !== '') {
                     $data['contentBlock'][$field] = $value;
@@ -113,7 +113,6 @@ class ContentTypeService
 
     public function handleContentElement($data): AnswerInterface
     {
-        // name is already in vendor/name format from getContentTypeData()
         $contentTypeName = $data['contentBlock']['name'];
         [$vendor, $name] = explode('/', $contentTypeName, 2);
 
@@ -123,8 +122,8 @@ class ContentTypeService
             throw new \RuntimeException('The extension "' . $data['extension'] . '" could not be found.');
         }
 
-        // Use ConfigBuilder like CreateContentBlockCommand does.
-        // This ensures proper defaults (e.g. typeName auto-generated from name).
+        // Use ConfigBuilder for proper defaults (e.g. typeName auto-generated from name).
+        // ConfigBuilder preserves fields from $data['contentBlock'] when non-empty.
         $yamlConfiguration = $this->configBuilder->build(
             ContentType::CONTENT_ELEMENT,
             $vendor,
@@ -156,7 +155,7 @@ class ContentTypeService
             'contentType',
             [
                 'type' => 'content-element',
-                'name' => $data['contentBlock']['name'],
+                'name' => $contentTypeName,
             ],
         );
     }
@@ -310,10 +309,6 @@ class ContentTypeService
             throw new \RuntimeException('A content block with the name "' . $contentBlockName . '" already exists.');
         } elseif ($this->contentBlockRegistry->hasContentBlock($contentBlockName) && $mode === 'edit') {
             $this->updateContentBlock($contentBlock);
-
-            // Flush caches like ContentBlockBuilder does
-            $this->cacheManager->flushCachesInGroup('system');
-            $this->cacheManager->getCache('typoscript')->flush();
         } elseif ($mode === 'copy') {
             if ($this->contentBlockRegistry->hasContentBlock($contentBlockName)) {
                 throw new \RuntimeException('A content block with the name "' . $contentBlockName . '" already exists.');
@@ -326,17 +321,14 @@ class ContentTypeService
         } else {
             // Use ContentBlockBuilder for creation - it handles all file operations
             $this->contentBlockBuilder->create($contentBlock);
+        }
 
-            // Flush caches like CreateContentBlockCommand does
-            $this->cacheManager->flushCachesInGroup('system');
-            $this->cacheManager->getCache('typoscript')->flush();
-
-            // Update database schema (e.g. create tables for new Record Types).
-            // Like the CLI's `extension:setup` recommendation after `make:content-block`.
-            $result = $this->databaseUtility->updateDatabaseSchema();
-            if (isset($result['error'])) {
-                throw new \RuntimeException('Database schema update failed: ' . $result['error']);
-            }
+        // Always flush caches and update database schema after any operation.
+        // Edit may add new fields (new columns), copy creates new blocks
+        // (potentially new tables), and create always needs both.
+        $result = $this->databaseUtility->updateDatabaseSchema();
+        if (isset($result['error'])) {
+            throw new \RuntimeException('Database schema update failed: ' . $result['error']);
         }
 
         // Reload the registry after any content block operation
