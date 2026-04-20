@@ -4,7 +4,7 @@
     "description": "Visual backend module for creating and editing Content Blocks definitions.",
     "homepage": "https://github.com/FriendsOfTYPO3/content-blocks-gui",
     "license": ["GPL-2.0-or-later"],
-    "version": "0.2.0",
+    "version": "0.3.0",
     "minimum-stability": "alpha",
     "authors": [{
         "name": "TYPO3 Content Types Team",
@@ -26,12 +26,13 @@
         }
     ],
     "require": {
-        "friendsoftypo3/content-blocks": "^1.3.17",
+        "friendsoftypo3/content-blocks": "^1.4.6",
         "typo3/cms-backend": "^13.4.19",
         "typo3/cms-core": "^13.4.19"
     },
     "require-dev": {
         "contentblocks/examples": "@dev",
+        "contentblocks/local-test": "@dev",
         "friendsofphp/php-cs-fixer": "^3.94",
         "helhum/typo3-console": "^8.3",
         "phpstan/phpstan": "^2.1",
