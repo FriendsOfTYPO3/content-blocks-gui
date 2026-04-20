@@ -149,5 +149,5 @@ export interface DropField {
   },
   position: number,
   level: number,
-  parent?: ContentBlockField
+  parentPath: number[]
 }

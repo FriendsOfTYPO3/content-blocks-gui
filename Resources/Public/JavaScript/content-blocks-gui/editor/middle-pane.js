@@ -10,7 +10,7 @@
  *
  * The TYPO3 project - inspiring people to share!
  */
-import{LitElement as y,html as c}from"lit";import{property as p,customElement as g}from"lit/decorators.js";import{classMap as v}from"lit/directives/class-map.js";import"@typo3/backend/element/icon-element.js";import"@friendsoftypo3/content-blocks-gui/editor/dropzone-field.js";var a=function(s,e,i,t){var r=arguments.length,o=r<3?e:t===null?t=Object.getOwnPropertyDescriptor(e,i):t,d;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")o=Reflect.decorate(s,e,i,t);else for(var n=s.length-1;n>=0;n--)(d=s[n])&&(o=(r<3?d(o):r>3?d(e,i,o):d(e,i))||o);return r>3&&o&&Object.defineProperty(e,i,o),o};let l=class extends y{render(){return c`
+import{LitElement as g,html as n}from"lit";import{property as p,customElement as u}from"lit/decorators.js";import{classMap as m}from"lit/directives/class-map.js";import"@typo3/backend/element/icon-element.js";import"@friendsoftypo3/content-blocks-gui/editor/dropzone-field.js";var a=function(s,e,i,t){var r=arguments.length,o=r<3?e:t===null?t=Object.getOwnPropertyDescriptor(e,i):t,l;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")o=Reflect.decorate(s,e,i,t);else for(var c=s.length-1;c>=0;c--)(l=s[c])&&(o=(r<3?l(o):r>3?l(e,i,o):l(e,i))||o);return r>3&&o&&Object.defineProperty(e,i,o),o};let d=class extends g{render(){return n`
       <style>
         .content-block-field-builder {
           min-height: 400px;
@@ -155,16 +155,16 @@ import{LitElement as y,html as c}from"lit";import{property as p,customElement as
       <div class="content-block-field-builder">
         <div class="field-builder-container">
           <div class="initial-dropzone">
-            <dropzone-field position="0" level="0"></dropzone-field>
+            <dropzone-field .position="${0}" .level="${0}" .parentPath="${[]}"></dropzone-field>
           </div>
           <div class="fields-list">
-            ${this.fieldList?.map((e,i)=>{const t=this.isFieldActive(i+1,0,null);return c`
-                <div class=${v({"field-item":!0,"collection-type":e.type==="Collection"||e.type==="Palette","field-active":t})} data-field-index="${i}">
-                  ${this.renderFieldArea(e,i+1,0,null)}
+            ${this.fieldList?.map((e,i)=>{const t=this.isFieldActive(i+1,0,[]);return n`
+                <div class=${m({"field-item":!0,"collection-type":e.type==="Collection"||e.type==="Palette","field-active":t})} data-field-index="${i}">
+                  ${this.renderFieldArea(e,i+1,0,[])}
                 </div>
               `})}
           </div>
-          ${this.fieldList?.length===0?c`
+          ${this.fieldList?.length===0?n`
             <div class="empty-state">
               <div class="empty-state-content">
                 <typo3-backend-icon identifier="content-elements-container" size="large"></typo3-backend-icon>
@@ -175,21 +175,21 @@ import{LitElement as y,html as c}from"lit";import{property as p,customElement as
           `:""}
         </div>
       </div>
-    `}isFieldActive(e,i,t){return this.activeFieldPosition===e-1&&this.activeFieldLevel===i&&this.activeFieldParent===t}renderFieldArea(e,i,t,r){const o=this.fieldTypes?.filter(d=>d.type===e.type)[0];if(e.type==="Collection"||e.type==="Palette"){const d=e.type==="Palette"?"palette-field":"collection-field";return c`
+    `}isFieldActive(e,i,t){return this.activeFieldPosition===e-1&&this.activeFieldLevel===i&&this.pathsEqual(this.activeFieldParentPath,t)}pathsEqual(e,i){if(!e||!i)return(!e||e.length===0)&&(!i||i.length===0);if(e.length!==i.length)return!1;for(let t=0;t<e.length;t++)if(e[t]!==i[t])return!1;return!0}renderFieldArea(e,i,t,r){const o=this.fieldTypes?.filter(l=>l.type===e.type)[0];if(e.type==="Collection"||e.type==="Palette"){const l=[...r,i-1],c=e.type==="Palette"?"palette-field":"collection-field";return n`
         <div class="collection-container" data-level="${t}">
-          <div class="${d}">
+          <div class="${c}">
             <div class="collection-header">
               ${this.renderDraggableFieldType(o,e,i,t,r,!0,!1)}
             </div>
             <div class="collection-body">
               <div class="collection-fields">
                 <div class="collection-initial-dropzone">
-                  ${this.renderDraggableFieldType(o,e,0,t+1,e,!1,!0)}
+                  ${this.renderDraggableFieldType(o,e,0,t+1,l,!1,!0)}
                 </div>
-                ${e.fields?.map((n,f)=>{const m=this.isFieldActive(f+1,t+1,e);return c`
-                    <div class=${v({"collection-field-item":!0,"field-active":m})} data-field-index="${f}">
-                      <div class=${v({"field-item":!0,"collection-type":n.type==="Collection"||n.type==="Palette"})} data-field-index="${f}">
-                        ${this.renderFieldArea(n,f+1,t+1,e)}
+                ${e.fields?.map((v,f)=>{const y=this.isFieldActive(f+1,t+1,l);return n`
+                    <div class=${m({"collection-field-item":!0,"field-active":y})} data-field-index="${f}">
+                      <div class=${m({"field-item":!0,"collection-type":v.type==="Collection"||v.type==="Palette"})} data-field-index="${f}">
+                        ${this.renderFieldArea(v,f+1,t+1,l)}
                       </div>
                     </div>
                   `})}
@@ -197,29 +197,29 @@ import{LitElement as y,html as c}from"lit";import{property as p,customElement as
             </div>
           </div>
           <div class="collection-footer">
-            ${this.renderDraggableFieldType(o,e,i,t,e,!1,!0)}
+            ${this.renderDraggableFieldType(o,e,i,t,r,!1,!0)}
           </div>
         </div>
-      `}else return c`
+      `}else return n`
         <div class="standard-field" data-level="${t}">
           ${this.renderDraggableFieldType(o,e,i,t,r)}
         </div>
-      `}renderDraggableFieldType(e,i,t,r,o,d=!0,n=!0){return d&&!n?c`
+      `}renderDraggableFieldType(e,i,t,r,o,l=!0,c=!0){return l&&!c?n`
         <div class="field-component field-only">
           <draggable-field-type
             .fieldTypeSetting="${e}"
             .fieldTypeInfo="${i}"
             .position="${t}"
             .level="${r}"
-            .parent="${o}"
+            .parentPath="${o}"
             showDeleteButton="true"
           ></draggable-field-type>
         </div>
-      `:!d&&n?c`
+      `:!l&&c?n`
         <div class="field-component dropzone-only">
-          <dropzone-field .position="${t}" .level="${r}" .parent="${o}"></dropzone-field>
+          <dropzone-field .position="${t}" .level="${r}" .parentPath="${o}"></dropzone-field>
         </div>
-      `:c`
+      `:n`
       <div class="field-component field-with-dropzone">
         <div class="field-wrapper">
           <draggable-field-type
@@ -227,12 +227,12 @@ import{LitElement as y,html as c}from"lit";import{property as p,customElement as
             .fieldTypeInfo="${i}"
             .position="${t}"
             .level="${r}"
-            .parent="${o}"
+            .parentPath="${o}"
             showDeleteButton="true"
           ></draggable-field-type>
         </div>
         <div class="dropzone-wrapper">
-          <dropzone-field .position="${t}" .level="${r}" .parent="${o}"></dropzone-field>
+          <dropzone-field .position="${t}" .level="${r}" .parentPath="${o}"></dropzone-field>
         </div>
       </div>
-    `}createRenderRoot(){return this}};a([p()],l.prototype,"fieldList",void 0),a([p()],l.prototype,"fieldTypes",void 0),a([p()],l.prototype,"dragActive",void 0),a([p()],l.prototype,"position",void 0),a([p()],l.prototype,"level",void 0),a([p()],l.prototype,"parent",void 0),a([p()],l.prototype,"activeFieldPosition",void 0),a([p()],l.prototype,"activeFieldLevel",void 0),a([p()],l.prototype,"activeFieldParent",void 0),l=a([g("content-block-editor-middle-pane")],l);export{l as ContentBlockEditorMiddlePane};
+    `}createRenderRoot(){return this}};a([p()],d.prototype,"fieldList",void 0),a([p()],d.prototype,"fieldTypes",void 0),a([p()],d.prototype,"dragActive",void 0),a([p()],d.prototype,"position",void 0),a([p()],d.prototype,"level",void 0),a([p()],d.prototype,"activeFieldPosition",void 0),a([p()],d.prototype,"activeFieldLevel",void 0),a([p({type:Array})],d.prototype,"activeFieldParentPath",void 0),d=a([u("content-block-editor-middle-pane")],d);export{d as ContentBlockEditorMiddlePane};

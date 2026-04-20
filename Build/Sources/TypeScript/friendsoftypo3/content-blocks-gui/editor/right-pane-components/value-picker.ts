@@ -43,8 +43,8 @@ export class ContentBlockEditorValuePicker extends LitElement {
   @property()
   level?: number;
 
-  @property()
-  parent?: number;
+  @property({ type: Array })
+  parentPath: number[] = [];
 
   @property()
   isValuePickerEnabled = false;
@@ -232,7 +232,7 @@ export class ContentBlockEditorValuePicker extends LitElement {
       detail: {
         position: this.position,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
         values: this.values,
       },
     }));

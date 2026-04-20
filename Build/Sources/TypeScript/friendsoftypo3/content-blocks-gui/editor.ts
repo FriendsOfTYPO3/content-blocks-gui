@@ -73,8 +73,8 @@ export class ContentBlockEditor extends LitElement {
   rightPaneActivePosition: number;
   @property()
   rightPaneActiveLevel: number;
-  @property()
-  rightPaneActiveParent: ContentBlockField;
+  @property({ type: Array })
+  rightPaneActiveParentPath: number[] = [];
 
   @property()
   dragActive?: boolean = false;
@@ -121,7 +121,7 @@ export class ContentBlockEditor extends LitElement {
               .dragActive="${this.dragActive}"
               .activeFieldPosition="${this.rightPaneActivePosition}"
               .activeFieldLevel="${this.rightPaneActiveLevel}"
-              .activeFieldParent="${this.rightPaneActiveParent}"
+              .activeFieldParentPath="${this.rightPaneActiveParentPath}"
               @fieldTypeDropped="${this.fieldTypeDroppedListener}"
               @activateSettings="${this.activateFieldSettings}"
               @removeFieldType="${this.removeFieldTypeEventListener}"
@@ -134,7 +134,7 @@ export class ContentBlockEditor extends LitElement {
               .values="${this.fieldSettingsValues}"
               .position="${this.rightPaneActivePosition}"
               .level="${this.rightPaneActiveLevel}"
-              .parent="${this.rightPaneActiveParent}"
+              .parentPath="${this.rightPaneActiveParentPath}"
               .fieldTypeList="${this.fieldTypeList}"
               .fieldMetadata="${this.fieldMetadata}"
               .availableBasics="${this.availableBasics}"
@@ -379,29 +379,44 @@ export class ContentBlockEditor extends LitElement {
     return this;
   }
 
+  // Walks cbDefinition.yaml.fields using a path of indices and returns the
+  // innermost `fields` array. Empty path means the root array.
+  // Paths identify containers by position, so they survive structuredClone
+  // (unlike raw object references which become orphans in the discarded tree).
+  private resolveParentFields(path: number[]): ContentBlockField[] {
+    if (!path || path.length === 0) {
+      if (!this.cbDefinition.yaml.fields) {
+        this.cbDefinition.yaml.fields = [];
+      }
+      return this.cbDefinition.yaml.fields;
+    }
+    let fields: ContentBlockField[] = this.cbDefinition.yaml.fields ?? [];
+    for (const index of path) {
+      const node = fields[index];
+      if (!node) {return [];}
+      if (!node.fields) {node.fields = [];}
+      fields = node.fields;
+    }
+    return fields;
+  }
+
   protected fieldTypeDroppedListener(event: CustomEvent) {
     this.rightPaneActiveSchema = this.fieldTypeList.filter((fieldType) => fieldType.type === event.detail.data.type)[0];
-    if (!this.cbDefinition.yaml.fields) {
-      this.cbDefinition.yaml.fields = [];
-    }
-    const fields = event.detail.level > 0 ? (event.detail.parent.fields ?? []) : this.cbDefinition.yaml.fields;
+    const fields = this.resolveParentFields(event.detail.parentPath);
     const newIdentifier = event.detail.data.type + '_' + this.getNextFieldIndex(fields, event.detail.data.type);
     this.handleFieldAction(newIdentifier, event.detail);
   }
 
   protected handleFieldAction(newIdentifier: string, eventData: DropField) {
-    let fields = this.cbDefinition.yaml.fields ?? [];
-    if(eventData.parent !== null) {
-      fields = eventData.parent.fields ?? [];
-    }
-    if(fields.filter((fieldType) => fieldType.identifier === eventData.data.identifier).length > 0) {
-      this.updateContentBlockField(eventData.data.identifier, eventData.position, eventData.level, eventData.parent);
+    const fields = this.resolveParentFields(eventData.parentPath);
+    if (fields.filter((fieldType) => fieldType.identifier === eventData.data.identifier).length > 0) {
+      this.updateContentBlockField(eventData.data.identifier, eventData.position, eventData.level, eventData.parentPath);
     } else {
-      this.addNewContentBlockField(newIdentifier, eventData.data.type, eventData.position, eventData.level, eventData.parent);
+      this.addNewContentBlockField(newIdentifier, eventData.data.type, eventData.position, eventData.level, eventData.parentPath);
     }
   }
 
-  protected addNewContentBlockField(identifier: string, type: string, position: number, level: number, parent: ContentBlockField): void {
+  protected addNewContentBlockField(identifier: string, type: string, position: number, level: number, parentPath: number[]): void {
     const newField: ContentBlockField = {
       identifier: identifier,
       type: type,
@@ -410,127 +425,82 @@ export class ContentBlockEditor extends LitElement {
     if (type === 'Collection' || type === 'Palette') {
       newField.fields = [];
     }
-    if(level > 0) {
-      parent.fields.splice(position, 0, newField);
-    } else {
-      this.cbDefinition.yaml.fields.splice(position, 0, newField);
-    }
+    const fields = this.resolveParentFields(parentPath);
+    fields.splice(position, 0, newField);
 
-    // Create a new cbDefinition reference so Lit detects the change and
-    // re-renders downstream components (especially the middle pane).
-    // Without this, splice() mutates the array in place and Lit's dirty
-    // checking skips the update because the reference hasn't changed.
+    // Validate the newly created field before deep-cloning
+    const validation = this.validateField(newField, level);
+    newField._validation = validation;
+
     this.cbDefinition = structuredClone(this.cbDefinition);
 
-    // Re-resolve the field reference after cloning
-    const fields = level > 0 ? parent.fields : this.cbDefinition.yaml.fields;
-    const clonedField = fields[position];
-
-    this.fieldSettingsValues = clonedField;
+    const freshFields = this.resolveParentFields(parentPath);
+    this.fieldSettingsValues = { ...freshFields[position] };
     this.rightPaneActivePosition = position;
     this.rightPaneActiveLevel = level;
-    this.rightPaneActiveParent = parent;
-
-    // Validate the newly created field
-    const validation = this.validateField(clonedField, level);
-    clonedField._validation = validation;
-    this.fieldSettingsValues._validation = validation;
+    this.rightPaneActiveParentPath = parentPath;
   }
 
-  protected updateContentBlockField(identifier: string, position: number, level: number, parent: ContentBlockField): void {
-    let fields: ContentBlockField[] = this.cbDefinition.yaml.fields;
-    if(parent !== null) {
-      fields = parent.fields;
-    }
+  protected updateContentBlockField(identifier: string, position: number, level: number, parentPath: number[]): void {
+    const fields = this.resolveParentFields(parentPath);
     const existingFieldPosition = fields.findIndex((fieldType: ContentBlockField) => fieldType.identifier === identifier);
     const movedField = fields[existingFieldPosition];
-    const tempFields = [
+    const reordered: ContentBlockField[] = [
       ...fields.slice(0, existingFieldPosition),
-      ...fields.slice(existingFieldPosition + 1)
+      ...fields.slice(existingFieldPosition + 1),
     ];
-    fields = [
-      ...tempFields.slice(0, position),
-      movedField,
-      ...tempFields.slice(position)
-    ];
-    if(parent !== null) {
-      parent.fields = fields;
-    } else {
-      this.cbDefinition.yaml.fields = fields;
-    }
-    this.fieldSettingsValues = fields[position];
+    reordered.splice(position, 0, movedField);
+    // Mutate the array in place so the parent's .fields reference is preserved.
+    fields.length = 0;
+    fields.push(...reordered);
+
+    this.cbDefinition = structuredClone(this.cbDefinition);
+
+    const freshFields = this.resolveParentFields(parentPath);
+    this.fieldSettingsValues = { ...freshFields[position] };
     this.rightPaneActivePosition = position;
     this.rightPaneActiveLevel = level;
-    this.rightPaneActiveParent = parent;
-    this.cbDefinition = structuredClone(this.cbDefinition);
+    this.rightPaneActiveParentPath = parentPath;
   }
 
   protected updateFieldDataEventListener(event: CustomEvent) {
-    // Use parent context to get the correct field array
-    let fields: ContentBlockField[] = this.cbDefinition.yaml.fields;
-    if(event.detail.parent !== null) {
-      fields = event.detail.parent.fields;
-    }
+    const fields = this.resolveParentFields(event.detail.parentPath);
+    const field = event.detail.values as ContentBlockField;
+    fields[event.detail.position] = field;
 
-    // Update field values
-    fields[event.detail.position] = event.detail.values;
-    this.fieldSettingsValues = event.detail.values;
-
-    // Recalculate _isBaseField and type injection when relevant fields change
-    // This ensures the type dropdown enables/disables correctly and validation updates
-    const field = event.detail.values;
+    // Recalculate _isBaseField and type injection for root-level fields.
     if (event.detail.level === 0) {
       if (field.useExistingField && field.identifier) {
-        // Check if this identifier is a base field
         const baseField = this.fieldMetadata.baseFields[field.identifier];
-
         if (baseField) {
-          // It's a base field - FORCE prefixField to false (can't prefix existing base fields)
           field.prefixFields = false;
-          // Reset prefixType since prefixing is disabled
           field.prefixType = '';
-
-          // Mark as base field and inject type if needed
           field._isBaseField = true;
           if (!field.type || field._typeInjected) {
             field.type = baseField.type;
             field._typeInjected = true;
           }
         } else {
-          // Not a base field - clear base field marker but KEEP the type
           field._isBaseField = false;
-          // Remove the _typeInjected flag but keep the type property itself
           if (field._typeInjected) {
             field._typeInjected = false;
           }
         }
       } else {
-        // useExistingField is false - clear base field marker but KEEP the type
         field._isBaseField = false;
-        // Remove the _typeInjected flag but keep the type property itself
         if (field._typeInjected) {
           field._typeInjected = false;
         }
       }
     }
 
-    // Validate the field
-    const validation = this.validateField(field, event.detail.level);
-    field._validation = validation;
+    field._validation = this.validateField(field, event.detail.level);
 
-    // Clone the entire definition to trigger reactivity
     this.cbDefinition = structuredClone(this.cbDefinition);
 
-    // After cloning, get fresh references to the updated field
-    let clonedFields: ContentBlockField[] = this.cbDefinition.yaml.fields;
-    if(event.detail.parent !== null) {
-      clonedFields = event.detail.parent.fields;
-    }
-    // Create a shallow copy to ensure a new reference for reactivity
-    this.fieldSettingsValues = { ...clonedFields[event.detail.position] };
+    const freshFields = this.resolveParentFields(event.detail.parentPath);
+    this.fieldSettingsValues = { ...freshFields[event.detail.position] };
 
-    // Update the active schema only if type changed explicitly (via dropdown)
-    // Don't change schema when we just removed an injected type
     if (event.detail.typeChanged && event.detail.newType) {
       const newSchema = this.fieldTypeList.find(
         (fieldType) => fieldType.type === event.detail.newType
@@ -539,7 +509,6 @@ export class ContentBlockEditor extends LitElement {
         this.rightPaneActiveSchema = newSchema;
       }
     } else if (this.fieldSettingsValues.type && !this.rightPaneActiveSchema) {
-      // Field has a type but no schema is set - find and set the schema
       const newSchema = this.fieldTypeList.find(
         (fieldType) => fieldType.type === this.fieldSettingsValues.type
       );
@@ -547,85 +516,96 @@ export class ContentBlockEditor extends LitElement {
         this.rightPaneActiveSchema = newSchema;
       }
     }
-    // Keep existing schema if type was just removed - don't set to null
 
-    // Force re-render to ensure UI updates
     this.requestUpdate();
   }
+
   protected removeFieldTypeEventListener(event: CustomEvent) {
-    let fields: ContentBlockField[] = this.cbDefinition.yaml.fields;
-    // TODO: check why parent is set for Collection on level 0
-    // if(event.detail.parent !== null) {
-    if(event.detail.level > 0) {
-      fields = event.detail.parent.fields;
-    }
-    fields.splice(event.detail.position, 1);
-    if(event.detail.level > 0) {
-      event.detail.parent.fields = fields;
-    } else {
-      this.cbDefinition.yaml.fields = fields;
-    }
+    const parentPath: number[] = event.detail.parentPath ?? [];
+    const position: number = event.detail.position;
+    const fields = this.resolveParentFields(parentPath);
+    fields.splice(position, 1);
+
     this.cbDefinition = structuredClone(this.cbDefinition);
-    this.fieldSettingsValues = { identifier: '', label: '', type: '' };
-    this.rightPaneActiveSchema = null;
+
+    // Selection maintenance: if the removed field was or is an ancestor of the
+    // currently active field, clear selection; if a same-parent sibling above
+    // the active field was removed, shift active position left.
+    if (this.rightPaneActiveParentPath && this.pathsEqual(this.rightPaneActiveParentPath, parentPath)) {
+      if (this.rightPaneActivePosition === position) {
+        this.clearRightPaneSelection();
+      } else if (this.rightPaneActivePosition > position) {
+        this.rightPaneActivePosition -= 1;
+      }
+    } else if (this.isSubPath(parentPath, this.rightPaneActiveParentPath)
+      && this.rightPaneActiveParentPath[parentPath.length] === position) {
+      // The removed field IS an ancestor of the active one — drop selection.
+      this.clearRightPaneSelection();
+    }
   }
 
   protected activateFieldSettings(event: CustomEvent) {
-    let fields: ContentBlockField[] = this.cbDefinition.yaml.fields;
-    if(event.detail.parent !== null) {
-      fields = event.detail.parent.fields;
+    const parentPath: number[] = event.detail.parentPath ?? [];
+    const position: number = event.detail.position;
+    const fields = this.resolveParentFields(parentPath);
+    const field = fields[position] as ContentBlockField;
+    if (field === undefined) {
+      this.clearRightPaneSelection();
+      return;
     }
 
-    const field = fields[event.detail.position] as ContentBlockField;
-    if(field !== undefined) {
-      // Apply base field logic when activating a field
-      if (event.detail.level === 0 && field.useExistingField && field.identifier) {
-        const baseField = this.fieldMetadata.baseFields[field.identifier];
-
-        if (baseField) {
-          // It's a base field - FORCE prefixFields to false
-          field.prefixFields = false;
-          // Reset prefixType since prefixing is disabled
-          field.prefixType = '';
-          field._isBaseField = true;
-
-          // Inject type if missing
-          if (!field.type || field._typeInjected) {
-            field.type = baseField.type;
-            field._typeInjected = true;
-          }
+    if (event.detail.level === 0 && field.useExistingField && field.identifier) {
+      const baseField = this.fieldMetadata.baseFields[field.identifier];
+      if (baseField) {
+        field.prefixFields = false;
+        field.prefixType = '';
+        field._isBaseField = true;
+        if (!field.type || field._typeInjected) {
+          field.type = baseField.type;
+          field._typeInjected = true;
         }
       }
-
-      // Validate the field when it's activated to show current validation state
-      const validation = this.validateField(field, event.detail.level);
-      field._validation = validation;
-
-      // Trigger reactivity - clone FIRST
-      this.cbDefinition = structuredClone(this.cbDefinition);
-
-      // NOW get fresh references to the cloned objects
-      let clonedFields: ContentBlockField[] = this.cbDefinition.yaml.fields;
-      if(event.detail.parent !== null) {
-        clonedFields = event.detail.parent.fields;
-      }
-
-      // Update fieldSettingsValues to point to the CLONED field
-      this.fieldSettingsValues = { ...clonedFields[event.detail.position] };
-
-      this.rightPaneActiveSchema = this.fieldTypeList.filter((fieldType) => fieldType.type === this.fieldSettingsValues.type)[0];
-      this.rightPaneActivePosition = event.detail.position;
-      this.rightPaneActiveLevel = event.detail.level;
-      this.rightPaneActiveParent = event.detail.parent;
-
-      this.requestUpdate();
-    } else {
-      this.fieldSettingsValues = { identifier: '', label: '', type: '' };
-      this.rightPaneActiveSchema = null;
-      this.rightPaneActivePosition = 0;
-      this.rightPaneActiveLevel = 0;
-      this.rightPaneActiveParent = null;
     }
+
+    field._validation = this.validateField(field, event.detail.level);
+
+    this.cbDefinition = structuredClone(this.cbDefinition);
+
+    const freshFields = this.resolveParentFields(parentPath);
+    this.fieldSettingsValues = { ...freshFields[position] };
+
+    this.rightPaneActiveSchema = this.fieldTypeList.filter((fieldType) => fieldType.type === this.fieldSettingsValues.type)[0];
+    this.rightPaneActivePosition = position;
+    this.rightPaneActiveLevel = event.detail.level;
+    this.rightPaneActiveParentPath = parentPath;
+
+    this.requestUpdate();
+  }
+
+  private clearRightPaneSelection(): void {
+    this.fieldSettingsValues = { identifier: '', label: '', type: '' };
+    this.rightPaneActiveSchema = null;
+    this.rightPaneActivePosition = 0;
+    this.rightPaneActiveLevel = 0;
+    this.rightPaneActiveParentPath = [];
+  }
+
+  private pathsEqual(a: number[] | undefined, b: number[] | undefined): boolean {
+    if (!a || !b) {return (!a || a.length === 0) && (!b || b.length === 0);}
+    if (a.length !== b.length) {return false;}
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) {return false;}
+    }
+    return true;
+  }
+
+  // True when `prefix` is a strict prefix of `path` (path descends from prefix).
+  private isSubPath(prefix: number[], path: number[] | undefined): boolean {
+    if (!path || path.length <= prefix.length) {return false;}
+    for (let i = 0; i < prefix.length; i++) {
+      if (prefix[i] !== path[i]) {return false;}
+    }
+    return true;
   }
 
 

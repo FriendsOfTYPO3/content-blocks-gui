@@ -46,8 +46,8 @@ export class DraggableFieldType extends LitElement {
   @property({ type: Number })
   level?: number = 0;
 
-  @property()
-  parent?: ContentBlockField = null;
+  @property({ type: Array })
+  parentPath: number[] = [];
 
   @property()
   showDeleteButton?: boolean = false;
@@ -108,7 +108,7 @@ export class DraggableFieldType extends LitElement {
           identifier: identifier,
           position: this.position - 1,
           level: this.level,
-          parent: this.parent,
+          parentPath: this.parentPath,
         },
         bubbles: true,
         composed: true,
@@ -120,7 +120,7 @@ export class DraggableFieldType extends LitElement {
       detail: {
         position: this.position - 1,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
       },
       bubbles: true,
       composed: true,

@@ -38,8 +38,8 @@ export class ContentBlockEditorAllowedTypes extends LitElement {
   @property()
   level?: number;
 
-  @property()
-  parent?: number;
+  @property({ type: Array })
+  parentPath: number[] = [];
 
   @property()
   isAllowedTypesEnabled = false;
@@ -158,7 +158,7 @@ export class ContentBlockEditorAllowedTypes extends LitElement {
       detail: {
         position: this.position,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
         values: this.values,
       },
     }));

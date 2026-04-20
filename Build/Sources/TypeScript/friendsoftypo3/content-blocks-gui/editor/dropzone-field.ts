@@ -15,7 +15,6 @@ import { html, LitElement } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@typo3/backend/element/icon-element.js';
-import type { ContentBlockField } from '@friendsoftypo3/content-blocks-gui/interface/definitions';
 
 /**
  * Module: @typo3/module/web/ContentBlocksGui
@@ -30,8 +29,8 @@ export class DropzoneField extends LitElement {
   position: number = 0;
   @property({ type: Number })
   level: number = 0;
-  @property()
-  parent?: ContentBlockField = null;
+  @property({ type: Array })
+  parentPath: number[] = [];
 
   protected override render(): TemplateResult {
     return html`
@@ -94,7 +93,7 @@ export class DropzoneField extends LitElement {
         data: dataObject,
         position: this.position,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
       },
       bubbles: true,
       composed: true,

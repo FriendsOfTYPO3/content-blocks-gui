@@ -90,7 +90,8 @@ class ContentTypeService
             $typeName = $contentBlockData['contentBlock']['type'] ?? random_int(10000, 99999);
             PageTypeNameValidator::validate($typeName, $vendor . '/' . $name);
             $data['contentBlock']['type'] = (int) $typeName;
-            foreach (['prefixFields', 'prefixType'] as $field) {
+            $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'] ?? [];
+            foreach (['prefixFields', 'prefixType', 'title', 'labelField'] as $field) {
                 $value = $contentBlockData['contentBlock'][$field] ?? null;
                 if ($value !== null && $value !== '') {
                     $data['contentBlock'][$field] = $value;

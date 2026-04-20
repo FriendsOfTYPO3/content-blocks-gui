@@ -39,13 +39,11 @@ export class ContentBlockEditorMiddlePane extends LitElement {
   @property()
   level: number;
   @property()
-  parent: ContentBlockField;
-  @property()
   activeFieldPosition?: number;
   @property()
   activeFieldLevel?: number;
-  @property()
-  activeFieldParent?: ContentBlockField;
+  @property({ type: Array })
+  activeFieldParentPath?: number[];
 
   protected override render(): TemplateResult {
     return html`
@@ -193,15 +191,15 @@ export class ContentBlockEditorMiddlePane extends LitElement {
       <div class="content-block-field-builder">
         <div class="field-builder-container">
           <div class="initial-dropzone">
-            <dropzone-field position="0" level="0"></dropzone-field>
+            <dropzone-field .position="${0}" .level="${0}" .parentPath="${[]}"></dropzone-field>
           </div>
           <div class="fields-list">
             ${this.fieldList?.map((item, index) => {
-              const isActive = this.isFieldActive(index + 1, 0, null);
+              const isActive = this.isFieldActive(index + 1, 0, []);
 
               return html`
                 <div class=${classMap({ 'field-item': true, 'collection-type': item.type === 'Collection' || item.type === 'Palette', 'field-active': isActive })} data-field-index="${index}">
-                  ${this.renderFieldArea(item, index + 1, 0, null)}
+                  ${this.renderFieldArea(item, index + 1, 0, [])}
                 </div>
               `;
             })}
@@ -220,37 +218,51 @@ export class ContentBlockEditorMiddlePane extends LitElement {
     `;
   }
 
-  protected isFieldActive(position: number, level: number, parent: ContentBlockField | null): boolean {
+  protected isFieldActive(position: number, level: number, parentPath: number[]): boolean {
     return (
       this.activeFieldPosition === position - 1 &&
       this.activeFieldLevel === level &&
-      this.activeFieldParent === parent
+      this.pathsEqual(this.activeFieldParentPath, parentPath)
     );
   }
 
-  protected renderFieldArea(cbField: ContentBlockField, position: number, level: number, parent: ContentBlockField): TemplateResult {
+  private pathsEqual(a: number[] | undefined, b: number[] | undefined): boolean {
+    if (!a || !b) {
+      return (!a || a.length === 0) && (!b || b.length === 0);
+    }
+    if (a.length !== b.length) {return false;}
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) {return false;}
+    }
+    return true;
+  }
+
+  protected renderFieldArea(cbField: ContentBlockField, position: number, level: number, parentPath: number[]): TemplateResult {
     const fieldType = this.fieldTypes?.filter((fieldType) => fieldType.type === cbField.type)[0];
 
     if (cbField.type === 'Collection' || cbField.type === 'Palette') {
+      // This container's own path (for its children to reference as their parent).
+      // position is 1-based; index in parent = position - 1.
+      const childParentPath = [...parentPath, position - 1];
       const containerClass = cbField.type === 'Palette' ? 'palette-field' : 'collection-field';
       return html`
         <div class="collection-container" data-level="${level}">
           <div class="${containerClass}">
             <div class="collection-header">
-              ${this.renderDraggableFieldType(fieldType, cbField, position, level, parent, true, false)}
+              ${this.renderDraggableFieldType(fieldType, cbField, position, level, parentPath, true, false)}
             </div>
             <div class="collection-body">
               <div class="collection-fields">
                 <div class="collection-initial-dropzone">
-                  ${this.renderDraggableFieldType(fieldType, cbField, 0, level + 1, cbField, false, true)}
+                  ${this.renderDraggableFieldType(fieldType, cbField, 0, level + 1, childParentPath, false, true)}
                 </div>
                 ${cbField.fields?.map((field, index) => {
-                  const isActive = this.isFieldActive(index + 1, level + 1, cbField);
+                  const isActive = this.isFieldActive(index + 1, level + 1, childParentPath);
 
                   return html`
                     <div class=${classMap({ 'collection-field-item': true, 'field-active': isActive })} data-field-index="${index}">
                       <div class=${classMap({ 'field-item': true, 'collection-type': field.type === 'Collection' || field.type === 'Palette' })} data-field-index="${index}">
-                        ${this.renderFieldArea(field, index + 1, level + 1, cbField)}
+                        ${this.renderFieldArea(field, index + 1, level + 1, childParentPath)}
                       </div>
                     </div>
                   `;
@@ -259,14 +271,14 @@ export class ContentBlockEditorMiddlePane extends LitElement {
             </div>
           </div>
           <div class="collection-footer">
-            ${this.renderDraggableFieldType(fieldType, cbField, position, level, cbField, false, true)}
+            ${this.renderDraggableFieldType(fieldType, cbField, position, level, parentPath, false, true)}
           </div>
         </div>
       `;
     } else {
       return html`
         <div class="standard-field" data-level="${level}">
-          ${this.renderDraggableFieldType(fieldType, cbField, position, level, parent)}
+          ${this.renderDraggableFieldType(fieldType, cbField, position, level, parentPath)}
         </div>
       `;
     }
@@ -277,7 +289,7 @@ export class ContentBlockEditorMiddlePane extends LitElement {
     fieldTypeInfo: ContentBlockField,
     position: number,
     level: number,
-    parent: ContentBlockField,
+    parentPath: number[],
     renderLabel: boolean = true,
     renderDropZone: boolean = true
   ): TemplateResult {
@@ -289,7 +301,7 @@ export class ContentBlockEditorMiddlePane extends LitElement {
             .fieldTypeInfo="${fieldTypeInfo}"
             .position="${position}"
             .level="${level}"
-            .parent="${parent}"
+            .parentPath="${parentPath}"
             showDeleteButton="true"
           ></draggable-field-type>
         </div>
@@ -299,7 +311,7 @@ export class ContentBlockEditorMiddlePane extends LitElement {
     if (!renderLabel && renderDropZone) {
       return html`
         <div class="field-component dropzone-only">
-          <dropzone-field .position="${position}" .level="${level}" .parent="${parent}"></dropzone-field>
+          <dropzone-field .position="${position}" .level="${level}" .parentPath="${parentPath}"></dropzone-field>
         </div>
       `;
     }
@@ -312,12 +324,12 @@ export class ContentBlockEditorMiddlePane extends LitElement {
             .fieldTypeInfo="${fieldTypeInfo}"
             .position="${position}"
             .level="${level}"
-            .parent="${parent}"
+            .parentPath="${parentPath}"
             showDeleteButton="true"
           ></draggable-field-type>
         </div>
         <div class="dropzone-wrapper">
-          <dropzone-field .position="${position}" .level="${level}" .parent="${parent}"></dropzone-field>
+          <dropzone-field .position="${position}" .level="${level}" .parentPath="${parentPath}"></dropzone-field>
         </div>
       </div>
     `;

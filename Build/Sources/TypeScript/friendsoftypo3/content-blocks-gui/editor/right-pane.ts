@@ -47,8 +47,8 @@ export class ContentBlockEditorRightPane extends LitElement {
   @property({ type: Number })
   level?: number;
 
-  @property()
-  parent?: number;
+  @property({ type: Array })
+  parentPath: number[] = [];
 
   @property()
   fieldTypeList?: Array<FieldTypeSetting>;
@@ -150,7 +150,7 @@ export class ContentBlockEditorRightPane extends LitElement {
                   .values="${this.values}"
                   .position="${this.position}"
                   .level="${this.level}"
-                  .parent="${this.parent}"
+                  .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
                 </content-block-editor-value-picker>`;
           case 'range':
@@ -159,7 +159,7 @@ export class ContentBlockEditorRightPane extends LitElement {
                   .values="${this.values}"
                   .position="${this.position}"
                   .level="${this.level}"
-                  .parent="${this.parent}"
+                  .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
                 </content-block-editor-range-selector>`;
           case 'slider':
@@ -168,7 +168,7 @@ export class ContentBlockEditorRightPane extends LitElement {
                   .values="${this.values}"
                   .position="${this.position}"
                   .level="${this.level}"
-                  .parent="${this.parent}"
+                  .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
                 </content-block-editor-slider-selector>`;
           case 'allowedTypes':
@@ -177,7 +177,7 @@ export class ContentBlockEditorRightPane extends LitElement {
                   .values="${this.values}"
                   .position="${this.position}"
                   .level="${this.level}"
-                  .parent="${this.parent}"
+                  .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
                 </content-block-editor-allowed-types>`;
           case 'allowedCustomProperties':
@@ -186,7 +186,7 @@ export class ContentBlockEditorRightPane extends LitElement {
                   .values="${this.values}"
                   .position="${this.position}"
                   .level="${this.level}"
-                  .parent="${this.parent}"
+                  .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
                 </content-block-editor-allowed-custom-properties>`;
           case 'items':
@@ -195,7 +195,7 @@ export class ContentBlockEditorRightPane extends LitElement {
                   .values="${this.values}"
                   .position="${this.position}"
                   .level="${this.level}"
-                  .parent="${this.parent}"
+                  .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
                 </content-block-editor-items>`;
           default:
@@ -214,7 +214,7 @@ export class ContentBlockEditorRightPane extends LitElement {
       detail: {
         position: this.position,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
         values: this.values,
       },
     }));
@@ -237,7 +237,7 @@ export class ContentBlockEditorRightPane extends LitElement {
       detail: {
         position: this.position,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
         values: this.values,
       },
     }));
@@ -295,7 +295,7 @@ export class ContentBlockEditorRightPane extends LitElement {
       detail: {
         position: this.position,
         level: this.level,
-        parent: this.parent,
+        parentPath: this.parentPath,
         values: this.values,
         typeChanged: true, // Flag to indicate type changed
         newType: newType,
@@ -397,7 +397,7 @@ export class ContentBlockEditorRightPane extends LitElement {
         detail: {
           position: this.position,
           level: this.level,
-          parent: this.parent,
+          parentPath: this.parentPath,
           values: this.values,
         },
       }));
