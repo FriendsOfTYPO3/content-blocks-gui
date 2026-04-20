@@ -288,7 +288,7 @@ export class ContentBlockUpload extends LitElement {
           </button>
           <button
             class="btn btn-primary ms-2"
-            @click="${() => this.closeAndReload()}"
+            @click="${() => this.dispatchEvent(new CustomEvent('close'))}"
           >
             Close
           </button>
@@ -507,19 +507,6 @@ export class ContentBlockUpload extends LitElement {
       }
     });
     return count;
-  }
-
-  /**
-   * Close modal and reload page to show updated content blocks
-   */
-  protected closeAndReload(): void {
-    // Dispatch close event to close the modal
-    this.dispatchEvent(new CustomEvent('close'));
-
-    // Reload page after a short delay to ensure modal closes first
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
   }
 
   /**
