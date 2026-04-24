@@ -1,6 +1,9 @@
 {
     "name": "friendsoftypo3/content-blocks-gui",
     "type": "typo3-cms-extension",
+    "keywords": [
+        "dev"
+    ],
     "description": "Visual backend module for creating and editing Content Blocks definitions.",
     "homepage": "https://github.com/FriendsOfTYPO3/content-blocks-gui",
     "license": ["GPL-2.0-or-later"],
