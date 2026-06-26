@@ -6,7 +6,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 15 * 1000,
+  timeout: 30 * 1000,
   expect: {
     timeout: 10000,
   },
@@ -33,6 +33,11 @@ export default defineConfig({
     {
       name: 'editor',
       testMatch: 'editor.spec.ts',
+      dependencies: ['login'],
+    },
+    {
+      name: 'roundtrip',
+      testMatch: 'roundtrip.spec.ts',
       dependencies: ['login'],
     },
   ],

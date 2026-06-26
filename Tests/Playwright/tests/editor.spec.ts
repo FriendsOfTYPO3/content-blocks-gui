@@ -1,17 +1,56 @@
-import { test, expect } from '@playwright/test';
-import { createAuthContext, openNewEditor, dropFieldType } from './helpers';
+import { test, expect, type FrameLocator, type Page } from '@playwright/test';
+import {
+  createAuthContext, openNewEditor, openNewEditorByType, openModule,
+  dropFieldType, dropFieldIntoCollection, fillEditorSettings, clickField,
+} from './helpers';
+
+/**
+ * Rename the currently-selected field by editing the identifier input in the
+ * right pane. Fills the input and fires blur so the @blur handler in
+ * right-pane.ts pushes the new value back into cbDefinition and re-renders
+ * the middle pane.
+ */
+async function renameActiveField(frame: FrameLocator, page: Page, newIdentifier: string): Promise<void> {
+  const rightPane = frame.locator('content-block-editor-right-pane');
+  const identifierInput = rightPane.locator('#identifier');
+  await expect(identifierInput, 'right-pane identifier input missing — field not selected?').toBeVisible({ timeout: 5000 });
+  await identifierInput.fill(newIdentifier);
+  await identifierInput.blur();
+  // Give Lit one tick to process the @blur handler and re-render the middle pane.
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Assert an identifier is present exactly once in the middle pane (and count 0
+ * for the previous identifier). Fail hard on mismatch — the whole point of
+ * this suite is to catch parent/parentPath sync regressions.
+ */
+async function expectMiddlePaneIdentifier(
+  frame: FrameLocator,
+  presentIdentifier: string,
+  absentIdentifier?: string,
+): Promise<void> {
+  await expect(
+    frame.locator(`content-block-editor-middle-pane [data-identifier="${presentIdentifier}"]`),
+    `identifier "${presentIdentifier}" not found in middle pane`,
+  ).toBeVisible({ timeout: 5000 });
+  if (absentIdentifier) {
+    await expect(
+      frame.locator(`content-block-editor-middle-pane [data-identifier="${absentIdentifier}"]`),
+      `old identifier "${absentIdentifier}" still present in middle pane`,
+    ).toHaveCount(0);
+  }
+}
 
 test.describe('Editor', () => {
   test('loads with three panes', async ({ browser }) => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      await expect(editorFrame.locator('content-block-editor')).toBeAttached();
-      await expect(editorFrame.locator('content-block-editor-left-pane')).toBeAttached();
-      await expect(editorFrame.locator('content-block-editor-middle-pane')).toBeAttached();
-      await expect(editorFrame.locator('content-block-editor-right-pane')).toBeAttached();
-    }
+    await expect(editorFrame.locator('content-block-editor')).toBeAttached();
+    await expect(editorFrame.locator('content-block-editor-left-pane')).toBeAttached();
+    await expect(editorFrame.locator('content-block-editor-middle-pane')).toBeAttached();
+    await expect(editorFrame.locator('content-block-editor-right-pane')).toBeAttached();
     await context.close();
   });
 
@@ -19,11 +58,9 @@ test.describe('Editor', () => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      await expect(editorFrame.locator('#vendor')).toBeAttached();
-      await expect(editorFrame.locator('#name')).toBeAttached();
-      await expect(editorFrame.locator('#extension')).toBeAttached();
-    }
+    await expect(editorFrame.locator('#vendor')).toBeAttached();
+    await expect(editorFrame.locator('#name')).toBeAttached();
+    await expect(editorFrame.locator('#extension')).toBeAttached();
     await context.close();
   });
 
@@ -31,13 +68,10 @@ test.describe('Editor', () => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      const componentsTab = editorFrame.getByText('Components');
-      if (await componentsTab.isVisible()) {
-        await componentsTab.click();
-        await expect(editorFrame.locator('draggable-field-type').first()).toBeAttached();
-      }
-    }
+    const componentsTab = editorFrame.getByText('Components');
+    await expect(componentsTab).toBeVisible();
+    await componentsTab.click();
+    await expect(editorFrame.locator('draggable-field-type').first()).toBeAttached();
     await context.close();
   });
 
@@ -45,15 +79,12 @@ test.describe('Editor', () => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      const fieldsBefore = await editorFrame.locator('content-block-editor-middle-pane draggable-field-type').count();
-      const dropped = await dropFieldType(page, 'Text', 'Text_0');
-      if (dropped) {
-        await page.waitForTimeout(500);
-        const fieldsAfter = await editorFrame.locator('content-block-editor-middle-pane draggable-field-type').count();
-        expect(fieldsAfter).toBeGreaterThan(fieldsBefore);
-      }
-    }
+    const fieldsBefore = await editorFrame.locator('content-block-editor-middle-pane draggable-field-type').count();
+    const dropped = await dropFieldType(page, 'Text', 'Text_0');
+    expect(dropped).toBe(true);
+    await page.waitForTimeout(500);
+    const fieldsAfter = await editorFrame.locator('content-block-editor-middle-pane draggable-field-type').count();
+    expect(fieldsAfter).toBeGreaterThan(fieldsBefore);
     await context.close();
   });
 
@@ -61,17 +92,15 @@ test.describe('Editor', () => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      await dropFieldType(page, 'Text', 'Text_0');
-      await page.waitForTimeout(500);
-      const field = editorFrame.locator('content-block-editor-middle-pane draggable-field-type').first();
-      if (await field.isVisible()) {
-        await field.click();
-        await page.waitForTimeout(500);
-        const rightPane = editorFrame.locator('content-block-editor-right-pane');
-        await expect(rightPane.locator('#identifier')).toBeAttached({ timeout: 5000 });
-      }
-    }
+    const dropped = await dropFieldType(page, 'Text', 'Text_0');
+    expect(dropped).toBe(true);
+    await page.waitForTimeout(500);
+    const field = editorFrame.locator('content-block-editor-middle-pane draggable-field-type').first();
+    await expect(field).toBeVisible();
+    await field.click();
+    await page.waitForTimeout(500);
+    const rightPane = editorFrame.locator('content-block-editor-right-pane');
+    await expect(rightPane.locator('#identifier')).toBeAttached({ timeout: 5000 });
     await context.close();
   });
 
@@ -79,61 +108,177 @@ test.describe('Editor', () => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      const extensionSelect = editorFrame.locator('#extension');
-      await expect(extensionSelect).toBeAttached();
+    const extensionSelect = editorFrame.locator('#extension');
+    await expect(extensionSelect).toBeAttached();
 
-      // The dropdown must contain at least one real option besides the
-      // "please choose" placeholder (value="0"). If this fails, it means
-      // ExtensionUtility::findAvailableExtensions() did not detect any
-      // host extension that requires friendsoftypo3/content-blocks.
-      const realOptions = extensionSelect.locator('option:not([value="0"])');
-      const count = await realOptions.count();
-      expect(count).toBeGreaterThan(0);
+    // The dropdown must contain at least one real option besides the
+    // "please choose" placeholder (value="0"). If this fails, it means
+    // ExtensionUtility::findAvailableExtensions() did not detect any
+    // host extension that requires friendsoftypo3/content-blocks.
+    const realOptions = extensionSelect.locator('option:not([value="0"])');
+    const count = await realOptions.count();
+    expect(count).toBeGreaterThan(0);
 
-      // Each listed option should expose a non-empty extension key as value.
-      for (let i = 0; i < count; i++) {
-        const value = await realOptions.nth(i).getAttribute('value');
-        expect(value).toBeTruthy();
-      }
+    // Each listed option should expose a non-empty extension key as value.
+    for (let i = 0; i < count; i++) {
+      const value = await realOptions.nth(i).getAttribute('value');
+      expect(value).toBeTruthy();
     }
     await context.close();
   });
 
-  test('save content block roundtrip', async ({ browser }) => {
+  test('save new content block and delete it via list view', async ({ browser }) => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    if (editorFrame) {
-      const vendorInput = editorFrame.locator('#vendor');
-      const nameInput = editorFrame.locator('#name');
-      const extensionSelect = editorFrame.locator('#extension');
 
-      if (await vendorInput.isVisible()) {
-        await vendorInput.fill('test-vendor');
-        await nameInput.fill('test-block-' + Date.now());
+    const vendorInput = editorFrame.locator('#vendor');
+    const nameInput = editorFrame.locator('#name');
+    const extensionSelect = editorFrame.locator('#extension');
 
-        const firstOption = extensionSelect.locator('option:not([value="0"])').first();
-        if (await firstOption.count() > 0) {
-          const optionValue = await firstOption.getAttribute('value');
-          if (optionValue) {
-            await extensionSelect.selectOption(optionValue);
-          }
-        }
+    await expect(vendorInput).toBeVisible({ timeout: 5000 });
+    await vendorInput.fill('test-vendor');
 
-        await dropFieldType(page, 'Text', 'Text_0');
-        await page.waitForTimeout(500);
+    const blockName = 'pw-save-test-' + Date.now();
+    const fullName = 'test-vendor/' + blockName;
+    await nameInput.fill(blockName);
 
-        const saveButton = page.locator('[data-action="save-content-block"]').first();
-        if (await saveButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await saveButton.click();
-          await page.waitForTimeout(3000);
-          const errorNotification = page.locator('.alert-danger, .callout-danger').first();
-          const hasError = await errorNotification.isVisible().catch(() => false);
-          expect(hasError).toBe(false);
-        }
-      }
+    // Select first real extension
+    const firstOption = extensionSelect.locator('option:not([value="0"])').first();
+    await expect(firstOption).toBeAttached();
+    const optionValue = await firstOption.getAttribute('value');
+    expect(optionValue).toBeTruthy();
+    await extensionSelect.selectOption(optionValue!);
+
+    // Add a field
+    const dropped = await dropFieldType(page, 'Text', 'Text_0');
+    expect(dropped).toBe(true);
+    await page.waitForTimeout(500);
+
+    // Intercept the AJAX save request to verify outcome
+    const saveResponsePromise = page.waitForResponse(
+      resp => resp.url().includes('contentblocks/gui/cb/save'),
+      { timeout: 15000 }
+    );
+
+    // Click save button (lives in the iframe's docheader)
+    const saveButton = editorFrame.locator('[data-action="save-content-block"]').first();
+    await expect(saveButton).toBeVisible({ timeout: 5000 });
+    await saveButton.click();
+
+    // Wait for the AJAX response and verify it succeeded
+    const saveResponse = await saveResponsePromise;
+    expect(saveResponse.status()).toBe(200);
+    const responseBody = await saveResponse.json();
+    expect(responseBody.success, 'Save failed: ' + (responseBody.message || '')).not.toBe(false);
+
+    // Verify the success modal appears (not the error modal)
+    const successModal = page.locator('.modal-title', { hasText: 'Success' });
+    const errorModal = page.locator('.modal-title', { hasText: 'Error' });
+    await expect(successModal.or(errorModal)).toBeVisible({ timeout: 10000 });
+    await expect(successModal).toBeVisible();
+    await expect(errorModal).not.toBeVisible();
+
+    // Dismiss the modal
+    await page.locator('.modal.show .btn').filter({ hasText: 'OK' }).click();
+
+    // Navigate to list view and verify the created block appears
+    const listFrame = await openModule(page);
+    const createdRow = listFrame.locator('tr', { hasText: fullName });
+    await expect(createdRow).toBeVisible({ timeout: 10000 });
+
+    // Click delete button on the created block's row
+    const deleteButton = createdRow.locator('button[title*="Delete"]');
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Confirm deletion in the modal
+    const confirmDeleteButton = page.locator('.modal.show .btn-warning', { hasText: /delete|ok|remove/i });
+    await expect(confirmDeleteButton).toBeVisible({ timeout: 5000 });
+    await confirmDeleteButton.click();
+    await page.waitForLoadState('networkidle');
+
+    // Verify the block is gone from the list
+    const listFrameAfter = page.frameLocator('typo3-iframe-module iframe');
+    await expect(listFrameAfter.locator('tr', { hasText: fullName })).not.toBeVisible({ timeout: 10000 });
+
+    await context.close();
+  });
+
+  // Regression guard for commit 2c87040 which refactored the single `parent`
+  // property into a `parentPath: number[]` array threaded through every pane
+  // and component. If that wiring breaks, identifier edits in the right pane
+  // either land on the wrong field or never reach the middle pane at all.
+  // This test walks nested containers (root → Collection → sibling Text →
+  // Palette) and asserts the middle pane reflects every rename.
+  test('identifier renames propagate through parentPath at every nesting level', async ({ browser }) => {
+    test.setTimeout(60_000);
+
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditorByType(page, 'content-block');
+    await fillEditorSettings(page, frame, 'test', `pw-parentpath-${Date.now()}`);
+
+    // 1) Root-level Text → rename to "rootText"
+    expect(await dropFieldType(page, 'Text', 'Text_0'), 'Drop root Text').toBe(true);
+    await page.waitForTimeout(500);
+    await clickField(frame, 'Text_0');
+    await renameActiveField(frame, page, 'rootText');
+    await expectMiddlePaneIdentifier(frame, 'rootText', 'Text_0');
+
+    // 2) Collection + inner Text → rename inner Text to "collectionText"
+    expect(await dropFieldType(page, 'Collection', 'Collection_0'), 'Drop Collection').toBe(true);
+    await page.waitForTimeout(500);
+    expect(await dropFieldIntoCollection(page, 'Text', 'Text_0', 0), 'Drop Text into Collection').toBe(true);
+    await page.waitForTimeout(500);
+    // The only Text_0 now lives inside Collection_0 (root Text was renamed in step 1).
+    await clickField(frame, 'Text_0');
+    await renameActiveField(frame, page, 'collectionText');
+    await expectMiddlePaneIdentifier(frame, 'collectionText', 'Text_0');
+    // Sanity: container and its previously-renamed sibling must still be intact.
+    await expectMiddlePaneIdentifier(frame, 'Collection_0');
+    await expectMiddlePaneIdentifier(frame, 'rootText');
+
+    // 3) Second root-level Text (after the Collection).
+    //    editor.ts#getNextFieldIndex reuses the lowest free "<Type>_<n>" slot,
+    //    so with root = [rootText, Collection_0] the new Text is named Text_0
+    //    (the original Text_0 was renamed away in step 1). The identifier we
+    //    pass into dropFieldType is ignored for new drops — just a probe.
+    expect(await dropFieldType(page, 'Text', 'probe'), 'Drop second root Text').toBe(true);
+    await page.waitForTimeout(500);
+    await expectMiddlePaneIdentifier(frame, 'Text_0');
+
+    // 4) Palette with a Textarea inside → rename the Textarea to "paletteTextarea"
+    expect(await dropFieldType(page, 'Palette', 'Palette_0'), 'Drop Palette').toBe(true);
+    await page.waitForTimeout(500);
+    // Nested (level > 0) dropzones in document order at this point:
+    //   [0] Collection_0 initial dropzone
+    //   [1] Collection_0 dropzone after collectionText
+    //   [2] Palette_0 initial dropzone
+    expect(await dropFieldIntoCollection(page, 'Textarea', 'Textarea_0', 2), 'Drop Textarea into Palette').toBe(true);
+    await page.waitForTimeout(500);
+    await clickField(frame, 'Textarea_0');
+    await renameActiveField(frame, page, 'paletteTextarea');
+    await expectMiddlePaneIdentifier(frame, 'paletteTextarea', 'Textarea_0');
+
+    // 5) Rename the containers themselves. Children must stay put — their
+    //    parentPath is index-based, so renaming the container must not break
+    //    anything downstream.
+    await clickField(frame, 'Palette_0');
+    await renameActiveField(frame, page, 'myPalette');
+    await expectMiddlePaneIdentifier(frame, 'myPalette', 'Palette_0');
+    await expectMiddlePaneIdentifier(frame, 'paletteTextarea');
+
+    await clickField(frame, 'Collection_0');
+    await renameActiveField(frame, page, 'myCollection');
+    await expectMiddlePaneIdentifier(frame, 'myCollection', 'Collection_0');
+    await expectMiddlePaneIdentifier(frame, 'collectionText');
+
+    // Final sanity pass: the full expected identifier set is in the middle pane.
+    for (const id of ['rootText', 'myCollection', 'collectionText', 'Text_0', 'myPalette', 'paletteTextarea']) {
+      await expectMiddlePaneIdentifier(frame, id);
     }
+
     await context.close();
   });
 });

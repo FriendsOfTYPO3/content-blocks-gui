@@ -24,6 +24,10 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 final class AjaxControllerTest extends FunctionalTestCase
 {
+    protected array $coreExtensionsToLoad = [
+        'install',
+    ];
+
     protected array $testExtensionsToLoad = [
         'friendsoftypo3/content-blocks',
         'friendsoftypo3/content-blocks-gui',

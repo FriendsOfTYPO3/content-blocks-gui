@@ -445,9 +445,20 @@ class ContentTypeService
 
         $defaults = $this->configBuilder->build($contentType, $vendor, $package, null, $typeName, []);
 
+        // Record types must always declare "table" (and "typeField") in their
+        // YAML — content-blocks core rejects them otherwise ("does not define
+        // required table"). They equal the generated default, so guard them
+        // from the default-stripping below. Mirrors the explicit keep in
+        // updateConfigYaml() where only non-record types drop table/typeField.
+        $alwaysKeep = ['name', 'fields', 'title', 'description', 'typeName'];
+        if ($contentType === ContentType::RECORD_TYPE) {
+            $alwaysKeep[] = 'table';
+            $alwaysKeep[] = 'typeField';
+        }
+
         // Remove keys where value matches the generated default
         foreach ($defaults as $key => $defaultValue) {
-            if ($key === 'name' || $key === 'fields' || $key === 'title' || $key === 'description' || $key === 'typeName') {
+            if (in_array($key, $alwaysKeep, true)) {
                 continue;
             }
             if (isset($yamlContent[$key]) && $yamlContent[$key] === $defaultValue) {
