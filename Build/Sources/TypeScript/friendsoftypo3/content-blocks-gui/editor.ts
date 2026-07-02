@@ -402,8 +402,7 @@ export class ContentBlockEditor extends LitElement {
 
   protected fieldTypeDroppedListener(event: CustomEvent) {
     this.rightPaneActiveSchema = this.fieldTypeList.filter((fieldType) => fieldType.type === event.detail.data.type)[0];
-    const fields = this.resolveParentFields(event.detail.parentPath);
-    const newIdentifier = event.detail.data.type + '_' + this.getNextFieldIndex(fields, event.detail.data.type);
+    const newIdentifier = event.detail.data.type + '_' + this.getNextFieldIndex(event.detail.parentPath, event.detail.data.type);
     this.handleFieldAction(newIdentifier, event.detail);
   }
 
@@ -695,26 +694,39 @@ export class ContentBlockEditor extends LitElement {
   private validateUniqueIdentifiers(fields: ContentBlockField[]): { isValid: boolean; duplicates: string[] } {
     const duplicates: string[] = [];
 
-    const validateLevel = (fieldsAtLevel: ContentBlockField[]): void => {
+    // content-blocks scopes identifiers per table: a Collection starts a new
+    // table (its own scope), while Palettes/Tabs are transparent and share the
+    // parent table's scope. Validate one scope at a time so identical
+    // identifiers across separate Collections stay valid, while a duplicate
+    // within the same table (e.g. root vs. a palette in root) is caught.
+    const validateScope = (scopeFields: ContentBlockField[]): void => {
       const identifierCounts = new Map<string, number>();
 
-      for (const field of fieldsAtLevel) {
-        if (field.identifier) {
-          const count = identifierCounts.get(field.identifier) || 0;
-          identifierCounts.set(field.identifier, count + 1);
+      const walk = (list: ContentBlockField[]): void => {
+        for (const field of list) {
+          if (field.identifier) {
+            const count = identifierCounts.get(field.identifier) || 0;
+            identifierCounts.set(field.identifier, count + 1);
 
-          if (count === 1) {
-            duplicates.push(field.identifier);
+            if (count === 1) {
+              duplicates.push(field.identifier);
+            }
+          }
+
+          if (field.fields && field.fields.length > 0) {
+            if (field.type === 'Collection') {
+              validateScope(field.fields);
+            } else {
+              walk(field.fields);
+            }
           }
         }
+      };
 
-        if (field.fields && field.fields.length > 0) {
-          validateLevel(field.fields);
-        }
-      }
+      walk(scopeFields);
     };
 
-    validateLevel(fields);
+    validateScope(fields);
 
     return {
       isValid: duplicates.length === 0,
@@ -1198,17 +1210,48 @@ export class ContentBlockEditor extends LitElement {
   /**
    * Find the next available index for a field type to avoid identifier collisions after deletion
    */
-  private getNextFieldIndex(fields: Array<ContentBlockField>, type: string): number {
-    let maxIndex = -1;
+  // Resolve the fields array of the *table scope* a drop target belongs to.
+  // content-blocks scopes identifiers per table: a Collection starts a new
+  // table (new scope), while Palettes/Tabs are transparent (same scope).
+  // So we walk the path from the root and reset the scope only when we pass
+  // through a Collection.
+  private resolveScopeFields(parentPath: number[]): ContentBlockField[] {
+    let scope: ContentBlockField[] = this.cbDefinition.yaml.fields ?? [];
+    let fields: ContentBlockField[] = scope;
+    for (const index of (parentPath ?? [])) {
+      const node = fields[index];
+      if (!node || !node.fields) {
+        break;
+      }
+      if (node.type === 'Collection') {
+        scope = node.fields;
+      }
+      fields = node.fields;
+    }
+    return scope;
+  }
+
+  // Compute the next free index for an auto-generated identifier (e.g. Text_3),
+  // unique within the drop target's table scope. Descends through transparent
+  // containers (Palettes/Tabs) but stops at nested Collections, which form
+  // their own scope.
+  private getNextFieldIndex(parentPath: number[], type: string): number {
     const prefix = type + '_';
-    for (const field of fields) {
-      if (field.identifier.startsWith(prefix)) {
-        const num = parseInt(field.identifier.substring(prefix.length), 10);
-        if (!isNaN(num) && num > maxIndex) {
-          maxIndex = num;
+    let maxIndex = -1;
+    const scan = (list: Array<ContentBlockField>): void => {
+      for (const field of list) {
+        if (field.identifier && field.identifier.startsWith(prefix)) {
+          const num = parseInt(field.identifier.substring(prefix.length), 10);
+          if (!isNaN(num) && num > maxIndex) {
+            maxIndex = num;
+          }
+        }
+        if (field.fields && field.fields.length > 0 && field.type !== 'Collection') {
+          scan(field.fields);
         }
       }
-    }
+    };
+    scan(this.resolveScopeFields(parentPath));
     return maxIndex + 1;
   }
 }
