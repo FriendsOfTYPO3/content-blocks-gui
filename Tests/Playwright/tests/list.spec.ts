@@ -82,4 +82,122 @@ test.describe('List View', () => {
 
     await context.close();
   });
+
+  test('search filters rows to matches, shows no-results for unknown, restores on clear', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openModule(page);
+
+    const rows = frame.locator('table.table tbody tr');
+    await expect(rows.first()).toBeVisible({ timeout: 10000 });
+    const initialCount = await rows.count();
+    expect(initialCount, 'need at least one content block to exercise search').toBeGreaterThanOrEqual(1);
+
+    // Derive a real search term from the first row's name cell (the first
+    // td.col holds the name; the second holds the label).
+    const firstName = (await rows.first().locator('td.col a').first().innerText()).trim();
+    const namePart = firstName.split('/').pop() || firstName;
+    const term = namePart.substring(0, Math.min(5, Math.max(3, namePart.length)));
+    expect(term.length, 'derived search term must be >= 3 chars').toBeGreaterThanOrEqual(3);
+
+    const searchInput = frame.locator('input[type="search"]');
+    await searchInput.fill(term);
+    await page.waitForTimeout(300);
+
+    // Every remaining row must contain the term in name/label/extension.
+    const filteredCount = await rows.count();
+    expect(filteredCount, 'search must keep at least the source row').toBeGreaterThanOrEqual(1);
+    expect(filteredCount, 'search must not widen the list').toBeLessThanOrEqual(initialCount);
+    const termLower = term.toLowerCase();
+    for (let i = 0; i < filteredCount; i++) {
+      const text = (await rows.nth(i).innerText()).toLowerCase();
+      expect(text, `filtered row ${i} should contain "${term}"`).toContain(termLower);
+    }
+
+    // Unknown term -> explicit no-results state.
+    await searchInput.fill('zzzznomatch12345');
+    await page.waitForTimeout(300);
+    await expect(frame.getByText(/No results found for/i)).toBeVisible({ timeout: 3000 });
+
+    // Clearing restores the full list.
+    await searchInput.fill('');
+    await page.waitForTimeout(300);
+    await expect(rows).toHaveCount(initialCount);
+
+    await context.close();
+  });
+
+  test('sort by name toggles ascending and descending order', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openModule(page);
+
+    const rows = frame.locator('table.table tbody tr');
+    await expect(rows.first()).toBeVisible({ timeout: 10000 });
+    const rowCount = await rows.count();
+    expect(rowCount, 'need at least two rows to verify ordering').toBeGreaterThanOrEqual(2);
+
+    const readNames = async (): Promise<string[]> => {
+      const count = await rows.count();
+      const names: string[] = [];
+      for (let i = 0; i < count; i++) {
+        names.push((await rows.nth(i).locator('td.col a').first().innerText()).trim());
+      }
+      return names;
+    };
+
+    // Default sort is name ascending.
+    const ascNames = await readNames();
+    const expectedAsc = [...ascNames].sort((a, b) => a.localeCompare(b));
+    expect(ascNames, 'default order should be name ascending').toEqual(expectedAsc);
+
+    // Clicking the name header toggles to descending.
+    const nameHeader = frame.locator('th.sortable').first();
+    await nameHeader.click();
+    await page.waitForTimeout(300);
+
+    const descNames = await readNames();
+    expect(descNames, 'clicking name header should reverse the order').toEqual([...expectedAsc].reverse());
+
+    await context.close();
+  });
+
+  test('multi-select accumulates across type tabs (type-übergreifend)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openModule(page);
+
+    const rows = frame.locator('table.table tbody tr');
+    await expect(rows.first()).toBeVisible({ timeout: 10000 });
+    const ceCount = await rows.count();
+    expect(ceCount, 'need content elements to select').toBeGreaterThanOrEqual(1);
+
+    // Enter selection mode and select all Content Elements.
+    await frame.getByText('Select Multiple').click();
+    await expect(frame.getByText('Cancel Selection')).toBeVisible();
+    const downloadButton = frame.locator('button', { hasText: 'Download Selected' });
+    const selectAll = frame.locator('table.table thead input[type="checkbox"]');
+    await selectAll.click();
+    await expect(downloadButton).toContainText(`(${ceCount})`);
+
+    // Switching tabs must NOT drop the selection — selection is keyed per
+    // tab (`${tab}:${name}`) so the counter is cumulative across types.
+    const rtTab = frame.locator('.nav-tabs button, .nav-tabs a').filter({ hasText: 'Record Types' });
+    await expect(rtTab.first()).toBeVisible();
+    await rtTab.first().click();
+    await page.waitForTimeout(500);
+    await expect(frame.getByText('Cancel Selection')).toBeVisible();
+    await expect(downloadButton).toContainText(`(${ceCount})`);
+
+    const rtRows = frame.locator('table.table tbody tr');
+    await expect(rtRows.first()).toBeVisible({ timeout: 10000 });
+    const rtCount = await rtRows.count();
+    expect(rtCount, 'need record types to verify cross-type selection').toBeGreaterThanOrEqual(1);
+
+    // Select all Record Types → counter accumulates across both types.
+    await selectAll.click();
+    await expect(downloadButton).toContainText(`(${ceCount + rtCount})`);
+
+    await context.close();
+  });
 });
