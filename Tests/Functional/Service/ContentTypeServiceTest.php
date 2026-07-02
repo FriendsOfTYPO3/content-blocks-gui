@@ -33,7 +33,7 @@ final class ContentTypeServiceTest extends FunctionalTestCase
     ];
 
     #[Test]
-    public function getContentTypeDataSetsCorrectDefaultsForContentElement(): void
+    public function getContentTypeDataOmitsUnsetOptionalFieldsForContentElement(): void
     {
         $service = $this->get(ContentTypeService::class);
 
@@ -47,15 +47,19 @@ final class ContentTypeServiceTest extends FunctionalTestCase
         ]);
 
         self::assertSame('content-element', $result['contentType']);
-        self::assertSame('tt_content', $result['contentBlock']['table']);
-        self::assertTrue($result['contentBlock']['prefixFields']);
-        self::assertSame('full', $result['contentBlock']['prefixType']);
-        self::assertSame('CType', $result['contentBlock']['typeField']);
-        self::assertSame('common', $result['contentBlock']['group']);
+        self::assertSame('testvendor/testelement', $result['contentBlock']['name']);
+
+        // Optional fields must NOT be injected when unset — content-blocks core
+        // (ConfigBuilder) fills the defaults downstream. Forcing empty/default
+        // values here would override core's auto-generation (the typeName/table
+        // override regressions). This test guards that contract.
+        foreach (['group', 'prefixFields', 'prefixType', 'table', 'typeField', 'typeName', 'priority', 'title'] as $key) {
+            self::assertArrayNotHasKey($key, $result['contentBlock'], $key . ' should be omitted when unset');
+        }
     }
 
     #[Test]
-    public function getContentTypeDataSetsCorrectDefaultsForPageType(): void
+    public function getContentTypeDataSetsTypeAndOmitsUnsetOptionalsForPageType(): void
     {
         $service = $this->get(ContentTypeService::class);
 
@@ -71,14 +75,19 @@ final class ContentTypeServiceTest extends FunctionalTestCase
         ]);
 
         self::assertSame('page-type', $result['contentType']);
+        self::assertSame('testvendor/testpage', $result['contentBlock']['name']);
         self::assertIsInt($result['contentBlock']['type']);
         self::assertSame(12345, $result['contentBlock']['type']);
-        self::assertTrue($result['contentBlock']['prefixFields']);
-        self::assertSame('full', $result['contentBlock']['prefixType']);
+        self::assertIsArray($result['contentBlock']['fields']);
+
+        // Optional fields omitted when unset; core supplies the defaults.
+        foreach (['prefixFields', 'prefixType', 'title', 'labelField'] as $key) {
+            self::assertArrayNotHasKey($key, $result['contentBlock'], $key . ' should be omitted when unset');
+        }
     }
 
     #[Test]
-    public function getContentTypeDataSetsCorrectDefaultsForRecordType(): void
+    public function getContentTypeDataOmitsUnsetOptionalFieldsForRecordType(): void
     {
         $service = $this->get(ContentTypeService::class);
 
@@ -92,9 +101,15 @@ final class ContentTypeServiceTest extends FunctionalTestCase
         ]);
 
         self::assertSame('record-type', $result['contentType']);
-        self::assertSame('', $result['contentBlock']['typeName']);
-        self::assertSame('', $result['contentBlock']['title']);
+        self::assertSame('testvendor/testrecord', $result['contentBlock']['name']);
         self::assertIsArray($result['contentBlock']['fields']);
+
+        // Optional fields omitted when unset; core (ConfigBuilder) auto-generates
+        // typeName/table for record types. Forcing empty values here would break
+        // that — the same class of bug the Record Type roundtrip E2E caught.
+        foreach (['typeName', 'title', 'table', 'labelField'] as $key) {
+            self::assertArrayNotHasKey($key, $result['contentBlock'], $key . ' should be omitted when unset');
+        }
     }
 
     #[Test]
