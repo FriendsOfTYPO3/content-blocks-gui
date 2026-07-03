@@ -2,6 +2,7 @@ import { test, expect, type FrameLocator, type Page } from '@playwright/test';
 import {
   createAuthContext, openNewEditor, openNewEditorByType, openModule,
   dropFieldType, dropFieldIntoCollection, fillEditorSettings, clickField,
+  switchLeftPaneTab,
 } from './helpers';
 
 /**
@@ -299,6 +300,31 @@ test.describe('Editor', () => {
 
     // The save must NOT have succeeded.
     await expect(page.locator('.modal-title', { hasText: 'Success' })).toHaveCount(0);
+
+    await context.close();
+  });
+
+  test('tt_content-reuse Basics are offered for content elements but hidden for record types (#19)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+
+    // Content Element (tt_content): TYPO3/Appearance re-uses tt_content fields → offered.
+    let frame = await openNewEditorByType(page, 'content-block');
+    await switchLeftPaneTab(frame, 'Basics');
+    await page.waitForTimeout(300);
+    await expect(
+      frame.locator('li.basic-item:has-text("TYPO3/Appearance")'),
+      'Appearance should be available for content elements',
+    ).toBeVisible({ timeout: 5000 });
+
+    // Record Type (custom table): the same Basic must be filtered out (#19).
+    frame = await openNewEditorByType(page, 'record-type');
+    await switchLeftPaneTab(frame, 'Basics');
+    await page.waitForTimeout(300);
+    await expect(
+      frame.locator('li.basic-item:has-text("TYPO3/Appearance")'),
+      'Appearance must NOT be offered for record types',
+    ).toHaveCount(0);
 
     await context.close();
   });

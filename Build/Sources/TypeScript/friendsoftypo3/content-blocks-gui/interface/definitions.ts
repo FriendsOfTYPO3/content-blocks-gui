@@ -109,6 +109,10 @@ export interface BasicMetadata {
   fieldCount: number;
   path: string;
   extension: string;
+  // Identifiers of fields inside the Basic that re-use existing base fields
+  // (useExistingField). Used to hide Basics incompatible with the current
+  // content type's table (issue #19).
+  reusedFields?: string[];
 }
 
 export interface ContentBlocksYaml {

@@ -106,7 +106,7 @@ export class ContentBlockEditor extends LitElement {
               .hostExtension="${this.cbDefinition.hostExtension}"
               .mode="${this.mode}"
               .contenttype="${this.contenttype}"
-              .availableBasics="${this.availableBasics}"
+              .availableBasics="${this.getCompatibleBasics()}"
               @dragStart="${this.handleDragStart}"
               @dragEnd="${this.handleDragEnd}"
               @basics-changed="${this.handleBasicsChanged}"
@@ -212,13 +212,57 @@ export class ContentBlockEditor extends LitElement {
           name: basic.identifier.split('/')[1] || '',
           fieldCount: basic.fields?.length || 0,
           path: '',
-          extension: basic.hostExtension || ''
+          extension: basic.hostExtension || '',
+          reusedFields: this.extractReusedFields(basic.fields || [])
         }));
       }
     } catch (error) {
       console.error('Failed to load available Basics:', error);
       this.availableBasics = [];
     }
+  }
+
+  /**
+   * Recursively collect the identifiers of all fields inside a Basic that
+   * re-use an existing base field (useExistingField). These live nested inside
+   * Palettes/Tabs, so we walk the whole tree.
+   */
+  private extractReusedFields(fields: Array<any>): string[] {
+    const reused: string[] = [];
+    const walk = (list: Array<any>): void => {
+      for (const field of list || []) {
+        if (field?.useExistingField && field.identifier) {
+          reused.push(field.identifier);
+        }
+        if (Array.isArray(field?.fields) && field.fields.length > 0) {
+          walk(field.fields);
+        }
+      }
+    };
+    walk(fields);
+    return reused;
+  }
+
+  /**
+   * Basics available to add to the current content type. A Basic that re-uses
+   * existing base fields only fits a table that actually has those columns
+   * (issue #19): Record Types use a custom table (no base fields to re-use),
+   * Page Types use "pages", Content Elements use "tt_content". Hide Basics
+   * whose re-used fields are not present in the current table.
+   */
+  private getCompatibleBasics(): Array<BasicMetadata> {
+    const baseFields = this.fieldMetadata?.baseFields || {};
+    const isRecordType = this.contenttype === 'record-type';
+    return this.availableBasics.filter((basic: BasicMetadata) => {
+      const reused = basic.reusedFields || [];
+      if (reused.length === 0) {
+        return true;
+      }
+      if (isRecordType) {
+        return false;
+      }
+      return reused.every(identifier => Object.prototype.hasOwnProperty.call(baseFields, identifier));
+    });
   }
 
   /**
