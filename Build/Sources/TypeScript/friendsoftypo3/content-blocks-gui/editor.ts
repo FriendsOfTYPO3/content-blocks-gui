@@ -735,6 +735,44 @@ export class ContentBlockEditor extends LitElement {
   }
 
   /**
+   * Validate the mandatory settings (issue #20): Vendor, Name and Host
+   * extension. Returns a human-readable error message listing the missing
+   * fields, or null when all are present.
+   */
+  private validateRequiredSettings(): string | null {
+    const vendor = (this.cbDefinition.yaml as any).vendor?.trim() || '';
+    const name = this.cbDefinition.yaml.name?.trim() || '';
+    const extension = this.cbDefinition.hostExtension;
+
+    const missing: string[] = [];
+    if (!vendor) {missing.push('Vendor');}
+    if (!name) {missing.push('Name');}
+    if (!extension || extension === '0') {missing.push('Host extension');}
+
+    if (missing.length === 0) {
+      return null;
+    }
+    return `The following required fields are missing: ${missing.join(', ')}.`;
+  }
+
+  private showValidationError(message: string): void {
+    Modal.confirm(
+      'Validation Error',
+      message,
+      SeverityEnum.error,
+      [{
+        text: 'OK',
+        active: true,
+        btnClass: 'btn-danger',
+        name: 'ok',
+        trigger: function() {
+          Modal.dismiss();
+        }
+      }]
+    );
+  }
+
+  /**
    * Save content block or basic via AJAX
    */
   private showSavingOverlay(): void {
@@ -762,6 +800,15 @@ export class ContentBlockEditor extends LitElement {
       // Check if we're saving a Basic or Content Block
       if (this.contenttype === 'basic') {
         await this.saveBasicAjax();
+        return;
+      }
+
+      // Vendor, Name and Host extension are mandatory (issue #20). Block the
+      // save with a clear message instead of letting the backend fail cryptically.
+      const requiredError = this.validateRequiredSettings();
+      if (requiredError) {
+        this.isSaving = false;
+        this.showValidationError(requiredError);
         return;
       }
 
@@ -889,45 +936,16 @@ export class ContentBlockEditor extends LitElement {
    */
   private async saveBasicAjax(): Promise<void> {
     try {
-      // Get vendor and name from component state
+      // Vendor, Name and Host extension are mandatory (issue #20).
+      const requiredError = this.validateRequiredSettings();
+      if (requiredError) {
+        this.showValidationError(requiredError);
+        return;
+      }
+
       const vendor = (this.cbDefinition.yaml as any).vendor?.trim() || '';
       const name = this.cbDefinition.yaml.name?.trim() || '';
-
-      if (!vendor || !name) {
-        Modal.confirm(
-          'Validation Error',
-          'Vendor and Name are required fields.',
-          SeverityEnum.error,
-          [{
-            text: 'OK',
-            active: true,
-            btnClass: 'btn-default',
-            trigger: function() {
-              Modal.dismiss();
-            }
-          }]
-        );
-        return;
-      }
-
-      // Get extension from component state
       const extension = this.cbDefinition.hostExtension;
-      if (!extension || extension === '0') {
-        Modal.confirm(
-          'Validation Error',
-          'Please select an extension.',
-          SeverityEnum.error,
-          [{
-            text: 'OK',
-            active: true,
-            btnClass: 'btn-default',
-            trigger: function() {
-              Modal.dismiss();
-            }
-          }]
-        );
-        return;
-      }
 
       // Clean fields by removing "enabled" properties
       const cleanedFields = this.removeEnabledProperties(this.cbDefinition.yaml.fields || []);

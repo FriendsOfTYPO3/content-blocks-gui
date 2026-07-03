@@ -57,6 +57,31 @@ final class AjaxControllerTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function saveContentTypeReturnsErrorWhenRequiredFieldsMissing(): void
+    {
+        $controller = $this->get(AjaxController::class);
+
+        $request = new ServerRequest('https://example.com/test', 'POST');
+        $request = $request->withParsedBody([
+            'contentType' => 'content-element',
+            'vendor' => '',
+            'name' => '',
+            'extension' => '0',
+            'mode' => 'new',
+            'contentBlock' => [],
+        ]);
+
+        $response = $controller->saveContentTypeAction($request);
+
+        $body = json_decode((string) $response->getBody(), true);
+        self::assertFalse($body['success']);
+        self::assertStringContainsString('Vendor', $body['message']);
+        self::assertStringContainsString('Name', $body['message']);
+        self::assertStringContainsString('Host extension', $body['message']);
+        self::assertContains('Vendor', $body['body']['missingFields']);
+    }
+
+    #[Test]
     public function downloadBasicReturns400OnMissingIdentifier(): void
     {
         $controller = $this->get(AjaxController::class);

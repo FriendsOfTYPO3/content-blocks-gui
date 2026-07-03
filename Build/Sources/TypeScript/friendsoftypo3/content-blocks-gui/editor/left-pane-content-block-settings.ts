@@ -53,8 +53,8 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
 
     return html`
       <div class="form-group">
-        <label for="extension" class="form-label">Extension</label>
-        <select class="form-control" id="extension" ?disabled="${isEditMode}" @change="${this.handleInputChange}">
+        <label for="extension" class="form-label">Extension <span class="text-danger">*</span></label>
+        <select class="form-control" id="extension" required ?disabled="${isEditMode}" @change="${this.handleInputChange}">
           <option value="0">Choose...</option>
           ${this.extensions.map((extension: ExtensionDefinition) => html`
             <option value="${extension.extension}" ?selected="${extension.extension === this.hostExtension}">${extension.extension}</option>
@@ -68,12 +68,12 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
         ` : ''}
       </div>
       <div class="form-group">
-        <label for="vendor" class="form-label">Vendor</label>
-        <input type="text" id="vendor" class="form-control" value=${(this.contentBlockYaml.vendor || '')} @input="${this.handleInputChange}" />
+        <label for="vendor" class="form-label">Vendor <span class="text-danger">*</span></label>
+        <input type="text" id="vendor" class="form-control" required value=${(this.contentBlockYaml.vendor || '')} @input="${this.handleInputChange}" />
       </div>
       <div class="form-group">
-        <label for="name" class="form-label">Name</label>
-        <input type="text" id="name" class="form-control" value=${(this.contentBlockYaml.name || '')} @input="${this.handleInputChange}" />
+        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+        <input type="text" id="name" class="form-control" required value=${(this.contentBlockYaml.name || '')} @input="${this.handleInputChange}" />
       </div>
       ${!isBasicMode ? html`
         <div class="form-group">

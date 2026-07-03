@@ -281,4 +281,25 @@ test.describe('Editor', () => {
 
     await context.close();
   });
+
+  test('save is blocked when required fields (vendor/name/extension) are missing', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditorByType(page, 'content-block');
+
+    // Intentionally leave vendor, name and host extension empty, then save.
+    const saveButton = frame.locator('[data-action="save-content-block"]').first();
+    await expect(saveButton).toBeVisible({ timeout: 5000 });
+    await saveButton.click();
+
+    // A validation error must block the save and name the missing fields (#20).
+    await expect(page.locator('.modal-title', { hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.modal.show')).toContainText(/required fields are missing/i);
+    await expect(page.locator('.modal.show')).toContainText('Vendor');
+
+    // The save must NOT have succeeded.
+    await expect(page.locator('.modal-title', { hasText: 'Success' })).toHaveCount(0);
+
+    await context.close();
+  });
 });

@@ -12,8 +12,8 @@
  */
 import{LitElement as x,css as g,html as a}from"lit";import{property as p,customElement as $}from"lit/decorators.js";import"@typo3/backend/element/icon-element.js";var c=function(d,l,e,n){var i=arguments.length,t=i<3?l:n===null?n=Object.getOwnPropertyDescriptor(l,e):n,r;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")t=Reflect.decorate(d,l,e,n);else for(var o=d.length-1;o>=0;o--)(r=d[o])&&(t=(i<3?r(t):i>3?r(l,e,t):r(l,e))||t);return i>3&&t&&Object.defineProperty(l,e,t),t};let s=class extends x{static{this.styles=g``}render(){const l=this.contenttype==="basic",e=this.contenttype==="record-type",n=this.mode==="edit",i=(this.contentBlockYaml.vendor||"").replace(/-/g,""),t=(this.contentBlockYaml.name||"").replace(/-/g,""),r=i&&t?`tx_${i}_${t}`:"";return a`
       <div class="form-group">
-        <label for="extension" class="form-label">Extension</label>
-        <select class="form-control" id="extension" ?disabled="${n}" @change="${this.handleInputChange}">
+        <label for="extension" class="form-label">Extension <span class="text-danger">*</span></label>
+        <select class="form-control" id="extension" required ?disabled="${n}" @change="${this.handleInputChange}">
           <option value="0">Choose...</option>
           ${this.extensions.map(o=>a`
             <option value="${o.extension}" ?selected="${o.extension===this.hostExtension}">${o.extension}</option>
@@ -27,12 +27,12 @@ import{LitElement as x,css as g,html as a}from"lit";import{property as p,customE
         `:""}
       </div>
       <div class="form-group">
-        <label for="vendor" class="form-label">Vendor</label>
-        <input type="text" id="vendor" class="form-control" value=${this.contentBlockYaml.vendor||""} @input="${this.handleInputChange}" />
+        <label for="vendor" class="form-label">Vendor <span class="text-danger">*</span></label>
+        <input type="text" id="vendor" class="form-control" required value=${this.contentBlockYaml.vendor||""} @input="${this.handleInputChange}" />
       </div>
       <div class="form-group">
-        <label for="name" class="form-label">Name</label>
-        <input type="text" id="name" class="form-control" value=${this.contentBlockYaml.name||""} @input="${this.handleInputChange}" />
+        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+        <input type="text" id="name" class="form-control" required value=${this.contentBlockYaml.name||""} @input="${this.handleInputChange}" />
       </div>
       ${l?"":a`
         <div class="form-group">

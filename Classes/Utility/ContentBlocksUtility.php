@@ -24,6 +24,7 @@ use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorContentBlockNotFoundAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorDownloadContentTypeAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorMissingBasicIdentifierAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorMissingContentBlockNameAnswer;
+use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorMissingRequiredFieldAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorNoBasicsAvailableAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorSaveContentTypeAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\SuccessAnswer;
@@ -84,6 +85,23 @@ class ContentBlocksUtility
 
     public function saveContentType(array $parsedBody): AnswerInterface
     {
+        // Vendor, name and host extension are mandatory (issue #20). Reject early
+        // with a typed answer instead of failing later inside the content-blocks API.
+        $missingFields = [];
+        if (trim((string) ($parsedBody['vendor'] ?? '')) === '') {
+            $missingFields[] = 'Vendor';
+        }
+        if (trim((string) ($parsedBody['name'] ?? '')) === '') {
+            $missingFields[] = 'Name';
+        }
+        $extension = (string) ($parsedBody['extension'] ?? '');
+        if ($extension === '' || $extension === '0') {
+            $missingFields[] = 'Host extension';
+        }
+        if ($missingFields !== []) {
+            return new ErrorMissingRequiredFieldAnswer($missingFields);
+        }
+
         try {
             $data = $this->contentTypeService->getContentTypeData($parsedBody);
             return match ($parsedBody['contentType']) {
