@@ -96,8 +96,19 @@ export class ContentBlockEditor extends LitElement {
       this._initMultiStepWizard();
     }
     return html`
+        <style>
+          /* Each pane scrolls on its own so the field area (config) stays in
+             view while scrolling the Components palette or the property panel
+             on small screens (issue #18). Tune the offset to the docheader. */
+          content-block-editor { --cb-pane-offset: 8rem; }
+          content-block-editor .cb-editor-pane {
+            max-height: calc(100vh - var(--cb-pane-offset));
+            overflow-y: auto;
+            overflow-x: hidden;
+          }
+        </style>
         <div class="row">
-          <div class="col-4">
+          <div class="col-4 cb-editor-pane">
             <content-block-editor-left-pane
               .contentBlockYaml="${this.cbDefinition.yaml}"
               .groups="${this.groupList}"
@@ -114,7 +125,7 @@ export class ContentBlockEditor extends LitElement {
             >
             </content-block-editor-left-pane>
           </div>
-          <div class="col-4">
+          <div class="col-4 cb-editor-pane">
             <content-block-editor-middle-pane
               .fieldList="${this.cbDefinition.yaml.fields}"
               .fieldTypes="${this.fieldTypeList}"
@@ -128,7 +139,7 @@ export class ContentBlockEditor extends LitElement {
             >
             </content-block-editor-middle-pane>
           </div>
-          <div class="col-4 properties-pane p-4">
+          <div class="col-4 properties-pane p-4 cb-editor-pane">
             <content-block-editor-right-pane
               .schema="${this.rightPaneActiveSchema}"
               .values="${this.fieldSettingsValues}"

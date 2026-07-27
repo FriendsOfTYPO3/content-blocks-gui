@@ -11,8 +11,19 @@
  * The TYPO3 project - inspiring people to share!
  */
 import{LitElement as g,html as P}from"lit";import{property as h,state as F,customElement as D}from"lit/decorators.js";import"@typo3/backend/element/icon-element.js";import"@friendsoftypo3/content-blocks-gui/editor/left-pane.js";import"@friendsoftypo3/content-blocks-gui/editor/middle-pane.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane.js";import m from"@typo3/backend/multi-step-wizard.js";import b from"@typo3/backend/severity.js";import u from"@typo3/core/ajax/ajax-request.js";import d from"@typo3/backend/modal.js";import{SeverityEnum as p}from"@typo3/backend/enum/severity.js";var f=function(v,e,t,i){var n=arguments.length,s=n<3?e:i===null?i=Object.getOwnPropertyDescriptor(e,t):i,a;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")s=Reflect.decorate(v,e,t,i);else for(var r=v.length-1;r>=0;r--)(a=v[r])&&(s=(n<3?a(s):n>3?a(e,t,s):a(e,t))||s);return n>3&&s&&Object.defineProperty(e,t,s),s};let c=class extends g{constructor(){super(...arguments),this.fieldSettingsValues={identifier:"",label:"",type:""},this.rightPaneActiveParentPath=[],this.dragActive=!1,this.availableBasics=[],this.init=!1}render(){return this.initData(),this.mode==="copy"&&this._initMultiStepWizard(),P`
+        <style>
+          /* Each pane scrolls on its own so the field area (config) stays in
+             view while scrolling the Components palette or the property panel
+             on small screens (issue #18). Tune the offset to the docheader. */
+          content-block-editor { --cb-pane-offset: 8rem; }
+          content-block-editor .cb-editor-pane {
+            max-height: calc(100vh - var(--cb-pane-offset));
+            overflow-y: auto;
+            overflow-x: hidden;
+          }
+        </style>
         <div class="row">
-          <div class="col-4">
+          <div class="col-4 cb-editor-pane">
             <content-block-editor-left-pane
               .contentBlockYaml="${this.cbDefinition.yaml}"
               .groups="${this.groupList}"
@@ -29,7 +40,7 @@ import{LitElement as g,html as P}from"lit";import{property as h,state as F,custo
             >
             </content-block-editor-left-pane>
           </div>
-          <div class="col-4">
+          <div class="col-4 cb-editor-pane">
             <content-block-editor-middle-pane
               .fieldList="${this.cbDefinition.yaml.fields}"
               .fieldTypes="${this.fieldTypeList}"
@@ -43,7 +54,7 @@ import{LitElement as g,html as P}from"lit";import{property as h,state as F,custo
             >
             </content-block-editor-middle-pane>
           </div>
-          <div class="col-4 properties-pane p-4">
+          <div class="col-4 properties-pane p-4 cb-editor-pane">
             <content-block-editor-right-pane
               .schema="${this.rightPaneActiveSchema}"
               .values="${this.fieldSettingsValues}"
