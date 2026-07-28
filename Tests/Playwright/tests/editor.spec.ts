@@ -328,4 +328,59 @@ test.describe('Editor', () => {
 
     await context.close();
   });
+
+  test('Basic field-type dropdown excludes tt_content-reuse Basics for record types (#19)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+
+    // Record Type: drop a Basic field; its right-pane dropdown must not offer Appearance.
+    let frame = await openNewEditorByType(page, 'record-type');
+    let dropped = await dropFieldType(page, 'Basic', 'Basic_0');
+    expect(dropped, 'Drop Basic field (record type)').toBe(true);
+    await page.waitForTimeout(400);
+    await clickField(frame, 'Basic_0');
+    await page.waitForTimeout(300);
+    const rtDropdown = frame.locator('content-block-editor-right-pane select#identifier');
+    await expect(rtDropdown).toBeVisible({ timeout: 5000 });
+    await expect(
+      rtDropdown.locator('option', { hasText: 'TYPO3/Appearance' }),
+      'Appearance must not be selectable for record types',
+    ).toHaveCount(0);
+
+    // Content Element: the same dropdown offers Appearance.
+    frame = await openNewEditorByType(page, 'content-block');
+    dropped = await dropFieldType(page, 'Basic', 'Basic_0');
+    expect(dropped, 'Drop Basic field (content element)').toBe(true);
+    await page.waitForTimeout(400);
+    await clickField(frame, 'Basic_0');
+    await page.waitForTimeout(300);
+    const ceDropdown = frame.locator('content-block-editor-right-pane select#identifier');
+    await expect(ceDropdown).toBeVisible({ timeout: 5000 });
+    await expect(
+      ceDropdown.locator('option', { hasText: 'TYPO3/Appearance' }),
+      'Appearance should be selectable for content elements',
+    ).toHaveCount(1);
+
+    await context.close();
+  });
+
+  test('Save & Close is blocked when required fields are missing (#20)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditorByType(page, 'content-block');
+
+    // Leave vendor/name/extension empty and use Save & Close.
+    const saveCloseButton = frame.locator('[data-action="save-and-close-content-block"]').first();
+    await expect(saveCloseButton).toBeVisible({ timeout: 5000 });
+    await saveCloseButton.click();
+
+    // Must block with the same validation error as Save — not navigate to the list.
+    await expect(page.locator('.modal-title', { hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.modal.show')).toContainText(/required fields are missing/i);
+    await expect(frame.locator('content-block-editor')).toBeAttached();
+    // The "Saving…" overlay must not be shown/stuck when the save was blocked.
+    await expect(frame.locator('#cb-saving-overlay')).toHaveCount(0);
+
+    await context.close();
+  });
 });
