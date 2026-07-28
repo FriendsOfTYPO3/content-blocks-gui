@@ -1181,12 +1181,19 @@ export class ContentBlockEditor extends LitElement {
    * Save & Close dispatcher (checks content type and calls appropriate method)
    */
   private async saveContentBlockAndClose(): Promise<void> {
-    this.showSavingOverlay();
-
     try {
       // Check if we're saving a Basic or Content Block
       if (this.contenttype === 'basic') {
         await this.saveBasicAndClose();
+        return;
+      }
+
+      // Vendor, Name and Host extension are mandatory (issue #20). Save & Close
+      // must block just like Save, instead of navigating away and only surfacing
+      // the error as a flash message in the list view.
+      const requiredError = this.validateRequiredSettings();
+      if (requiredError) {
+        this.showValidationError(requiredError);
         return;
       }
 
@@ -1268,6 +1275,11 @@ export class ContentBlockEditor extends LitElement {
           addHiddenInput(key, saveData[key]);
         }
       });
+
+      // Show the saving overlay only now — after validation passed and we are
+      // actually submitting. Showing it earlier left it stuck on screen when a
+      // validation check returned early. The page navigation clears it.
+      this.showSavingOverlay();
 
       // Append form to body and submit
       document.body.appendChild(form);
