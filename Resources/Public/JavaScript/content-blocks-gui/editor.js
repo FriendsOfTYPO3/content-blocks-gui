@@ -63,7 +63,7 @@ import{LitElement as g,html as P}from"lit";import{property as h,state as F,custo
               .parentPath="${this.rightPaneActiveParentPath}"
               .fieldTypeList="${this.fieldTypeList}"
               .fieldMetadata="${this.fieldMetadata}"
-              .availableBasics="${this.availableBasics}"
+              .availableBasics="${this.getCompatibleBasics()}"
               .contenttype="${this.contenttype}"
               @updateCbFieldData="${this.updateFieldDataEventListener}"
             >

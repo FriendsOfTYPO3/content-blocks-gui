@@ -148,7 +148,7 @@ export class ContentBlockEditor extends LitElement {
               .parentPath="${this.rightPaneActiveParentPath}"
               .fieldTypeList="${this.fieldTypeList}"
               .fieldMetadata="${this.fieldMetadata}"
-              .availableBasics="${this.availableBasics}"
+              .availableBasics="${this.getCompatibleBasics()}"
               .contenttype="${this.contenttype}"
               @updateCbFieldData="${this.updateFieldDataEventListener}"
             >
