@@ -383,4 +383,21 @@ test.describe('Editor', () => {
 
     await context.close();
   });
+
+  test('Save is blocked for a record type missing table/label field (#20)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditorByType(page, 'record-type');
+
+    // Empty record type: without vendor/name the table cannot be auto-suggested,
+    // so Table name is a missing required field alongside the base ones.
+    const saveButton = frame.locator('[data-action="save-content-block"]').first();
+    await expect(saveButton).toBeVisible({ timeout: 5000 });
+    await saveButton.click();
+
+    await expect(page.locator('.modal-title', { hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.modal.show')).toContainText('Table name');
+
+    await context.close();
+  });
 });

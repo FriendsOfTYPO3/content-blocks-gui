@@ -790,19 +790,48 @@ export class ContentBlockEditor extends LitElement {
   }
 
   /**
+   * Record Types must declare a "table" and a "labelField". The settings form
+   * shows auto-suggested defaults (tx_vendor_name / "title") but only as display
+   * values — commit them to state before saving so what the user sees is what
+   * gets saved (issue #20, Record Types). Mirrors the suggestion logic in
+   * left-pane-content-block-settings.ts.
+   */
+  private applyRecordTypeDefaults(): void {
+    if (this.contenttype !== 'record-type') {
+      return;
+    }
+    const yaml = this.cbDefinition.yaml as any;
+    const vendor = (yaml.vendor || '').replace(/-/g, '');
+    const name = (yaml.name || '').replace(/-/g, '');
+    if (!(yaml.table || '').trim() && vendor && name) {
+      yaml.table = `tx_${vendor}_${name}`;
+    }
+    if (!(yaml.labelField || '').trim()) {
+      yaml.labelField = 'title';
+    }
+  }
+
+  /**
    * Validate the mandatory settings (issue #20): Vendor, Name and Host
-   * extension. Returns a human-readable error message listing the missing
-   * fields, or null when all are present.
+   * extension for every content type, plus Table name and Label field for
+   * Record Types. Reads component state (not the DOM, whose Settings tab may
+   * not be mounted). Returns a message listing the missing fields, or null.
    */
   private validateRequiredSettings(): string | null {
-    const vendor = (this.cbDefinition.yaml as any).vendor?.trim() || '';
-    const name = this.cbDefinition.yaml.name?.trim() || '';
+    const yaml = this.cbDefinition.yaml as any;
+    const vendor = (yaml.vendor || '').trim();
+    const name = (yaml.name || '').trim();
     const extension = this.cbDefinition.hostExtension;
 
     const missing: string[] = [];
     if (!vendor) {missing.push('Vendor');}
     if (!name) {missing.push('Name');}
     if (!extension || extension === '0') {missing.push('Host extension');}
+
+    if (this.contenttype === 'record-type') {
+      if (!(yaml.table || '').trim()) {missing.push('Table name');}
+      if (!(yaml.labelField || '').trim()) {missing.push('Label field');}
+    }
 
     if (missing.length === 0) {
       return null;
@@ -860,6 +889,7 @@ export class ContentBlockEditor extends LitElement {
 
       // Vendor, Name and Host extension are mandatory (issue #20). Block the
       // save with a clear message instead of letting the backend fail cryptically.
+      this.applyRecordTypeDefaults();
       const requiredError = this.validateRequiredSettings();
       if (requiredError) {
         this.isSaving = false;
@@ -1191,6 +1221,7 @@ export class ContentBlockEditor extends LitElement {
       // Vendor, Name and Host extension are mandatory (issue #20). Save & Close
       // must block just like Save, instead of navigating away and only surfacing
       // the error as a flash message in the list view.
+      this.applyRecordTypeDefaults();
       const requiredError = this.validateRequiredSettings();
       if (requiredError) {
         this.showValidationError(requiredError);

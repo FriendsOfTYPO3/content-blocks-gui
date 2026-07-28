@@ -156,6 +156,10 @@ test.describe('Record Type Roundtrip', () => {
     // ── EDIT ────────────────────────────────────────────────────────────
     frame = await findInListAndEdit(page, FULL_NAME, 'Record Types');
 
+    // #20: the auto-suggested table name must have been persisted on save
+    // (what the Settings form showed is what got saved).
+    await expect(frame.locator('#table')).toHaveValue(`tx_${VENDOR}_${NAME.replace(/-/g, '')}`);
+
     await deleteField(frame, 'Collection_0');
     await page.waitForTimeout(300);
 
