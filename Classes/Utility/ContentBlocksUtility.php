@@ -1151,9 +1151,16 @@ class ContentBlocksUtility
     {
         if (array_key_exists('name', $parsedBody)) {
             if ($this->contentBlockRegistry->hasContentBlock($parsedBody['name'])) {
+                // content-blocks 1.x (v13) exposes getLanguageFile(); 2.x (v14)
+                // replaced it with getAllTranslations() (MessageCatalogue-based).
+                // call_user_func keeps this source compatible with both majors
+                // (a direct call would fail static analysis on the other version).
+                $registry = $this->languageFileRegistry;
+                // @phpstan-ignore function.alreadyNarrowedType, function.impossibleType
+                $method = method_exists($registry, 'getAllTranslations') ? 'getAllTranslations' : 'getLanguageFile';
                 return new DataAnswer(
                     'translations',
-                    $this->languageFileRegistry->getLanguageFile($parsedBody['name']),
+                    call_user_func([$registry, $method], $parsedBody['name']),
                 );
             }
             return new ErrorContentBlockNotFoundAnswer($parsedBody['name']);

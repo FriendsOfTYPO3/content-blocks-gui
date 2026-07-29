@@ -79,12 +79,14 @@ readonly class DatabaseUtility
                 if (empty($updateSuggestions[$action])) {
                     continue;
                 }
+                // Key = statement hash (SchemaMigrator::migrate() selects via
+                // array_intersect_key on the keys). Use the hash as value too so
+                // the payload is array<string, string> — matches the v14 type
+                // hint while staying identical at runtime on v13.
+                $hashes = array_keys($updateSuggestions[$action]);
                 $selectedStatements = array_merge(
                     $selectedStatements,
-                    array_combine(
-                        array_keys($updateSuggestions[$action]),
-                        array_fill(0, count($updateSuggestions[$action]), true),
-                    ),
+                    array_combine($hashes, $hashes),
                 );
             }
 
