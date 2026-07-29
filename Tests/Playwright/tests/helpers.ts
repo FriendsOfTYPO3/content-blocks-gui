@@ -2,6 +2,13 @@ import { type Browser, type FrameLocator, type Page, expect } from '@playwright/
 import * as path from 'path';
 import { execSync } from 'child_process';
 
+/**
+ * Matches the visible modal on both TYPO3 v13 (Bootstrap `.modal.show`) and
+ * v14 (native `<dialog open>`). Scope title/message/button lookups to this so
+ * the E2E suite stays dual-compatible.
+ */
+export const MODAL = 'dialog[open], .modal.show';
+
 export const config = {
   baseUrl: process.env.PLAYWRIGHT_BASE_URL || '',
   login: {
@@ -204,9 +211,9 @@ export async function saveAndVerify(page: Page, frame: FrameLocator): Promise<vo
   expect(body.success, 'Save failed: ' + (body.message || JSON.stringify(body))).not.toBe(false);
 
   // Verify success modal and dismiss
-  const successModal = page.locator('.modal-title', { hasText: 'Success' });
+  const successModal = page.locator(MODAL).filter({ hasText: 'Success' });
   await expect(successModal).toBeVisible({ timeout: 10000 });
-  await page.locator('.modal.show .btn').filter({ hasText: 'OK' }).click();
+  await successModal.getByRole('button', { name: 'OK' }).click();
   await page.waitForTimeout(500);
 }
 
@@ -268,10 +275,11 @@ export async function deleteFromList(page: Page, fullName: string, tab?: string)
   await expect(deleteButton).toBeVisible();
   await deleteButton.click();
 
-  // Confirm deletion modal
-  const confirmBtn = page.locator('.modal.show .btn-warning');
-  await expect(confirmBtn).toBeVisible({ timeout: 5000 });
-  await confirmBtn.click();
+  // Confirm deletion modal — the GUI sets a stable `.remove-button` class on
+  // the confirm button (btnClass), so this works on both v13 and v14.
+  const confirmBtn = page.locator(MODAL).locator('.remove-button');
+  await expect(confirmBtn.first()).toBeVisible({ timeout: 5000 });
+  await confirmBtn.first().click();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
