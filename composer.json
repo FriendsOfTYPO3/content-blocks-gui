@@ -29,27 +29,27 @@
         }
     ],
     "require": {
-        "friendsoftypo3/content-blocks": "^1.4.6",
-        "typo3/cms-backend": "^13.4.19",
-        "typo3/cms-core": "^13.4.19"
+        "friendsoftypo3/content-blocks": "^1.4.6 || ^2.0",
+        "typo3/cms-backend": "^13.4.19 || ^14.3",
+        "typo3/cms-core": "^13.4.19 || ^14.3"
     },
     "require-dev": {
         "contentblocks/examples": "@dev",
         "contentblocks/local-test": "@dev",
         "friendsofphp/php-cs-fixer": "^3.94",
-        "helhum/typo3-console": "^8.3",
+        "helhum/typo3-console": "^8.3 || ^9.0",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpunit/phpunit": "^11.0",
+        "phpunit/phpunit": "^11.0 || ^12.0",
         "saschaegerer/phpstan-typo3": "^3.0",
-        "typo3/cms-extbase": "^13.4",
-        "typo3/cms-extensionmanager": "^13.4",
-        "typo3/cms-filelist": "^13.4",
-        "typo3/cms-fluid": "^13.4",
-        "typo3/cms-fluid-styled-content": "^13.4",
-        "typo3/cms-frontend": "^13.4",
-        "typo3/cms-install": "^13.4",
-        "typo3/cms-rte-ckeditor": "^13.4",
+        "typo3/cms-extbase": "^13.4 || ^14.3",
+        "typo3/cms-extensionmanager": "^13.4 || ^14.3",
+        "typo3/cms-filelist": "^13.4 || ^14.3",
+        "typo3/cms-fluid": "^13.4 || ^14.3",
+        "typo3/cms-fluid-styled-content": "^13.4 || ^14.3",
+        "typo3/cms-frontend": "^13.4 || ^14.3",
+        "typo3/cms-install": "^13.4 || ^14.3",
+        "typo3/cms-rte-ckeditor": "^13.4 || ^14.3",
         "typo3/testing-framework": "^9.0"
     },
     "conflict": {
