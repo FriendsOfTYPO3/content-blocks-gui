@@ -7,7 +7,7 @@
     "description": "Visual backend module for creating and editing Content Blocks definitions.",
     "homepage": "https://github.com/FriendsOfTYPO3/content-blocks-gui",
     "license": ["GPL-2.0-or-later"],
-    "version": "0.3.0",
+    "version": "0.4.0",
     "minimum-stability": "alpha",
     "authors": [{
         "name": "TYPO3 Content Types Team",
