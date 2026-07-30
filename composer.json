@@ -58,7 +58,10 @@
     "extra": {
         "typo3/cms": {
             "extension-key": "content_blocks_gui",
-            "web-dir": ".Build/public"
+            "web-dir": ".Build/public",
+            "Package": {
+                "providesPackages": {}
+            }
         }
     },
     "autoload": {
