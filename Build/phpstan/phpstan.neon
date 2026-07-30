@@ -4,6 +4,10 @@ includes:
 
 parameters:
   level: 5
+  # Dual-version (TYPO3 v13 + v14 / content-blocks 1.x + 2.x): version-guarded
+  # code (method_exists checks) narrows differently per installed major, so the
+  # matching inline ignore differs by version. Don't fail on the unused one.
+  reportUnmatchedIgnoredErrors: false
   paths:
     - ../../Classes/
   excludePaths:

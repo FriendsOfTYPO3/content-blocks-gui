@@ -41,7 +41,6 @@ readonly class DatabaseUtility
     public function __construct(
         private LateBootService $lateBootService,
         private ClearCacheService $clearCacheService,
-        private SchemaMigrator $schemaMigrator,
         private LoggerInterface $logger,
     ) {}
 
@@ -62,16 +61,21 @@ readonly class DatabaseUtility
             //    @see MaintenanceController::databaseAnalyzerExecuteAction
             $container = $this->lateBootService->loadExtLocalconfDatabaseAndExtTables();
 
-            // 3) Get SqlReader from the FRESH container (not DI-injected).
-            //    SchemaMigrator can stay DI-injected — it just compares SQL vs DB.
+            // 3) Get SqlReader AND SchemaMigrator from the FRESH container.
+            //    The v14 Install Tool switched SchemaMigrator to the fresh
+            //    container; a boot-time instance emits "No columns specified for
+            //    table" for newly added tables (e.g. Collection child tables) on
+            //    Doctrine DBAL 4 / TYPO3 v14. Fresh-container works on v13 too.
+            //    @see MaintenanceController::databaseAnalyzerExecuteAction
             $sqlReader = $container->get(SqlReader::class);
+            $schemaMigrator = $container->get(SchemaMigrator::class);
             $sqlStatements = $sqlReader->getCreateTableStatementArray(
                 $sqlReader->getTablesDefinitionString(),
             );
 
             // 4) Get update suggestions and select only safe operations.
             //    @see PackageActivationService::updateDatabase
-            $updateSuggestions = $this->schemaMigrator->getUpdateSuggestions($sqlStatements);
+            $updateSuggestions = $schemaMigrator->getUpdateSuggestions($sqlStatements);
             $updateSuggestions = array_merge_recursive(...array_values($updateSuggestions));
 
             $selectedStatements = [];
@@ -79,12 +83,14 @@ readonly class DatabaseUtility
                 if (empty($updateSuggestions[$action])) {
                     continue;
                 }
+                // Key = statement hash (SchemaMigrator::migrate() selects via
+                // array_intersect_key on the keys). Use the hash as value too so
+                // the payload is array<string, string> — matches the v14 type
+                // hint while staying identical at runtime on v13.
+                $hashes = array_keys($updateSuggestions[$action]);
                 $selectedStatements = array_merge(
                     $selectedStatements,
-                    array_combine(
-                        array_keys($updateSuggestions[$action]),
-                        array_fill(0, count($updateSuggestions[$action]), true),
-                    ),
+                    array_combine($hashes, $hashes),
                 );
             }
 
@@ -93,7 +99,7 @@ readonly class DatabaseUtility
             }
 
             // 5) Execute the migration
-            $this->schemaMigrator->migrate($sqlStatements, $selectedStatements);
+            $schemaMigrator->migrate($sqlStatements, $selectedStatements);
 
             return [
                 'success' => sprintf(

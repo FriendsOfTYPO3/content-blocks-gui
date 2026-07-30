@@ -2,7 +2,7 @@ import { test, expect, type FrameLocator, type Page } from '@playwright/test';
 import {
   createAuthContext, openNewEditor, openNewEditorByType, openModule,
   dropFieldType, dropFieldIntoCollection, fillEditorSettings, clickField,
-  switchLeftPaneTab,
+  switchLeftPaneTab, MODAL,
 } from './helpers';
 
 /**
@@ -174,14 +174,14 @@ test.describe('Editor', () => {
     expect(responseBody.success, 'Save failed: ' + (responseBody.message || '')).not.toBe(false);
 
     // Verify the success modal appears (not the error modal)
-    const successModal = page.locator('.modal-title', { hasText: 'Success' });
-    const errorModal = page.locator('.modal-title', { hasText: 'Error' });
+    const successModal = page.locator(MODAL).filter({ hasText: 'Success' });
+    const errorModal = page.locator(MODAL).filter({ hasText: 'Error' });
     await expect(successModal.or(errorModal)).toBeVisible({ timeout: 10000 });
     await expect(successModal).toBeVisible();
     await expect(errorModal).not.toBeVisible();
 
     // Dismiss the modal
-    await page.locator('.modal.show .btn').filter({ hasText: 'OK' }).click();
+    await page.locator(MODAL).getByRole('button', { name: 'OK' }).first().click();
 
     // Navigate to list view and verify the created block appears
     const listFrame = await openModule(page);
@@ -193,8 +193,8 @@ test.describe('Editor', () => {
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 
-    // Confirm deletion in the modal
-    const confirmDeleteButton = page.locator('.modal.show .btn-warning', { hasText: /delete|ok|remove/i });
+    // Confirm deletion in the modal (stable GUI-set `.remove-button` class)
+    const confirmDeleteButton = page.locator(MODAL).locator('.remove-button').first();
     await expect(confirmDeleteButton).toBeVisible({ timeout: 5000 });
     await confirmDeleteButton.click();
     await page.waitForLoadState('networkidle');
@@ -294,12 +294,12 @@ test.describe('Editor', () => {
     await saveButton.click();
 
     // A validation error must block the save and name the missing fields (#20).
-    await expect(page.locator('.modal-title', { hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('.modal.show')).toContainText(/required fields are missing/i);
-    await expect(page.locator('.modal.show')).toContainText('Vendor');
+    await expect(page.locator(MODAL).filter({ hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(MODAL)).toContainText(/required fields are missing/i);
+    await expect(page.locator(MODAL)).toContainText('Vendor');
 
     // The save must NOT have succeeded.
-    await expect(page.locator('.modal-title', { hasText: 'Success' })).toHaveCount(0);
+    await expect(page.locator(MODAL).filter({ hasText: 'Success' })).toHaveCount(0);
 
     await context.close();
   });
@@ -375,8 +375,8 @@ test.describe('Editor', () => {
     await saveCloseButton.click();
 
     // Must block with the same validation error as Save — not navigate to the list.
-    await expect(page.locator('.modal-title', { hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('.modal.show')).toContainText(/required fields are missing/i);
+    await expect(page.locator(MODAL).filter({ hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(MODAL)).toContainText(/required fields are missing/i);
     await expect(frame.locator('content-block-editor')).toBeAttached();
     // The "Saving…" overlay must not be shown/stuck when the save was blocked.
     await expect(frame.locator('#cb-saving-overlay')).toHaveCount(0);
@@ -395,8 +395,8 @@ test.describe('Editor', () => {
     await expect(saveButton).toBeVisible({ timeout: 5000 });
     await saveButton.click();
 
-    await expect(page.locator('.modal-title', { hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('.modal.show')).toContainText('Table name');
+    await expect(page.locator(MODAL).filter({ hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(MODAL)).toContainText('Table name');
 
     await context.close();
   });
