@@ -34,7 +34,12 @@ export async function createAuthContext(browser: Browser) {
 export async function openModule(page: Page) {
   await page.goto(config.baseUrl + 'module/web/ContentBlocksGui');
   await page.waitForLoadState('networkidle');
-  return page.frameLocator('typo3-iframe-module iframe');
+  const frame = page.frameLocator('typo3-iframe-module iframe');
+  // Wait for the Lit list module to actually render before returning. On a
+  // cold first load (e.g. right after a cache flush) networkidle fires before
+  // the module JS has rendered its markup, which flaked the "new" links.
+  await frame.locator('content-block-list').first().waitFor({ state: 'attached', timeout: 20000 });
+  return frame;
 }
 
 /**
@@ -53,7 +58,7 @@ export async function openNewEditorByType(page: Page, type: 'content-block' | 'r
     // record-type or page-type: modify/new with contentType param
     button = frame.locator(`a[href*="contentType=${type}"]`).first();
   }
-  await expect(button).toBeVisible({ timeout: 5000 });
+  await expect(button).toBeVisible({ timeout: 20000 });
   await button.click();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
