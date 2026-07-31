@@ -8,11 +8,11 @@ $EM_CONF['content_blocks_gui'] = [
     'author' => 'TYPO3 Content Types Team',
     'author_email' => '',
     'author_company' => '',
-    'version' => '1.0.0',
+    'version' => '1.0.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.4.19-13.99.99',
-            'content_blocks' => '1.4.6-1.99.99',
+            'typo3' => '13.4.19-14.99.99',
+            'content_blocks' => '1.4.6-2.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
