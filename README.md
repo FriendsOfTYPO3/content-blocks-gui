@@ -104,7 +104,26 @@ After installation, the module is available in the TYPO3 backend under
 > …or add it manually to that extension's `composer.json` and run `composer update`
 > afterwards, so the package metadata is refreshed.
 
-## Developing
+---
+
+# Contributing
+
+> [!NOTE]
+> Everything below is only relevant if you want to **contribute to the extension
+> itself**. If you just want to *use* the Content Blocks GUI, you are done after
+> the installation steps above.
+
+Contributions are welcome — bug reports, feature ideas and pull requests alike.
+Open an issue or pull request on
+[GitHub](https://github.com/FriendsOfTYPO3/content-blocks-gui), or reach out on
+the [TYPO3 Slack](https://typo3.org/community/meet/chat-slack) channel
+`#cig-structuredcontent` if you want to discuss an idea first.
+
+Before opening a pull request, please run the [tests](#testing) as well as
+[PHPStan](#phpstan) and [PHP-CS-Fixer](#php-cs-fixer), and rebuild the
+[JavaScript](#building-javascript) if you touched any TypeScript sources.
+
+## Local DDEV Setup
 
 There is a DDEV setup ready to use. Ensure [DDEV](https://github.com/ddev/ddev)
 is installed on your machine. Then run:
@@ -177,6 +196,8 @@ ddev exec .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer/config.php --d
 ### Playwright E2E Tests
 
 See `Tests/Playwright/` for setup instructions.
+
+---
 
 ## Feedback and Support
 
