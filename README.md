@@ -1,8 +1,9 @@
-[![TYPO3 compatibility](https://img.shields.io/badge/TYPO3-13.4-ff8700?maxAge=3600&logo=typo3)](https://get.typo3.org/)
+[![TYPO3 compatibility](https://img.shields.io/badge/TYPO3-13.4%20%7C%2014.3-ff8700?maxAge=3600&logo=typo3)](https://get.typo3.org/)
 
 # TYPO3 Content Blocks GUI
 
-> **Alpha state**: This extension may contain bugs and can potentially break
+> [!WARNING]
+> **Beta state**: This extension may contain bugs and can potentially break
 > your TYPO3 installation. **Do not install on production systems.** Use only
 > in development environments.
 
@@ -57,15 +58,18 @@ Basics through a drag-and-drop interface instead of writing YAML by hand.
 
 ## Compatibility
 
-| Extension version | TYPO3 version | PHP version |
-|-------------------|---------------|-------------|
-| 0.2.x (alpha)     | 13.4          | 8.2+        |
+| Extension version | TYPO3 version         | PHP version |
+|-------------------|-----------------------|-------------|
+| 1.0.x (beta)      | 13.4.19+ &vert; 14.3+ | 8.2+        |
 
 ## Requirements
 
 This extension requires the Content Blocks extension:
 
-- [friendsoftypo3/content-blocks](https://packagist.org/packages/friendsoftypo3/content-blocks) (^1.3)
+- [friendsoftypo3/content-blocks](https://packagist.org/packages/friendsoftypo3/content-blocks) (`^1.4.6 || ^2.0`)
+
+Content Blocks `1.x` is the line for TYPO3 13.4, Content Blocks `2.x` requires
+TYPO3 14.3. Composer picks the matching one for your TYPO3 version.
 
 ## Installation
 
@@ -78,13 +82,27 @@ composer require --dev friendsoftypo3/content-blocks-gui
 Or install it via the Extension Manager in the TYPO3 backend. The extension key
 is `content_blocks_gui`.
 
-**Important:** The GUI looks for extensions that require `friendsoftypo3/content-blocks`
-in their `composer.json` to use as storage destination for new Content Blocks. Make sure
-your sitepackage or target extension has this dependency, then run `composer update` to
-refresh the package metadata. Otherwise the extension dropdown in the editor will be empty.
-
 After installation, the module is available in the TYPO3 backend under
 **Admin Tools > Content Blocks**.
+
+### ⚠️ Required: prepare a storage extension
+
+> [!IMPORTANT]
+> **The GUI only offers extensions that require `friendsoftypo3/content-blocks` in
+> their own `composer.json` as a storage destination for new Content Blocks.**
+>
+> If no extension declares that dependency, **the extension dropdown in the editor
+> stays empty and you cannot create any Content Block.**
+>
+> Add the dependency to your sitepackage (or whichever extension should hold the
+> Content Blocks):
+>
+> ```
+> composer require friendsoftypo3/content-blocks
+> ```
+>
+> …or add it manually to that extension's `composer.json` and run `composer update`
+> afterwards, so the package metadata is refreshed.
 
 ## Developing
 
