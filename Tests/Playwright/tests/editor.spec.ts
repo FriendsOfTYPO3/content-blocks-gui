@@ -105,6 +105,22 @@ test.describe('Editor', () => {
     await context.close();
   });
 
+  test('field identifiers are trimmed, lowercased, and separated with underscores (#21)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditor(page);
+
+    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    await page.waitForTimeout(500);
+    await clickField(frame, 'Text_0');
+    await renameActiveField(frame, page, '  Hero   Headline  ');
+
+    await expect(frame.locator('content-block-editor-right-pane #identifier')).toHaveValue('hero_headline');
+    await expectMiddlePaneIdentifier(frame, 'hero_headline', 'Text_0');
+
+    await context.close();
+  });
+
   test('extension dropdown lists destination extensions', async ({ browser }) => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
