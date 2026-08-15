@@ -10,7 +10,7 @@
  *
  * The TYPO3 project - inspiring people to share!
  */
-import{LitElement as v,html as s,nothing as p}from"lit";import{property as r,customElement as m}from"lit/decorators.js";import"@typo3/backend/element/icon-element.js";import{live as d}from"lit/directives/live.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/value-picker.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/range-selector.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/slider-selector.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/allowed-types.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/allowed-custom-properties.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/items.js";var o=function(h,e,t,l){var a=arguments.length,i=a<3?e:l===null?l=Object.getOwnPropertyDescriptor(e,t):l,c;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")i=Reflect.decorate(h,e,t,l);else for(var u=h.length-1;u>=0;u--)(c=h[u])&&(i=(a<3?c(i):a>3?c(e,t,i):c(e,t))||i);return a>3&&i&&Object.defineProperty(e,t,i),i};let n=class extends v{constructor(){super(...arguments),this.parentPath=[]}render(){return this.schema?s`
+import{LitElement as m,html as s,nothing as v}from"lit";import{property as r,customElement as $}from"lit/decorators.js";import"@typo3/backend/element/icon-element.js";import{live as d}from"lit/directives/live.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/value-picker.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/range-selector.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/slider-selector.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/allowed-types.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/allowed-custom-properties.js";import"@friendsoftypo3/content-blocks-gui/editor/right-pane-components/items.js";var o=function(h,e,t,l){var i=arguments.length,a=i<3?e:l===null?l=Object.getOwnPropertyDescriptor(e,t):l,c;if(typeof Reflect=="object"&&typeof Reflect.decorate=="function")a=Reflect.decorate(h,e,t,l);else for(var u=h.length-1;u>=0;u--)(c=h[u])&&(a=(i<3?c(a):i>3?c(e,t,a):c(e,t))||a);return i>3&&a&&Object.defineProperty(e,t,a),a},p;let n=p=class extends m{constructor(){super(...arguments),this.parentPath=[]}static normalizeIdentifier(e){return e.trim().toLowerCase().replace(/[\s/-]+/g,"_")}render(){return this.schema?s`
         <div class="content-block-field-configuration">
           <div class="field-properties">
             ${this.schema.properties.map(e=>s` ${this.renderFormFieldset(e)}`)}
@@ -22,7 +22,7 @@ import{LitElement as v,html as s,nothing as p}from"lit";import{property as r,cus
           <strong>No field selected</strong><br>
           Please select a field to configure its properties.
         </div>
-      </div>`}renderFormFieldset(e){const t=this.formatFieldLabel(e.name),l=["identifier","type","useExistingField"].includes(e.name),a=e.name==="identifier"&&this.level===0&&this.fieldMetadata&&this.contenttype!=="record-type";return s`
+      </div>`}renderFormFieldset(e){const t=this.formatFieldLabel(e.name),l=["identifier","type","useExistingField"].includes(e.name),i=e.name==="identifier"&&this.level===0&&this.fieldMetadata&&this.contenttype!=="record-type";return s`
       <div class="form-section mb-2">
         <div class="form-section-content">
           ${e.dataType==="boolean"?s`
@@ -35,13 +35,13 @@ import{LitElement as v,html as s,nothing as p}from"lit";import{property as r,cus
             ${this.renderFormField(e)}
           `}
           ${l?this.renderValidationBadge():""}
-          ${a?this.renderBaseFieldsHelper():""}
+          ${i?this.renderBaseFieldsHelper():""}
         </div>
       </div>`}renderFormField(e){if(e.name==="type"&&this.fieldTypeList)return this.renderTypeDropdown(e);if(e.name==="identifier"&&this.values.type==="Basic"&&this.availableBasics)return this.renderBasicIdentifierDropdown(e);switch(e.dataType){case"text":return s`<input @blur="${this.dispatchBlurEvent}" type="text" id="${e.name}" .value="${d(this.values[e.name]||e.default||"")}" class="form-control" />`;case"number":return s`<input @blur="${this.dispatchBlurEvent}" type="number" id="${e.name}" .value="${d(this.values[e.name]||e.default)}" class="form-control" />`;case"select":const t=e.name==="prefixType"&&this.values.prefixFields===!1;return s`<select @change="${this.dispatchBlurEvent}" class="form-select" id="${e.name}" ?disabled="${t}">
           <option value="">Choose...</option>
-          ${e.items.map(i=>s`
-            <option .value="${d(i.value)}" ?selected="${d(this.values[e.name]===i.value)}">${i.label}</option>`)}
-        </select>`;case"boolean":const l=e.name==="prefixFields"&&this.values._isBaseField,a=l?!1:this.values[e.name]||e.default;return s`<input @change="${this.dispatchBlurEvent}" type="checkbox" id="${e.name}" ?checked=${d(a)} ?disabled="${l}" class="form-check-input" />`;case"textarea":return s`<textarea @blur="${this.dispatchBlurEvent}" id="${e.name}" class="form-control">${d(e.default)}</textarea>`;case"array":switch(e.name){case"valuePicker":return s`<content-block-editor-value-picker
+          ${e.items.map(a=>s`
+            <option .value="${d(a.value)}" ?selected="${d(this.values[e.name]===a.value)}">${a.label}</option>`)}
+        </select>`;case"boolean":const l=e.name==="prefixFields"&&this.values._isBaseField,i=l?!1:this.values[e.name]||e.default;return s`<input @change="${this.dispatchBlurEvent}" type="checkbox" id="${e.name}" ?checked=${d(i)} ?disabled="${l}" class="form-check-input" />`;case"textarea":return s`<textarea @blur="${this.dispatchBlurEvent}" id="${e.name}" class="form-control">${d(e.default)}</textarea>`;case"array":switch(e.name){case"valuePicker":return s`<content-block-editor-value-picker
                   .fieldTypeProperty="${e}"
                   .values="${this.values}"
                   .position="${this.position}"
@@ -83,29 +83,29 @@ import{LitElement as v,html as s,nothing as p}from"lit";import{property as r,cus
                   .level="${this.level}"
                   .parentPath="${this.parentPath}"
                   @updateCbFieldData="${this.dispatchUpdateEvent}">
-                </content-block-editor-items>`;default:return s`Array field type for property ${e.name} is not yet implemented.`}default:return s`Unknown field type property ${e.name}.`}}dispatchUpdateEvent(){this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values}}))}formatFieldLabel(e){return e.replace(/([A-Z])/g," $1").replace(/^./,t=>t.toUpperCase()).trim()}dispatchBlurEvent(e){e.preventDefault();const t=e.target;this.values[t.id]=t.type==="checkbox"?t.checked:t.value,this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values}}))}renderTypeDropdown(e){const t=[...this.fieldTypeList].sort((i,c)=>i.type.localeCompare(c.type)),l=this.values[e.name]||"",a=this.values._isBaseField||!1;return s`
+                </content-block-editor-items>`;default:return s`Array field type for property ${e.name} is not yet implemented.`}default:return s`Unknown field type property ${e.name}.`}}dispatchUpdateEvent(){this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values}}))}formatFieldLabel(e){return e.replace(/([A-Z])/g," $1").replace(/^./,t=>t.toUpperCase()).trim()}dispatchBlurEvent(e){e.preventDefault();const t=e.target;if(t.id==="identifier"&&t.type==="text"){const l=p.normalizeIdentifier(t.value);t.value=l}this.values[t.id]=t.type==="checkbox"?t.checked:t.value,this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values}}))}renderTypeDropdown(e){const t=[...this.fieldTypeList].sort((a,c)=>a.type.localeCompare(c.type)),l=this.values[e.name]||"",i=this.values._isBaseField||!1;return s`
       <select
         @change="${this.handleTypeChange}"
         class="form-select"
         id="${e.name}"
-        ?disabled="${a}"
+        ?disabled="${i}"
       >
         <option value="">Choose...</option>
-        ${t.map(i=>s`
+        ${t.map(a=>s`
           <option
-            value="${i.type}"
-            ?selected="${l===i.type}"
+            value="${a.type}"
+            ?selected="${l===a.type}"
           >
-            ${i.type}
+            ${a.type}
           </option>
         `)}
       </select>
-    `}handleTypeChange(e){e.preventDefault();const l=e.target.value;this.values.type=l,this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values,typeChanged:!0,newType:l}}))}renderValidationBadge(){const e=this.values._validation;if(!e||!e.message)return p;const t={success:"alert-success",warning:"alert-warning",error:"alert-danger",info:"alert-info"},l={success:"actions-check",warning:"actions-exclamation",error:"actions-close",info:"actions-info"},a=t[e.severity]||"alert-info",i=l[e.severity]||"actions-info";return s`
-      <div class="alert ${a} mt-2 mb-0 py-1 px-2 d-flex align-items-center" role="alert">
-        <typo3-backend-icon identifier="${i}" size="small" class="me-1"></typo3-backend-icon>
+    `}handleTypeChange(e){e.preventDefault();const l=e.target.value;this.values.type=l,this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values,typeChanged:!0,newType:l}}))}renderValidationBadge(){const e=this.values._validation;if(!e||!e.message)return v;const t={success:"alert-success",warning:"alert-warning",error:"alert-danger",info:"alert-info"},l={success:"actions-check",warning:"actions-exclamation",error:"actions-close",info:"actions-info"},i=t[e.severity]||"alert-info",a=l[e.severity]||"actions-info";return s`
+      <div class="alert ${i} mt-2 mb-0 py-1 px-2 d-flex align-items-center" role="alert">
+        <typo3-backend-icon identifier="${a}" size="small" class="me-1"></typo3-backend-icon>
         <small>${e.message}</small>
       </div>
-    `}renderBaseFieldsHelper(){if(!this.fieldMetadata||!this.fieldMetadata.baseFields)return p;const e=this.fieldMetadata.systemReservedFields||[],t=Array.isArray(e)?e:Object.values(e),l=Object.entries(this.fieldMetadata.baseFields).filter(([a])=>!t.includes(a)).sort(([a],[i])=>a.localeCompare(i));return s`
+    `}renderBaseFieldsHelper(){if(!this.fieldMetadata||!this.fieldMetadata.baseFields)return v;const e=this.fieldMetadata.systemReservedFields||[],t=Array.isArray(e)?e:Object.values(e),l=Object.entries(this.fieldMetadata.baseFields).filter(([i])=>!t.includes(i)).sort(([i],[a])=>i.localeCompare(a));return s`
       <div class="mt-2">
         <label class="form-label text-muted small">Or choose from existing base fields:</label>
         <select
@@ -113,9 +113,9 @@ import{LitElement as v,html as s,nothing as p}from"lit";import{property as r,cus
           @change="${this.handleBaseFieldSelection}"
           .value="${""}">
           <option value="">Select a base field...</option>
-          ${l.map(([a,i])=>s`
-            <option value="${a}">
-              ${a} (${i.type})
+          ${l.map(([i,a])=>s`
+            <option value="${i}">
+              ${i} (${a.type})
             </option>
           `)}
         </select>
@@ -123,23 +123,23 @@ import{LitElement as v,html as s,nothing as p}from"lit";import{property as r,cus
           Base fields are reusable TCA columns like header, bodytext, etc.
         </small>
       </div>
-    `}handleBaseFieldSelection(e){const t=e.target,l=t.value;l&&(this.values.identifier=l,this.values.useExistingField=!0,t.value="",this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values}})))}renderBasicIdentifierDropdown(e){const t=this.values[e.name]||"",l=[...this.availableBasics||[]].sort((a,i)=>a.identifier.localeCompare(i.identifier));return s`
+    `}handleBaseFieldSelection(e){const t=e.target,l=t.value;l&&(this.values.identifier=l,this.values.useExistingField=!0,t.value="",this.dispatchEvent(new CustomEvent("updateCbFieldData",{bubbles:!0,composed:!0,detail:{position:this.position,level:this.level,parentPath:this.parentPath,values:this.values}})))}renderBasicIdentifierDropdown(e){const t=this.values[e.name]||"",l=[...this.availableBasics||[]].sort((i,a)=>i.identifier.localeCompare(a.identifier));return s`
       <select
         @change="${this.dispatchBlurEvent}"
         class="form-select"
         id="${e.name}"
       >
         <option value="">Choose a Basic...</option>
-        ${l.map(a=>s`
+        ${l.map(i=>s`
           <option
-            value="${a.identifier}"
-            ?selected="${t===a.identifier}"
+            value="${i.identifier}"
+            ?selected="${t===i.identifier}"
           >
-            ${a.identifier} (${a.fieldCount} fields)
+            ${i.identifier} (${i.fieldCount} fields)
           </option>
         `)}
       </select>
       <small class="form-text text-muted mt-1">
         Select a pre-defined Basic (field mixin) to include in this Content Block.
       </small>
-    `}createRenderRoot(){return this}};o([r()],n.prototype,"values",void 0),o([r()],n.prototype,"schema",void 0),o([r({type:Number})],n.prototype,"position",void 0),o([r({type:Number})],n.prototype,"level",void 0),o([r({type:Array})],n.prototype,"parentPath",void 0),o([r()],n.prototype,"fieldTypeList",void 0),o([r()],n.prototype,"fieldMetadata",void 0),o([r()],n.prototype,"availableBasics",void 0),o([r()],n.prototype,"contenttype",void 0),n=o([m("content-block-editor-right-pane")],n);export{n as ContentBlockEditorRightPane};
+    `}createRenderRoot(){return this}};o([r()],n.prototype,"values",void 0),o([r()],n.prototype,"schema",void 0),o([r({type:Number})],n.prototype,"position",void 0),o([r({type:Number})],n.prototype,"level",void 0),o([r({type:Array})],n.prototype,"parentPath",void 0),o([r()],n.prototype,"fieldTypeList",void 0),o([r()],n.prototype,"fieldMetadata",void 0),o([r()],n.prototype,"availableBasics",void 0),o([r()],n.prototype,"contenttype",void 0),n=p=o([$("content-block-editor-right-pane")],n);export{n as ContentBlockEditorRightPane};

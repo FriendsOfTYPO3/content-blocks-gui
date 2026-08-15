@@ -63,6 +63,29 @@ export class ContentBlockEditorRightPane extends LitElement {
   contenttype?: string;
 
 
+  /**
+   * Normalize a hand-typed field identifier to the shape the generated
+   * configuration requires: lower case, no surrounding whitespace, and
+   * separators collapsed to underscores.
+   *
+   * The same normalization is already applied to the block identifier
+   * suggested in the duplicate dialog (`list.ts`), and the record type and
+   * table name inputs there constrain themselves with `pattern="[a-zA-Z0-9_]+"`.
+   * The field identifier had neither, so `My Field` was accepted verbatim and
+   * only surfaced later as an invalid identifier.
+   *
+   * Deliberately conservative: characters that are neither alphanumeric nor a
+   * separator are left alone rather than stripped, so a typo stays visible and
+   * validation still reports it instead of the input silently discarding what
+   * was typed.
+   */
+  protected static normalizeIdentifier(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[\s/-]+/g, '_');
+  }
+
   protected override render(): TemplateResult {
     if (this.schema) {
       return html `
@@ -230,6 +253,16 @@ export class ContentBlockEditorRightPane extends LitElement {
   protected dispatchBlurEvent(event: Event): void {
     event.preventDefault();
     const target = event.target as HTMLInputElement;
+    // Only the free-text identifier input needs this. When the type is `Basic`
+    // the identifier is a <select> of existing Basics, and the base-fields
+    // helper writes a known-good field name straight to `values.identifier`.
+    if (target.id === 'identifier' && target.type === 'text') {
+      const normalized = ContentBlockEditorRightPane.normalizeIdentifier(target.value);
+      // Write it back to the input as well: `values` is mutated in place, so
+      // the `live()` binding has no new object reference to react to and the
+      // field would otherwise keep showing the unnormalized text.
+      target.value = normalized;
+    }
     this.values[target.id] = target.type === 'checkbox' ? target.checked : target.value;
     this.dispatchEvent(new CustomEvent('updateCbFieldData', {
       bubbles: true,
