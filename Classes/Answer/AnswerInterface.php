@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Http\JsonResponse;
 interface AnswerInterface
 {
     public function getResponse(): JsonResponse;
+    public function getMessage(): string;
     public function addToBody(string $index, mixed $data): void;
     public function isSuccess(): bool;
 }
