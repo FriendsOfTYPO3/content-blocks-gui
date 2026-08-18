@@ -150,4 +150,23 @@ final class AnswerClassesTest extends UnitTestCase
         self::assertSame(['a' => 1], $decoded['body']['first']);
         self::assertSame(['b' => 2], $decoded['body']['second']);
     }
+
+    #[Test]
+    public function getMessageReturnsReasonOfFailedSave(): void
+    {
+        $answer = new ErrorSaveContentTypeAnswer('Content Block name "Foo" does not match requirements.');
+
+        self::assertStringContainsString(
+            'Content Block name "Foo" does not match requirements.',
+            $answer->getMessage(),
+        );
+    }
+
+    #[Test]
+    public function getMessageIsEmptyForSuccessAnswer(): void
+    {
+        $answer = new SuccessAnswer();
+
+        self::assertSame('', $answer->getMessage());
+    }
 }
