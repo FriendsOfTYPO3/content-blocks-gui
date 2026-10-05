@@ -44,4 +44,9 @@ abstract class AbstractAnswer
     {
         return $this->success;
     }
+
+    public function getMessage(): string
+    {
+        return (string) $this->message;
+    }
 }

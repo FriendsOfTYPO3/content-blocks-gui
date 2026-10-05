@@ -594,7 +594,7 @@ final class ContentBlocksGuiController
             } else {
                 $flashMessage = GeneralUtility::makeInstance(
                     FlashMessage::class,
-                    'Failed to save Content Block',
+                    $result->getMessage() !== '' ? $result->getMessage() : 'Failed to save Content Block',
                     'Error',
                     ContextualFeedbackSeverity::ERROR,
                     true,

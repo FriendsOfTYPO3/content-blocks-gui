@@ -833,10 +833,27 @@ export class ContentBlockEditor extends LitElement {
       if (!(yaml.labelField || '').trim()) {missing.push('Label field');}
     }
 
-    if (missing.length === 0) {
-      return null;
+    if (missing.length > 0) {
+      return `The following required fields are missing: ${missing.join(', ')}.`;
     }
-    return `The following required fields are missing: ${missing.join(', ')}.`;
+
+    // Vendor and name have to match the pattern enforced server-side by
+    // EXT:content_blocks (ContentBlockNameValidator): lowercase letters, digits
+    // and single or double hyphens between segments. Checking it here turns a
+    // cryptic backend failure into an actionable message. Basics are saved
+    // through BasicsService, which does not apply this validator, so they are
+    // exempt.
+    if (this.contenttype !== 'basic') {
+      const namePattern = /^[a-z0-9]((-{1,2})?[a-z0-9]+)*$/;
+      const invalid: string[] = [];
+      if (!namePattern.test(vendor)) {invalid.push(`Vendor "${vendor}"`);}
+      if (!namePattern.test(name)) {invalid.push(`Name "${name}"`);}
+      if (invalid.length > 0) {
+        return `${invalid.join(' and ')} must consist of lowercase letters (a-z), digits (0-9) and hyphens only, and must start and end with a letter or digit. Example: "my-vendor/my-element".`;
+      }
+    }
+
+    return null;
   }
 
   private showValidationError(message: string): void {
@@ -972,8 +989,29 @@ export class ContentBlockEditor extends LitElement {
 
       const result = await response.resolve();
 
+      // The backend answers validation failures with HTTP 200 and
+      // {success: false, message: ...}, so AjaxRequest does not throw. Report
+      // the message instead of claiming a save that never happened.
+      if (result.success === false) {
+        Modal.confirm(
+          'Error',
+          result.message || 'Failed to save content block.',
+          SeverityEnum.error,
+          [{
+            text: 'OK',
+            active: true,
+            btnClass: 'btn-danger',
+            name: 'ok',
+            trigger: function() {
+              Modal.dismiss();
+            }
+          }]
+        );
+        return;
+      }
+
       // Switch from 'new' to 'edit' mode after successful first save
-      if (this.mode === 'new' && result.success !== false) {
+      if (this.mode === 'new') {
         this.mode = 'edit';
       }
 
