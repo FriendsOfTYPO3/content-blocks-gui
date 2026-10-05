@@ -25,6 +25,7 @@ import '@friendsoftypo3/content-blocks-gui/editor/right-pane-components/slider-s
 import '@friendsoftypo3/content-blocks-gui/editor/right-pane-components/allowed-types.js';
 import '@friendsoftypo3/content-blocks-gui/editor/right-pane-components/allowed-custom-properties.js';
 import '@friendsoftypo3/content-blocks-gui/editor/right-pane-components/items.js';
+import { normalizeFieldIdentifier } from '@friendsoftypo3/content-blocks-gui/editor/field-identifier.js';
 
 /**
  * Module: @typo3/module/web/ContentBlocksGui
@@ -230,7 +231,11 @@ export class ContentBlockEditorRightPane extends LitElement {
   protected dispatchBlurEvent(event: Event): void {
     event.preventDefault();
     const target = event.target as HTMLInputElement;
-    this.values[target.id] = target.type === 'checkbox' ? target.checked : target.value;
+    const value = target.id === 'identifier' && target.tagName === 'INPUT'
+      ? normalizeFieldIdentifier(target.value)
+      : target.value;
+    target.value = value;
+    this.values[target.id] = target.type === 'checkbox' ? target.checked : value;
     this.dispatchEvent(new CustomEvent('updateCbFieldData', {
       bubbles: true,
       composed: true,
