@@ -2,7 +2,7 @@ import { test, expect, type FrameLocator, type Page } from '@playwright/test';
 import {
   createAuthContext, openNewEditor, openNewEditorByType, openModule,
   dropFieldType, dropFieldIntoCollection, fillEditorSettings, clickField,
-  switchLeftPaneTab, MODAL,
+  switchLeftPaneTab, selectBaseField, MODAL,
 } from './helpers';
 
 /**
@@ -117,6 +117,70 @@ test.describe('Editor', () => {
 
     await expect(frame.locator('content-block-editor-right-pane #identifier')).toHaveValue('hero_headline');
     await expectMiddlePaneIdentifier(frame, 'hero_headline', 'Text_0');
+
+    await context.close();
+  });
+
+  test('save is blocked when vendor or name violate the Content Blocks naming pattern (#25)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditorByType(page, 'content-block');
+    await fillEditorSettings(page, frame, 'My_Vendor', 'Bad Name');
+
+    await frame.locator('[data-action="save-content-block"]').first().click();
+
+    await expect(page.locator(MODAL).filter({ hasText: 'Validation Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(MODAL)).toContainText('Vendor "My_Vendor"');
+    await expect(page.locator(MODAL)).toContainText('Name "Bad Name"');
+    await expect(page.locator(MODAL)).toContainText('lowercase letters');
+
+    await context.close();
+  });
+
+  test('backend rejection (success: false) is reported instead of a false success (#25)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    // The backend answers validation failures with HTTP 200 and success: false.
+    await page.route(/\/contentblocks\/gui\/cb\/save(\?|$)/, async route => {
+      if (route.request().method() !== 'POST') {
+        return route.continue();
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, message: 'Simulated backend rejection' }),
+      });
+    });
+    const frame = await openNewEditorByType(page, 'content-block');
+    await fillEditorSettings(page, frame, 'test', `pw-reject-${Date.now()}`);
+
+    await frame.locator('[data-action="save-content-block"]').first().click();
+
+    await expect(page.locator(MODAL).filter({ hasText: 'Error' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(MODAL)).toContainText('Simulated backend rejection');
+    await expect(page.locator(MODAL).filter({ hasText: 'Success' })).toHaveCount(0);
+
+    await context.close();
+  });
+
+  test('blur keeps an identifier chosen from existing base fields intact (#21)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const frame = await openNewEditor(page);
+
+    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    await page.waitForTimeout(500);
+    await clickField(frame, 'Text_0');
+    await selectBaseField(page, frame, 'header');
+    const identifier = frame.locator('content-block-editor-right-pane #identifier');
+    await expect(identifier).toHaveValue('header');
+
+    // Focus + blur without typing must not alter the selected existing field.
+    await identifier.focus();
+    await identifier.blur();
+    await page.waitForTimeout(300);
+    await expect(identifier).toHaveValue('header');
+    await expectMiddlePaneIdentifier(frame, 'header', 'Text_0');
 
     await context.close();
   });
