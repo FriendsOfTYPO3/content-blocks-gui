@@ -236,63 +236,63 @@ test.describe('Editor', () => {
     const frame = await openNewEditorByType(page, 'content-block');
     await fillEditorSettings(page, frame, 'test', `pw-parentpath-${Date.now()}`);
 
-    // 1) Root-level Text → rename to "rootText"
+    // 1) Root-level Text → rename to "root_text"
     expect(await dropFieldType(page, 'Text', 'Text_0'), 'Drop root Text').toBe(true);
     await page.waitForTimeout(500);
     await clickField(frame, 'Text_0');
-    await renameActiveField(frame, page, 'rootText');
-    await expectMiddlePaneIdentifier(frame, 'rootText', 'Text_0');
+    await renameActiveField(frame, page, 'root_text');
+    await expectMiddlePaneIdentifier(frame, 'root_text', 'Text_0');
 
-    // 2) Collection + inner Text → rename inner Text to "collectionText"
+    // 2) Collection + inner Text → rename inner Text to "collection_text"
     expect(await dropFieldType(page, 'Collection', 'Collection_0'), 'Drop Collection').toBe(true);
     await page.waitForTimeout(500);
     expect(await dropFieldIntoCollection(page, 'Text', 'Text_0', 0), 'Drop Text into Collection').toBe(true);
     await page.waitForTimeout(500);
     // The only Text_0 now lives inside Collection_0 (root Text was renamed in step 1).
     await clickField(frame, 'Text_0');
-    await renameActiveField(frame, page, 'collectionText');
-    await expectMiddlePaneIdentifier(frame, 'collectionText', 'Text_0');
+    await renameActiveField(frame, page, 'collection_text');
+    await expectMiddlePaneIdentifier(frame, 'collection_text', 'Text_0');
     // Sanity: container and its previously-renamed sibling must still be intact.
     await expectMiddlePaneIdentifier(frame, 'Collection_0');
-    await expectMiddlePaneIdentifier(frame, 'rootText');
+    await expectMiddlePaneIdentifier(frame, 'root_text');
 
     // 3) Second root-level Text (after the Collection).
     //    editor.ts#getNextFieldIndex reuses the lowest free "<Type>_<n>" slot,
-    //    so with root = [rootText, Collection_0] the new Text is named Text_0
+    //    so with root = [root_text, Collection_0] the new Text is named Text_0
     //    (the original Text_0 was renamed away in step 1). The identifier we
     //    pass into dropFieldType is ignored for new drops — just a probe.
     expect(await dropFieldType(page, 'Text', 'probe'), 'Drop second root Text').toBe(true);
     await page.waitForTimeout(500);
     await expectMiddlePaneIdentifier(frame, 'Text_0');
 
-    // 4) Palette with a Textarea inside → rename the Textarea to "paletteTextarea"
+    // 4) Palette with a Textarea inside → rename the Textarea to "palette_textarea"
     expect(await dropFieldType(page, 'Palette', 'Palette_0'), 'Drop Palette').toBe(true);
     await page.waitForTimeout(500);
     // Nested (level > 0) dropzones in document order at this point:
     //   [0] Collection_0 initial dropzone
-    //   [1] Collection_0 dropzone after collectionText
+    //   [1] Collection_0 dropzone after collection_text
     //   [2] Palette_0 initial dropzone
     expect(await dropFieldIntoCollection(page, 'Textarea', 'Textarea_0', 2), 'Drop Textarea into Palette').toBe(true);
     await page.waitForTimeout(500);
     await clickField(frame, 'Textarea_0');
-    await renameActiveField(frame, page, 'paletteTextarea');
-    await expectMiddlePaneIdentifier(frame, 'paletteTextarea', 'Textarea_0');
+    await renameActiveField(frame, page, 'palette_textarea');
+    await expectMiddlePaneIdentifier(frame, 'palette_textarea', 'Textarea_0');
 
     // 5) Rename the containers themselves. Children must stay put — their
     //    parentPath is index-based, so renaming the container must not break
     //    anything downstream.
     await clickField(frame, 'Palette_0');
-    await renameActiveField(frame, page, 'myPalette');
-    await expectMiddlePaneIdentifier(frame, 'myPalette', 'Palette_0');
-    await expectMiddlePaneIdentifier(frame, 'paletteTextarea');
+    await renameActiveField(frame, page, 'my_palette');
+    await expectMiddlePaneIdentifier(frame, 'my_palette', 'Palette_0');
+    await expectMiddlePaneIdentifier(frame, 'palette_textarea');
 
     await clickField(frame, 'Collection_0');
-    await renameActiveField(frame, page, 'myCollection');
-    await expectMiddlePaneIdentifier(frame, 'myCollection', 'Collection_0');
-    await expectMiddlePaneIdentifier(frame, 'collectionText');
+    await renameActiveField(frame, page, 'my_collection');
+    await expectMiddlePaneIdentifier(frame, 'my_collection', 'Collection_0');
+    await expectMiddlePaneIdentifier(frame, 'collection_text');
 
     // Final sanity pass: the full expected identifier set is in the middle pane.
-    for (const id of ['rootText', 'myCollection', 'collectionText', 'Text_0', 'myPalette', 'paletteTextarea']) {
+    for (const id of ['root_text', 'my_collection', 'collection_text', 'Text_0', 'my_palette', 'palette_textarea']) {
       await expectMiddlePaneIdentifier(frame, id);
     }
 
