@@ -1,4 +1,6 @@
 import { test, expect, type FrameLocator, type Page } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   createAuthContext, openNewEditor, openNewEditorByType, openModule,
   dropFieldType, dropFieldIntoCollection, fillEditorSettings, clickField,
@@ -211,6 +213,58 @@ test.describe('Editor', () => {
     frame = await findInListAndEdit(page, fullName);
     await expect(frame.locator('#title')).toHaveValue('Changed title');
     await expect(frame.locator('#description')).toHaveValue(description);
+
+    await deleteFromList(page, fullName, 'Content Elements');
+    await context.close();
+  });
+
+  test('a Content Block using YAML tags (!php/const) is refused by save and editor (#22)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const name = `pw-yamltag-${Date.now()}`;
+    const fullName = `test/${name}`;
+
+    let frame = await openNewEditorByType(page, 'content-block');
+    await fillEditorSettings(page, frame, 'test', name);
+    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    await page.waitForTimeout(500);
+    await saveAndVerify(page, frame);
+
+    // Open the block, then put a !php/const into its config.yaml on disk (the
+    // repo is bind-mounted into DDEV). Symfony would parse it as null, so the GUI
+    // must refuse to overwrite the file.
+    frame = await findInListAndEdit(page, fullName);
+    // Where the host extension keeps its Content Blocks, seen from the test host.
+    // Defaults to the examples package of the DDEV project; set
+    // PLAYWRIGHT_CONTENT_BLOCKS_DIR for other instances (e.g. the legacy test projects).
+    const blocksDir = process.env.PLAYWRIGHT_CONTENT_BLOCKS_DIR
+      || path.resolve(__dirname, '../../../Build/local-packages/content_blocks_examples/ContentBlocks');
+    const configPath = path.join(blocksDir, 'ContentElements', name, 'config.yaml');
+    if (!fs.existsSync(configPath)) {
+      await deleteFromList(page, fullName, 'Content Elements');
+      await context.close();
+      test.skip(true, `config.yaml not reachable at ${configPath} - set PLAYWRIGHT_CONTENT_BLOCKS_DIR`);
+    }
+    const original = fs.readFileSync(configPath, 'utf8');
+    const tagged = original.replace(/^(\s+)type: Text$/m, '$1type: Text\n$1description: !php/const PHP_VERSION');
+    expect(tagged, 'could not inject tag into config.yaml').not.toBe(original);
+    fs.writeFileSync(configPath, tagged);
+
+    await frame.locator('[data-action="save-content-block"]').first().click();
+    await expect(page.locator(MODAL).filter({ hasText: 'Error' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(MODAL)).toContainText('YAML tags');
+    await page.locator(MODAL).locator('button', { hasText: 'OK' }).click();
+    expect(fs.readFileSync(configPath, 'utf8'), 'config.yaml must be left untouched').toBe(tagged);
+
+    // Opening the block from the list must bounce back to the list with a message.
+    const listFrame = await openModule(page);
+    const row = listFrame.locator('tr', { hasText: fullName });
+    await expect(row).toBeVisible({ timeout: 10000 });
+    await row.locator('a').filter({ hasText: fullName }).first().click();
+    await page.waitForLoadState('networkidle');
+    const bounced = page.frameLocator('typo3-iframe-module iframe');
+    await expect(bounced.locator('content-block-list')).toBeAttached({ timeout: 10000 });
+    await expect(bounced.locator('.alert-danger')).toContainText('YAML tags');
 
     await deleteFromList(page, fullName, 'Content Elements');
     await context.close();

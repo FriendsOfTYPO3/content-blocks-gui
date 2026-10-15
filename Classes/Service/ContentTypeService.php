@@ -6,7 +6,9 @@ namespace FriendsOfTYPO3\ContentBlocksGui\Service;
 
 use FriendsOfTYPO3\ContentBlocksGui\Answer\AnswerInterface;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\DataAnswer;
+use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorContentBlockUsesYamlTagsAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Utility\DatabaseUtility;
+use FriendsOfTYPO3\ContentBlocksGui\Utility\YamlTagUtility;
 use Symfony\Component\Yaml\Yaml;
 use TYPO3\CMS\ContentBlocks\Builder\ConfigBuilder;
 use TYPO3\CMS\ContentBlocks\Builder\ContentBlockBuilder;
@@ -395,6 +397,12 @@ class ContentTypeService
         // Get the existing content block and its base path
         $existingContentBlock = $this->contentBlockRegistry->getContentBlock($contentBlock->getName());
         $basePath = GeneralUtility::getFileAbsFileName($existingContentBlock->getExtPath());
+
+        // Refuse to overwrite a config.yaml whose tags (e.g. !php/const) would be lost.
+        $configFile = $basePath . '/' . ContentBlockPathUtility::getContentBlockDefinitionFileName();
+        if (YamlTagUtility::fileContainsTags($configFile)) {
+            throw new \RuntimeException((new ErrorContentBlockUsesYamlTagsAnswer($contentBlock->getName()))->getMessage());
+        }
 
         // Update config.yaml file
         $this->updateConfigYaml($contentBlock, $basePath);

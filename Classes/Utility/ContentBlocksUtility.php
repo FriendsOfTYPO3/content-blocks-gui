@@ -21,6 +21,7 @@ use FriendsOfTYPO3\ContentBlocksGui\Answer\AnswerInterface;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\DataAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorBasicNotFoundAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorContentBlockNotFoundAnswer;
+use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorContentBlockUsesYamlTagsAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorDownloadContentTypeAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorMissingBasicIdentifierAnswer;
 use FriendsOfTYPO3\ContentBlocksGui\Answer\ErrorMissingContentBlockNameAnswer;
@@ -192,6 +193,12 @@ class ContentBlocksUtility
         // Get source content block
         $sourceContentBlock = $this->contentBlockRegistry->getContentBlock($sourceName);
         $contentType = $sourceContentBlock->getContentType();
+
+        // The copy gets re-dumped with a new name, which would turn YAML tags into null.
+        $sourceConfigFile = ExtensionManagementUtility::resolvePackagePath($sourceContentBlock->getExtPath()) . '/' . ContentBlockPathUtility::getContentBlockDefinitionFileName();
+        if (YamlTagUtility::fileContainsTags($sourceConfigFile)) {
+            throw new \RuntimeException((new ErrorContentBlockUsesYamlTagsAnswer($sourceName))->getMessage());
+        }
 
         // Construct target name
         $targetFullName = $targetVendor . '/' . $targetName;
@@ -1073,6 +1080,9 @@ class ContentBlocksUtility
                 $contentBlockAsArray = $loadedContentBlock->toArray();
                 // need to reset yaml to original data, since root-Basics are already resolved to fields here.
                 $yamlPath = ExtensionManagementUtility::resolvePackagePath($loadedContentBlock->getExtPath()) . '/' . ContentBlockPathUtility::getContentBlockDefinitionFileName();
+                if (YamlTagUtility::fileContainsTags($yamlPath)) {
+                    return new ErrorContentBlockUsesYamlTagsAnswer($parsedBody['name']);
+                }
                 $contentBlockAsArray['yaml'] = Yaml::parseFile($yamlPath);
                 // Title and description live in labels.xlf: ContentBlockBuilder strips
                 // them from config.yaml on create and the xlf has precedence at runtime.

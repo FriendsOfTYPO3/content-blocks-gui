@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\ContentBlocksGui\Controller\Backend;
 
+use FriendsOfTYPO3\ContentBlocksGui\Answer\AnswerInterface;
 use FriendsOfTYPO3\ContentBlocksGui\Service\BasicsService;
 use FriendsOfTYPO3\ContentBlocksGui\Service\FieldMetadataService;
 use FriendsOfTYPO3\ContentBlocksGui\Utility\ButtonBarUtility;
@@ -91,7 +92,10 @@ final class ContentBlocksGuiController
     {
         $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
         $this->buttonBarUtility->addEditButtonBar($this->moduleTemplate);
-        $this->handleAction($request);
+        $redirect = $this->handleAction($request);
+        if ($redirect !== null) {
+            return $redirect;
+        }
         return $this->moduleTemplate->renderResponse('ContentBlocksGui/Edit');
     }
 
@@ -198,7 +202,7 @@ final class ContentBlocksGuiController
     /**
      * @throws RouteNotFoundException
      */
-    protected function handleAction(ServerRequestInterface $request): void
+    protected function handleAction(ServerRequestInterface $request): ?ResponseInterface
     {
         $this->pageRenderer->loadJavaScriptModule('@friendsoftypo3/content-blocks-gui/editor.js');
         $queryParams = $request->getQueryParams();
@@ -238,6 +242,12 @@ final class ContentBlocksGuiController
             default:
                 throw new RouteNotFoundException('Invalid request mode: ' . $mode);
         }
+        // A typed error answer (e.g. the block uses YAML tags, issue #22) means the
+        // editor must not open: report it in the list view instead.
+        if ($contentBlocksData instanceof AnswerInterface) {
+            $this->addFlashMessage($contentBlocksData->getMessage(), 'Content Block cannot be opened', ContextualFeedbackSeverity::ERROR);
+            return $this->redirectToList($queryParams);
+        }
         // Get table for field metadata
         $table = $contentBlocksData['yaml']['table'] ?? 'tt_content';
         $fieldMetadata = $this->fieldMetadataService->getFieldMetadata($table);
@@ -255,6 +265,7 @@ final class ContentBlocksGuiController
         $this->moduleTemplate->assignMultiple([
             'contentBlockEditorData' => $contentBlockEditorData,
         ]);
+        return null;
     }
 
     /**
