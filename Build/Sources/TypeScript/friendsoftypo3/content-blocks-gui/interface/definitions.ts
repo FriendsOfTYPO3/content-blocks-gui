@@ -126,6 +126,7 @@ export interface ContentBlocksYaml {
   typeField: string;
   typeName: string;
   title?: string;
+  description?: string;
   vendorPrefix?: string;
   priority?: number;
   basics?: Array<string>;

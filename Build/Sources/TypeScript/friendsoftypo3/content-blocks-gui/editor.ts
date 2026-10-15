@@ -958,6 +958,7 @@ export class ContentBlockEditor extends LitElement {
       if (this.cbDefinition.yaml.labelField) {contentBlock.labelField = this.cbDefinition.yaml.labelField;}
       if (this.cbDefinition.yaml.priority) {contentBlock.priority = this.cbDefinition.yaml.priority;}
       if (this.cbDefinition.yaml.title) {contentBlock.title = this.cbDefinition.yaml.title;}
+      if (this.cbDefinition.yaml.description) {contentBlock.description = this.cbDefinition.yaml.description;}
       if (this.cbDefinition.yaml.vendorPrefix) {contentBlock.vendorPrefix = this.cbDefinition.yaml.vendorPrefix;}
 
       const saveData: Record<string, any> = {
@@ -1307,6 +1308,7 @@ export class ContentBlockEditor extends LitElement {
       if (this.cbDefinition.yaml.labelField) {contentBlock.labelField = this.cbDefinition.yaml.labelField;}
       if (this.cbDefinition.yaml.priority) {contentBlock.priority = this.cbDefinition.yaml.priority;}
       if (this.cbDefinition.yaml.title) {contentBlock.title = this.cbDefinition.yaml.title;}
+      if (this.cbDefinition.yaml.description) {contentBlock.description = this.cbDefinition.yaml.description;}
       if (this.cbDefinition.yaml.vendorPrefix) {contentBlock.vendorPrefix = this.cbDefinition.yaml.vendorPrefix;}
 
       const saveData: Record<string, any> = {

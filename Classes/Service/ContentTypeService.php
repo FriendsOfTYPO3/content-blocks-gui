@@ -17,6 +17,7 @@ use TYPO3\CMS\ContentBlocks\Generator\LanguageFileGenerator;
 use TYPO3\CMS\ContentBlocks\Loader\ContentBlockLoader;
 use TYPO3\CMS\ContentBlocks\Loader\LoadedContentBlock;
 use TYPO3\CMS\ContentBlocks\Registry\ContentBlockRegistry;
+use TYPO3\CMS\ContentBlocks\Registry\LanguageFileRegistry;
 use TYPO3\CMS\ContentBlocks\Service\PackageResolver;
 use TYPO3\CMS\ContentBlocks\Utility\ContentBlockPathUtility;
 use TYPO3\CMS\ContentBlocks\Validation\ContentBlockNameValidator;
@@ -37,6 +38,7 @@ class ContentTypeService
         protected readonly DefaultsLoader $defaultsLoader,
         protected readonly CacheManager $cacheManager,
         protected readonly LanguageFileGenerator $languageFileGenerator,
+        protected readonly LanguageFileRegistry $languageFileRegistry,
         protected readonly DatabaseUtility $databaseUtility,
     ) {}
 
@@ -78,7 +80,7 @@ class ContentTypeService
             // (e.g. typeName is auto-generated from the block name).
             $optionalFields = [
                 'group', 'prefixFields', 'prefixType', 'table',
-                'typeField', 'typeName', 'priority', 'title', 'vendorPrefix',
+                'typeField', 'typeName', 'priority', 'title', 'description', 'vendorPrefix',
             ];
             foreach ($optionalFields as $field) {
                 $value = $contentBlockData['contentBlock'][$field] ?? null;
@@ -91,7 +93,7 @@ class ContentTypeService
             PageTypeNameValidator::validate($typeName, $vendor . '/' . $name);
             $data['contentBlock']['type'] = (int) $typeName;
             $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'] ?? [];
-            foreach (['prefixFields', 'prefixType', 'title', 'labelField'] as $field) {
+            foreach (['prefixFields', 'prefixType', 'title', 'description', 'labelField'] as $field) {
                 $value = $contentBlockData['contentBlock'][$field] ?? null;
                 if ($value !== null && $value !== '') {
                     $data['contentBlock'][$field] = $value;
@@ -99,7 +101,7 @@ class ContentTypeService
             }
         } elseif ($data['contentType'] === 'record-type') {
             $data['contentBlock']['fields'] = $contentBlockData['contentBlock']['fields'] ?? [];
-            foreach (['typeName', 'title', 'table', 'labelField'] as $field) {
+            foreach (['typeName', 'title', 'description', 'table', 'labelField'] as $field) {
                 $value = $contentBlockData['contentBlock'][$field] ?? null;
                 if ($value !== null && $value !== '') {
                     $data['contentBlock'][$field] = $value;
@@ -477,10 +479,54 @@ class ContentTypeService
      */
     protected function updateLabelsXlf(LoadedContentBlock $contentBlock, string $basePath): void
     {
+        $this->overrideLanguageFileValues($contentBlock, ['title', 'description']);
         $xliffContent = $this->languageFileGenerator->generate($contentBlock);
         GeneralUtility::writeFile(
             $basePath . '/' . ContentBlockPathUtility::getLanguageFilePath(),
             $xliffContent,
         );
+    }
+
+    /**
+     * LanguageFileGenerator prefers values already present in labels.xlf over
+     * the YAML, so translations survive a regeneration. Title and description
+     * are edited in the GUI though (issue #29), so push the YAML values into the
+     * registry first - otherwise the generator would silently keep the old ones.
+     *
+     * @param string[] $keys
+     */
+    protected function overrideLanguageFileValues(LoadedContentBlock $contentBlock, array $keys): void
+    {
+        $name = $contentBlock->getName();
+        if (!$this->languageFileRegistry->hasLanguageFile($name)) {
+            return;
+        }
+        $yaml = $contentBlock->getYaml();
+        $values = [];
+        foreach ($keys as $key) {
+            $value = trim((string) ($yaml[$key] ?? ''));
+            if ($value !== '') {
+                $values[$key] = $value;
+            }
+        }
+        if ($values === []) {
+            return;
+        }
+        $languageFile = $this->languageFileRegistry->getAllLanguageFiles()[$name];
+        // content-blocks 2.x stores a Symfony MessageCatalogue (mutable object),
+        // 1.x a plain array in TYPO3's LocalizationFactory shape ([key][0]['source']).
+        if (is_object($languageFile) && method_exists($languageFile, 'set')) {
+            foreach ($values as $key => $value) {
+                $languageFile->set($key, $value);
+            }
+            return;
+        }
+        if (!is_array($languageFile)) {
+            return;
+        }
+        foreach ($values as $key => $value) {
+            $languageFile[$key] = [['source' => $value, 'target' => $value]];
+        }
+        $this->languageFileRegistry->register($contentBlock, $languageFile);
     }
 }

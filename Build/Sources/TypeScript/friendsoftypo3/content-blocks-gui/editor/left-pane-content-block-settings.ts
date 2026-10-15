@@ -80,6 +80,10 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
           <label for="title" class="form-label">Title</label>
           <input type="text" id="title" class="form-control" value="${this.contentBlockYaml.title || ''}" @input="${this.handleInputChange}" />
         </div>
+        <div class="form-group">
+          <label for="description" class="form-label">Description</label>
+          <textarea id="description" class="form-control" rows="2" @input="${this.handleInputChange}">${this.contentBlockYaml.description || ''}</textarea>
+        </div>
         ${isRecordType ? html`
           <div class="form-group">
             <label for="table" class="form-label">Table name <span class="text-danger">*</span></label>
@@ -186,6 +190,7 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
     // Content Block specific fields
     if (!isBasicMode) {
       const titleInput = this.renderRoot.querySelector('#title') as HTMLInputElement;
+      const descriptionInput = this.renderRoot.querySelector('#description') as HTMLTextAreaElement;
       const prefixCheckbox = this.renderRoot.querySelector('#prefix') as HTMLInputElement;
       const prefixTypeSelect = this.renderRoot.querySelector('#prefix-type') as HTMLSelectElement;
       const vendorPrefixInput = this.renderRoot.querySelector('#vendor-prefix') as HTMLInputElement;
@@ -196,6 +201,7 @@ export class EditorLeftPaneContentBlockSettings extends LitElement {
       const labelFieldInput = this.renderRoot.querySelector('#labelField') as HTMLInputElement;
 
       if (titleInput) {settings.title = titleInput.value;}
+      if (descriptionInput) {settings.description = descriptionInput.value;}
       if (prefixCheckbox) {settings.prefixFields = prefixCheckbox.checked;}
       if (prefixTypeSelect) {settings.prefixType = prefixTypeSelect.value;}
       if (vendorPrefixInput) {settings.vendorPrefix = vendorPrefixInput.value;}

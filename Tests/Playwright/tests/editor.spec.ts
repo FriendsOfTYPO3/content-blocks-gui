@@ -2,7 +2,7 @@ import { test, expect, type FrameLocator, type Page } from '@playwright/test';
 import {
   createAuthContext, openNewEditor, openNewEditorByType, openModule,
   dropFieldType, dropFieldIntoCollection, fillEditorSettings, clickField,
-  switchLeftPaneTab, selectBaseField, MODAL,
+  switchLeftPaneTab, selectBaseField, saveAndVerify, findInListAndEdit, deleteFromList, MODAL,
 } from './helpers';
 
 /**
@@ -62,6 +62,7 @@ test.describe('Editor', () => {
     await expect(editorFrame.locator('#vendor')).toBeAttached();
     await expect(editorFrame.locator('#name')).toBeAttached();
     await expect(editorFrame.locator('#extension')).toBeAttached();
+    await expect(editorFrame.locator('#description')).toBeAttached();
     await context.close();
   });
 
@@ -182,6 +183,36 @@ test.describe('Editor', () => {
     await expect(identifier).toHaveValue('header');
     await expectMiddlePaneIdentifier(frame, 'header', 'Text_0');
 
+    await context.close();
+  });
+
+  test('content block description is editable and survives a second save (#29)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const name = `pw-desc-${Date.now()}`;
+    const fullName = `test/${name}`;
+    const description = 'Teaser with headline and text';
+
+    let frame = await openNewEditorByType(page, 'content-block');
+    await fillEditorSettings(page, frame, 'test', name);
+    await frame.locator('#description').fill(description);
+    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    await page.waitForTimeout(500);
+    await saveAndVerify(page, frame);
+
+    // Reopen: the description must have been written to config.yaml.
+    frame = await findInListAndEdit(page, fullName);
+    await expect(frame.locator('#description')).toHaveValue(description);
+
+    // Change something else and save again: the description must not be
+    // replaced by the ConfigBuilder default ("Description for Content Element …").
+    await frame.locator('#title').fill('Changed title');
+    await saveAndVerify(page, frame);
+    frame = await findInListAndEdit(page, fullName);
+    await expect(frame.locator('#title')).toHaveValue('Changed title');
+    await expect(frame.locator('#description')).toHaveValue(description);
+
+    await deleteFromList(page, fullName, 'Content Elements');
     await context.close();
   });
 

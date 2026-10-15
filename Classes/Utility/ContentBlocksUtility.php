@@ -1074,6 +1074,13 @@ class ContentBlocksUtility
                 // need to reset yaml to original data, since root-Basics are already resolved to fields here.
                 $yamlPath = ExtensionManagementUtility::resolvePackagePath($loadedContentBlock->getExtPath()) . '/' . ContentBlockPathUtility::getContentBlockDefinitionFileName();
                 $contentBlockAsArray['yaml'] = Yaml::parseFile($yamlPath);
+                // Title and description live in labels.xlf: ContentBlockBuilder strips
+                // them from config.yaml on create and the xlf has precedence at runtime.
+                foreach (['title', 'description'] as $key) {
+                    if ($this->languageFileRegistry->isset($parsedBody['name'], $key)) {
+                        $contentBlockAsArray['yaml'][$key] = $this->languageFileRegistry->get($parsedBody['name'], $key);
+                    }
+                }
                 return $contentBlockAsArray;
             }
             return new ErrorContentBlockNotFoundAnswer($parsedBody['name']);
