@@ -84,7 +84,7 @@ test.describe('Editor', () => {
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
     const fieldsBefore = await editorFrame.locator('content-block-editor-middle-pane draggable-field-type').count();
-    const dropped = await dropFieldType(page, 'Text', 'Text_0');
+    const dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped).toBe(true);
     await page.waitForTimeout(500);
     const fieldsAfter = await editorFrame.locator('content-block-editor-middle-pane draggable-field-type').count();
@@ -96,7 +96,7 @@ test.describe('Editor', () => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();
     const editorFrame = await openNewEditor(page);
-    const dropped = await dropFieldType(page, 'Text', 'Text_0');
+    const dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped).toBe(true);
     await page.waitForTimeout(500);
     const field = editorFrame.locator('content-block-editor-middle-pane draggable-field-type').first();
@@ -113,13 +113,27 @@ test.describe('Editor', () => {
     const page = await context.newPage();
     const frame = await openNewEditor(page);
 
-    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    expect(await dropFieldType(page, 'Text', 'text_0')).toBe(true);
     await page.waitForTimeout(500);
-    await clickField(frame, 'Text_0');
+    await clickField(frame, 'text_0');
     await renameActiveField(frame, page, '  Hero   Headline  ');
 
     await expect(frame.locator('content-block-editor-right-pane #identifier')).toHaveValue('hero_headline');
-    await expectMiddlePaneIdentifier(frame, 'hero_headline', 'Text_0');
+    await expectMiddlePaneIdentifier(frame, 'hero_headline', 'text_0');
+
+    // Hyphens and slashes are invalid in column names and are folded to underscores too.
+    await renameActiveField(frame, page, 'Hero-Headline / Sub-Line');
+    await expect(frame.locator('content-block-editor-right-pane #identifier')).toHaveValue('hero_headline_sub_line');
+    await expectMiddlePaneIdentifier(frame, 'hero_headline_sub_line', 'hero_headline');
+
+    // What cannot be fixed automatically is reported by the validation badge.
+    // The badge is rendered once per validated property (identifier, type, useExistingField).
+    const badge = frame.locator('content-block-editor-right-pane .alert-danger').first();
+    await renameActiveField(frame, page, '1st-Field');
+    await expect(frame.locator('content-block-editor-right-pane #identifier')).toHaveValue('1st_field');
+    await expect(badge).toContainText('snake_case');
+    await renameActiveField(frame, page, 'first_field');
+    await expect(frame.locator('content-block-editor-right-pane .alert-danger')).toHaveCount(0);
 
     await context.close();
   });
@@ -171,9 +185,9 @@ test.describe('Editor', () => {
     const page = await context.newPage();
     const frame = await openNewEditor(page);
 
-    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    expect(await dropFieldType(page, 'Text', 'text_0')).toBe(true);
     await page.waitForTimeout(500);
-    await clickField(frame, 'Text_0');
+    await clickField(frame, 'text_0');
     await selectBaseField(page, frame, 'header');
     const identifier = frame.locator('content-block-editor-right-pane #identifier');
     await expect(identifier).toHaveValue('header');
@@ -183,7 +197,7 @@ test.describe('Editor', () => {
     await identifier.blur();
     await page.waitForTimeout(300);
     await expect(identifier).toHaveValue('header');
-    await expectMiddlePaneIdentifier(frame, 'header', 'Text_0');
+    await expectMiddlePaneIdentifier(frame, 'header', 'text_0');
 
     await context.close();
   });
@@ -198,7 +212,7 @@ test.describe('Editor', () => {
     let frame = await openNewEditorByType(page, 'content-block');
     await fillEditorSettings(page, frame, 'test', name);
     await frame.locator('#description').fill(description);
-    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    expect(await dropFieldType(page, 'Text', 'text_0')).toBe(true);
     await page.waitForTimeout(500);
     await saveAndVerify(page, frame);
 
@@ -226,7 +240,7 @@ test.describe('Editor', () => {
 
     let frame = await openNewEditorByType(page, 'content-block');
     await fillEditorSettings(page, frame, 'test', name);
-    expect(await dropFieldType(page, 'Text', 'Text_0')).toBe(true);
+    expect(await dropFieldType(page, 'Text', 'text_0')).toBe(true);
     await page.waitForTimeout(500);
     await saveAndVerify(page, frame);
 
@@ -317,7 +331,7 @@ test.describe('Editor', () => {
     await extensionSelect.selectOption(optionValue!);
 
     // Add a field
-    const dropped = await dropFieldType(page, 'Text', 'Text_0');
+    const dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped).toBe(true);
     await page.waitForTimeout(500);
 
@@ -386,62 +400,62 @@ test.describe('Editor', () => {
     await fillEditorSettings(page, frame, 'test', `pw-parentpath-${Date.now()}`);
 
     // 1) Root-level Text → rename to "root_text"
-    expect(await dropFieldType(page, 'Text', 'Text_0'), 'Drop root Text').toBe(true);
+    expect(await dropFieldType(page, 'Text', 'text_0'), 'Drop root Text').toBe(true);
     await page.waitForTimeout(500);
-    await clickField(frame, 'Text_0');
+    await clickField(frame, 'text_0');
     await renameActiveField(frame, page, 'root_text');
-    await expectMiddlePaneIdentifier(frame, 'root_text', 'Text_0');
+    await expectMiddlePaneIdentifier(frame, 'root_text', 'text_0');
 
     // 2) Collection + inner Text → rename inner Text to "collection_text"
-    expect(await dropFieldType(page, 'Collection', 'Collection_0'), 'Drop Collection').toBe(true);
+    expect(await dropFieldType(page, 'Collection', 'collection_0'), 'Drop Collection').toBe(true);
     await page.waitForTimeout(500);
-    expect(await dropFieldIntoCollection(page, 'Text', 'Text_0', 0), 'Drop Text into Collection').toBe(true);
+    expect(await dropFieldIntoCollection(page, 'Text', 'text_0', 0), 'Drop Text into Collection').toBe(true);
     await page.waitForTimeout(500);
-    // The only Text_0 now lives inside Collection_0 (root Text was renamed in step 1).
-    await clickField(frame, 'Text_0');
+    // The only text_0 now lives inside collection_0 (root Text was renamed in step 1).
+    await clickField(frame, 'text_0');
     await renameActiveField(frame, page, 'collection_text');
-    await expectMiddlePaneIdentifier(frame, 'collection_text', 'Text_0');
+    await expectMiddlePaneIdentifier(frame, 'collection_text', 'text_0');
     // Sanity: container and its previously-renamed sibling must still be intact.
-    await expectMiddlePaneIdentifier(frame, 'Collection_0');
+    await expectMiddlePaneIdentifier(frame, 'collection_0');
     await expectMiddlePaneIdentifier(frame, 'root_text');
 
     // 3) Second root-level Text (after the Collection).
     //    editor.ts#getNextFieldIndex reuses the lowest free "<Type>_<n>" slot,
-    //    so with root = [root_text, Collection_0] the new Text is named Text_0
-    //    (the original Text_0 was renamed away in step 1). The identifier we
+    //    so with root = [root_text, collection_0] the new Text is named text_0
+    //    (the original text_0 was renamed away in step 1). The identifier we
     //    pass into dropFieldType is ignored for new drops — just a probe.
     expect(await dropFieldType(page, 'Text', 'probe'), 'Drop second root Text').toBe(true);
     await page.waitForTimeout(500);
-    await expectMiddlePaneIdentifier(frame, 'Text_0');
+    await expectMiddlePaneIdentifier(frame, 'text_0');
 
     // 4) Palette with a Textarea inside → rename the Textarea to "palette_textarea"
-    expect(await dropFieldType(page, 'Palette', 'Palette_0'), 'Drop Palette').toBe(true);
+    expect(await dropFieldType(page, 'Palette', 'palette_0'), 'Drop Palette').toBe(true);
     await page.waitForTimeout(500);
     // Nested (level > 0) dropzones in document order at this point:
-    //   [0] Collection_0 initial dropzone
-    //   [1] Collection_0 dropzone after collection_text
-    //   [2] Palette_0 initial dropzone
-    expect(await dropFieldIntoCollection(page, 'Textarea', 'Textarea_0', 2), 'Drop Textarea into Palette').toBe(true);
+    //   [0] collection_0 initial dropzone
+    //   [1] collection_0 dropzone after collection_text
+    //   [2] palette_0 initial dropzone
+    expect(await dropFieldIntoCollection(page, 'Textarea', 'textarea_0', 2), 'Drop Textarea into Palette').toBe(true);
     await page.waitForTimeout(500);
-    await clickField(frame, 'Textarea_0');
+    await clickField(frame, 'textarea_0');
     await renameActiveField(frame, page, 'palette_textarea');
-    await expectMiddlePaneIdentifier(frame, 'palette_textarea', 'Textarea_0');
+    await expectMiddlePaneIdentifier(frame, 'palette_textarea', 'textarea_0');
 
     // 5) Rename the containers themselves. Children must stay put — their
     //    parentPath is index-based, so renaming the container must not break
     //    anything downstream.
-    await clickField(frame, 'Palette_0');
+    await clickField(frame, 'palette_0');
     await renameActiveField(frame, page, 'my_palette');
-    await expectMiddlePaneIdentifier(frame, 'my_palette', 'Palette_0');
+    await expectMiddlePaneIdentifier(frame, 'my_palette', 'palette_0');
     await expectMiddlePaneIdentifier(frame, 'palette_textarea');
 
-    await clickField(frame, 'Collection_0');
+    await clickField(frame, 'collection_0');
     await renameActiveField(frame, page, 'my_collection');
-    await expectMiddlePaneIdentifier(frame, 'my_collection', 'Collection_0');
+    await expectMiddlePaneIdentifier(frame, 'my_collection', 'collection_0');
     await expectMiddlePaneIdentifier(frame, 'collection_text');
 
     // Final sanity pass: the full expected identifier set is in the middle pane.
-    for (const id of ['root_text', 'my_collection', 'collection_text', 'Text_0', 'my_palette', 'palette_textarea']) {
+    for (const id of ['root_text', 'my_collection', 'collection_text', 'text_0', 'my_palette', 'palette_textarea']) {
       await expectMiddlePaneIdentifier(frame, id);
     }
 
@@ -500,10 +514,10 @@ test.describe('Editor', () => {
 
     // Record Type: drop a Basic field; its right-pane dropdown must not offer Appearance.
     let frame = await openNewEditorByType(page, 'record-type');
-    let dropped = await dropFieldType(page, 'Basic', 'Basic_0');
+    let dropped = await dropFieldType(page, 'Basic', 'basic_0');
     expect(dropped, 'Drop Basic field (record type)').toBe(true);
     await page.waitForTimeout(400);
-    await clickField(frame, 'Basic_0');
+    await clickField(frame, 'basic_0');
     await page.waitForTimeout(300);
     const rtDropdown = frame.locator('content-block-editor-right-pane select#identifier');
     await expect(rtDropdown).toBeVisible({ timeout: 5000 });
@@ -514,10 +528,10 @@ test.describe('Editor', () => {
 
     // Content Element: the same dropdown offers Appearance.
     frame = await openNewEditorByType(page, 'content-block');
-    dropped = await dropFieldType(page, 'Basic', 'Basic_0');
+    dropped = await dropFieldType(page, 'Basic', 'basic_0');
     expect(dropped, 'Drop Basic field (content element)').toBe(true);
     await page.waitForTimeout(400);
-    await clickField(frame, 'Basic_0');
+    await clickField(frame, 'basic_0');
     await page.waitForTimeout(300);
     const ceDropdown = frame.locator('content-block-editor-right-pane select#identifier');
     await expect(ceDropdown).toBeVisible({ timeout: 5000 });

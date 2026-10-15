@@ -39,31 +39,31 @@ test.describe('Content Element Roundtrip', () => {
     await fillEditorSettings(page, frame, VENDOR, NAME);
 
     // Add fields: Text, Collection with sub-fields, Palette with sub-fields
-    let dropped = await dropFieldType(page, 'Text', 'Text_0');
+    let dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped, 'Drop Text').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'Textarea', 'Textarea_0');
+    dropped = await dropFieldType(page, 'Textarea', 'textarea_0');
     expect(dropped, 'Drop Textarea').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'Collection', 'Collection_0');
+    dropped = await dropFieldType(page, 'Collection', 'collection_0');
     expect(dropped, 'Drop Collection').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldIntoCollection(page, 'Text', 'Text_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'Text', 'text_0', 0);
     expect(dropped, 'Drop Text into collection').toBe(true);
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldIntoCollection(page, 'File', 'File_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'File', 'file_0', 0);
     expect(dropped, 'Drop File into collection').toBe(true);
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldType(page, 'Palette', 'Palette_0');
+    dropped = await dropFieldType(page, 'Palette', 'palette_0');
     expect(dropped, 'Drop Palette').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldIntoCollection(page, 'Textarea', 'Textarea_0', 1);
+    dropped = await dropFieldIntoCollection(page, 'Textarea', 'textarea_0', 1);
     expect(dropped, 'Drop Textarea into palette').toBe(true);
     await page.waitForTimeout(300);
 
@@ -84,15 +84,15 @@ test.describe('Content Element Roundtrip', () => {
     await removeBasicFromList(page, frame, 'TYPO3/Appearance');
 
     // Delete the collection
-    await deleteField(frame, 'Collection_0');
+    await deleteField(frame, 'collection_0');
     await page.waitForTimeout(300);
 
     // Delete the Textarea
-    await deleteField(frame, 'Textarea_0');
+    await deleteField(frame, 'textarea_0');
     await page.waitForTimeout(300);
 
     // Add a new File field
-    dropped = await dropFieldType(page, 'File', 'File_0');
+    dropped = await dropFieldType(page, 'File', 'file_0');
     expect(dropped, 'Drop File').toBe(true);
     await page.waitForTimeout(500);
 
@@ -128,19 +128,19 @@ test.describe('Record Type Roundtrip', () => {
     let frame = await openNewEditorByType(page, 'record-type');
     await fillEditorSettings(page, frame, VENDOR, NAME);
 
-    let dropped = await dropFieldType(page, 'Text', 'Text_0');
+    let dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped, 'Drop Text').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'Collection', 'Collection_0');
+    dropped = await dropFieldType(page, 'Collection', 'collection_0');
     expect(dropped, 'Drop Collection').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldIntoCollection(page, 'Textarea', 'Textarea_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'Textarea', 'textarea_0', 0);
     expect(dropped, 'Drop Textarea into collection').toBe(true);
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldType(page, 'File', 'File_0');
+    dropped = await dropFieldType(page, 'File', 'file_0');
     expect(dropped, 'Drop File').toBe(true);
     await page.waitForTimeout(500);
 
@@ -160,14 +160,14 @@ test.describe('Record Type Roundtrip', () => {
     // (what the Settings form showed is what got saved).
     await expect(frame.locator('#table')).toHaveValue(`tx_${VENDOR}_${NAME.replace(/-/g, '')}`);
 
-    await deleteField(frame, 'Collection_0');
+    await deleteField(frame, 'collection_0');
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldType(page, 'Palette', 'Palette_0');
+    dropped = await dropFieldType(page, 'Palette', 'palette_0');
     expect(dropped, 'Drop Palette').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldIntoCollection(page, 'Text', 'Text_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'Text', 'text_0', 0);
     expect(dropped, 'Drop Text into palette').toBe(true);
     await page.waitForTimeout(300);
 
@@ -200,19 +200,19 @@ test.describe('Page Type Roundtrip', () => {
     let frame = await openNewEditorByType(page, 'page-type');
     await fillEditorSettings(page, frame, VENDOR, NAME);
 
-    let dropped = await dropFieldType(page, 'Text', 'Text_0');
+    let dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped, 'Drop Text').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'Textarea', 'Textarea_0');
+    dropped = await dropFieldType(page, 'Textarea', 'textarea_0');
     expect(dropped, 'Drop Textarea').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'Collection', 'Collection_0');
+    dropped = await dropFieldType(page, 'Collection', 'collection_0');
     expect(dropped, 'Drop Collection').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldIntoCollection(page, 'Text', 'Text_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'Text', 'text_0', 0);
     expect(dropped, 'Drop Text into collection').toBe(true);
     await page.waitForTimeout(300);
 
@@ -228,10 +228,10 @@ test.describe('Page Type Roundtrip', () => {
     // ── EDIT ────────────────────────────────────────────────────────────
     frame = await findInListAndEdit(page, FULL_NAME, 'Page Types');
 
-    await deleteField(frame, 'Collection_0');
+    await deleteField(frame, 'collection_0');
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldType(page, 'File', 'File_0');
+    dropped = await dropFieldType(page, 'File', 'file_0');
     expect(dropped, 'Drop File').toBe(true);
     await page.waitForTimeout(500);
 
@@ -239,7 +239,7 @@ test.describe('Page Type Roundtrip', () => {
 
     frame = await findInListAndEdit(page, FULL_NAME, 'Page Types');
     await expect(frame.locator('.collection-field')).not.toBeAttached({ timeout: 3000 });
-    await expect(frame.locator('content-block-editor-middle-pane [data-identifier="File_0"]')).toBeAttached({ timeout: 3000 });
+    await expect(frame.locator('content-block-editor-middle-pane [data-identifier="file_0"]')).toBeAttached({ timeout: 3000 });
 
     // ── DELETE ───────────────────────────────────────────────────────────
     await deleteFromList(page, FULL_NAME, 'Page Types');
@@ -264,15 +264,15 @@ test.describe('Basic Roundtrip', () => {
     let frame = await openNewEditorByType(page, 'basic');
     await fillEditorSettings(page, frame, VENDOR, NAME);
 
-    let dropped = await dropFieldType(page, 'Text', 'Text_0');
+    let dropped = await dropFieldType(page, 'Text', 'text_0');
     expect(dropped, 'Drop Text').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'Textarea', 'Textarea_0');
+    dropped = await dropFieldType(page, 'Textarea', 'textarea_0');
     expect(dropped, 'Drop Textarea').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldType(page, 'File', 'File_0');
+    dropped = await dropFieldType(page, 'File', 'file_0');
     expect(dropped, 'Drop File').toBe(true);
     await page.waitForTimeout(500);
 
@@ -288,18 +288,18 @@ test.describe('Basic Roundtrip', () => {
     // ── EDIT ────────────────────────────────────────────────────────────
     frame = await findInListAndEdit(page, FULL_NAME, 'Basics');
 
-    await deleteField(frame, 'Textarea_0');
+    await deleteField(frame, 'textarea_0');
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldType(page, 'Collection', 'Collection_0');
+    dropped = await dropFieldType(page, 'Collection', 'collection_0');
     expect(dropped, 'Drop Collection').toBe(true);
     await page.waitForTimeout(500);
 
-    dropped = await dropFieldIntoCollection(page, 'Text', 'Text_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'Text', 'text_0', 0);
     expect(dropped, 'Drop Text into collection').toBe(true);
     await page.waitForTimeout(300);
 
-    dropped = await dropFieldIntoCollection(page, 'Textarea', 'Textarea_0', 0);
+    dropped = await dropFieldIntoCollection(page, 'Textarea', 'textarea_0', 0);
     expect(dropped, 'Drop Textarea into collection').toBe(true);
     await page.waitForTimeout(300);
 
@@ -317,7 +317,7 @@ test.describe('Basic Roundtrip', () => {
     // Reopen and verify changes
     frame = await findInListAndEdit(page, FULL_NAME, 'Basics');
     await expect(frame.locator('.collection-field')).toBeAttached({ timeout: 5000 });
-    // Root should have Text_0, File_0, Collection_0 = 3 fields (Textarea_0 was deleted from root)
+    // Root should have text_0, file_0, collection_0 = 3 fields (textarea_0 was deleted from root)
     const rootFields = frame.locator('content-block-editor-middle-pane > .content-block-field-builder > .field-builder-container > .fields-list > .field-item');
     const rootFieldCount = await rootFields.count();
     expect(rootFieldCount).toBe(3);

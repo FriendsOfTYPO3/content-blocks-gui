@@ -10,4 +10,4 @@
  *
  * The TYPO3 project - inspiring people to share!
  */
-function r(e){return e.trim().toLowerCase().replace(/\s+/g,"_")}export{r as normalizeFieldIdentifier};
+function r(e){return e.trim().toLowerCase().replace(/[\s/-]+/g,"_")}export{r as normalizeFieldIdentifier};

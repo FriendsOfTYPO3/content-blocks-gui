@@ -336,6 +336,17 @@ export class ContentBlockEditor extends LitElement {
       };
     }
 
+    // Check 1b: identifiers end up as column names and Fluid variables, and
+    // Content Blocks itself does not validate them (issue #21). Reused existing
+    // fields and Basics carry foreign identifiers, so they are exempt.
+    if (!field.useExistingField && field.type !== 'Basic' && !/^[a-z][a-z0-9_]*$/.test(field.identifier || '')) {
+      return {
+        valid: false,
+        severity: 'error',
+        message: 'Identifier must be snake_case: lowercase letters, digits and underscores, not starting with a digit'
+      };
+    }
+
     // Check 2: useExistingField logic (only applies at level 0)
     // This check must come BEFORE system reserved field check, because base fields
     // like 'header' are reusable and should show SUCCESS, not ERROR
@@ -457,7 +468,8 @@ export class ContentBlockEditor extends LitElement {
 
   protected fieldTypeDroppedListener(event: CustomEvent) {
     this.rightPaneActiveSchema = this.fieldTypeList.filter((fieldType) => fieldType.type === event.detail.data.type)[0];
-    const newIdentifier = event.detail.data.type + '_' + this.getNextFieldIndex(event.detail.parentPath, event.detail.data.type);
+    // Default identifiers are snake_case like everything the GUI accepts (issue #21).
+    const newIdentifier = event.detail.data.type.toLowerCase() + '_' + this.getNextFieldIndex(event.detail.parentPath, event.detail.data.type);
     this.handleFieldAction(newIdentifier, event.detail);
   }
 
@@ -1392,11 +1404,13 @@ export class ContentBlockEditor extends LitElement {
   // containers (Palettes/Tabs) but stops at nested Collections, which form
   // their own scope.
   private getNextFieldIndex(parentPath: number[], type: string): number {
-    const prefix = type + '_';
+    // Case-insensitive: blocks created by older GUI versions use "Text_0", and
+    // MySQL column names are case-insensitive, so "text_0" would clash with it.
+    const prefix = type.toLowerCase() + '_';
     let maxIndex = -1;
     const scan = (list: Array<ContentBlockField>): void => {
       for (const field of list) {
-        if (field.identifier && field.identifier.startsWith(prefix)) {
+        if (field.identifier && field.identifier.toLowerCase().startsWith(prefix)) {
           const num = parseInt(field.identifier.substring(prefix.length), 10);
           if (!isNaN(num) && num > maxIndex) {
             maxIndex = num;
