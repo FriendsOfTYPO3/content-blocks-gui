@@ -284,6 +284,54 @@ test.describe('Editor', () => {
     await context.close();
   });
 
+  test('numeric field properties are written as integers to config.yaml (#32)', async ({ browser }) => {
+    const context = await createAuthContext(browser);
+    const page = await context.newPage();
+    const name = `pw-numeric-${Date.now()}`;
+    const fullName = `test/${name}`;
+
+    let frame = await openNewEditorByType(page, 'content-block');
+    await fillEditorSettings(page, frame, 'test', name);
+    expect(await dropFieldType(page, 'File', 'file_0')).toBe(true);
+    await page.waitForTimeout(500);
+
+    // Type into the number input and blur it, exactly as a user would. The
+    // DOM delivers strings, the YAML must still get integers.
+    const maxitems = frame.locator('content-block-editor-right-pane #maxitems');
+    await expect(maxitems).toBeVisible({ timeout: 5000 });
+    await maxitems.fill('2');
+    await maxitems.blur();
+    await page.waitForTimeout(300);
+    await saveAndVerify(page, frame);
+
+    const blocksDir = process.env.PLAYWRIGHT_CONTENT_BLOCKS_DIR
+      || path.resolve(__dirname, '../../../Build/local-packages/content_blocks_examples/ContentBlocks');
+    const configPath = path.join(blocksDir, 'ContentElements', name, 'config.yaml');
+    if (!fs.existsSync(configPath)) {
+      await deleteFromList(page, fullName, 'Content Elements');
+      await context.close();
+      test.skip(true, `config.yaml not reachable at ${configPath} - set PLAYWRIGHT_CONTENT_BLOCKS_DIR`);
+    }
+    expect(fs.readFileSync(configPath, 'utf8'), 'maxitems must be an unquoted integer').toMatch(/^\s+maxitems: 2$/m);
+
+    // A deliberate 0 is a value, not "empty": it must be saved and shown again.
+    frame = await findInListAndEdit(page, fullName);
+    await clickField(frame, 'file_0');
+    const maxitemsAgain = frame.locator('content-block-editor-right-pane #maxitems');
+    await expect(maxitemsAgain).toHaveValue('2');
+    await maxitemsAgain.fill('0');
+    await maxitemsAgain.blur();
+    await page.waitForTimeout(300);
+    await saveAndVerify(page, frame);
+    expect(fs.readFileSync(configPath, 'utf8'), 'maxitems 0 must be kept').toMatch(/^\s+maxitems: 0$/m);
+    frame = await findInListAndEdit(page, fullName);
+    await clickField(frame, 'file_0');
+    await expect(frame.locator('content-block-editor-right-pane #maxitems')).toHaveValue('0');
+
+    await deleteFromList(page, fullName, 'Content Elements');
+    await context.close();
+  });
+
   test('extension dropdown lists destination extensions', async ({ browser }) => {
     const context = await createAuthContext(browser);
     const page = await context.newPage();

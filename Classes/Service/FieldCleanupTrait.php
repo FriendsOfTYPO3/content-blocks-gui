@@ -41,6 +41,18 @@ trait FieldCleanupTrait
         'renderType',
     ];
 
+    private const INTEGER_FIELD_PROPERTIES = [
+        'minitems',
+        'maxitems',
+        'size',
+        'min',
+        'max',
+        'rows',
+        'cols',
+        'dbFieldLength',
+        'version',
+    ];
+
     private const UI_ONLY_PROPERTIES = [
         '_validation',
         '_isBaseField',
@@ -69,6 +81,19 @@ trait FieldCleanupTrait
                 $cleaned[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                 continue;
             }
+            // Cast known integer properties, drop them when left empty
+            if (in_array($key, self::INTEGER_FIELD_PROPERTIES, true)) {
+                if ($value === '' || $value === null) {
+                    continue;
+                }
+                $cleaned[$key] = $this->castInteger($value);
+                continue;
+            }
+            // The default value of a Number field is numeric, for every other type it is a string
+            if ($key === 'default' && ($data['type'] ?? null) === 'Number') {
+                $cleaned[$key] = $this->castNumber($value);
+                continue;
+            }
             // Unwrap UI wrapper: { enabled, items: [...] } -> [...]
             if (is_array($value) && array_key_exists('items', $value) && is_array($value['items'])) {
                 $otherKeys = array_diff(array_keys($value), ['items', 'enabled']);
@@ -81,5 +106,23 @@ trait FieldCleanupTrait
             $cleaned[$key] = $this->cleanFieldsForSave($value);
         }
         return $cleaned;
+    }
+
+    private function castInteger(mixed $value): mixed
+    {
+        $integer = filter_var($value, FILTER_VALIDATE_INT);
+        return $integer === false ? $value : $integer;
+    }
+
+    private function castNumber(mixed $value): mixed
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+        if (!is_string($value) || !is_numeric($value)) {
+            return $value;
+        }
+        $integer = filter_var($value, FILTER_VALIDATE_INT);
+        return $integer === false ? (float) $value : $integer;
     }
 }

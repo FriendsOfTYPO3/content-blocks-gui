@@ -126,7 +126,7 @@ export class ContentBlockEditorRightPane extends LitElement {
       case 'text':
         return html `<input @blur="${this.dispatchBlurEvent}" type="text" id="${fieldTypeProperty.name}" .value="${live(this.values[fieldTypeProperty.name] || fieldTypeProperty.default || '')}" class="form-control" />`;
       case 'number':
-        return html `<input @blur="${this.dispatchBlurEvent}" type="number" id="${fieldTypeProperty.name}" .value="${live(this.values[fieldTypeProperty.name] as number || fieldTypeProperty.default)}" class="form-control" />`;
+        return html `<input @blur="${this.dispatchBlurEvent}" type="number" id="${fieldTypeProperty.name}" .value="${live(this.values[fieldTypeProperty.name] as number ?? fieldTypeProperty.default)}" class="form-control" />`;
       case 'select':
         // Disable prefixType only when prefixFields is explicitly false
         const isPrefixTypeDisabled = fieldTypeProperty.name === 'prefixType' && this.values.prefixFields === false;
@@ -235,7 +235,19 @@ export class ContentBlockEditorRightPane extends LitElement {
       ? normalizeFieldIdentifier(target.value)
       : target.value;
     target.value = value;
-    this.values[target.id] = target.type === 'checkbox' ? target.checked : value;
+    if (target.type === 'checkbox') {
+      this.values[target.id] = target.checked;
+    } else if (target.type === 'number') {
+      // Inputs always yield strings. Keep numeric properties numeric so the
+      // YAML gets `maxitems: 2` instead of `maxitems: '2'` (#32).
+      if (Number.isNaN(target.valueAsNumber)) {
+        delete this.values[target.id];
+      } else {
+        this.values[target.id] = target.valueAsNumber;
+      }
+    } else {
+      this.values[target.id] = value;
+    }
     this.dispatchEvent(new CustomEvent('updateCbFieldData', {
       bubbles: true,
       composed: true,
